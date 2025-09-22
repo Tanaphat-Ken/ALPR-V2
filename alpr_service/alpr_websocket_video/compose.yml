@@ -1,0 +1,20 @@
+services:
+  video-handler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5002:5000"
+    volumes:
+      - ./src:/usr/src/app/src
+      - ./main.py:/usr/src/app/main.py
+      - ./images_logs:/usr/src/app/images_logs
+      - ./testing:/usr/src/app/testing
+      - .env:/usr/src/app/.env
+    restart: always
+    networks: 
+      - alpr-network
+
+networks:
+  alpr-network:
+    external: true

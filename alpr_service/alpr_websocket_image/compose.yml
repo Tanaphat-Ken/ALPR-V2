@@ -1,0 +1,16 @@
+services:
+  image-websocket-container:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./:/app
+    restart: unless-stopped
+    networks:
+      - alpr-network
+  
+networks:
+  alpr-network:
+    external: true

@@ -1,0 +1,16 @@
+services:
+  fastapi_image_container:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./:/app
+    restart: unless-stopped
+    networks:
+      - alpr-network
+  
+networks:
+  alpr-network:
+    external: true

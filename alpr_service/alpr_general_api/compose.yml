@@ -1,0 +1,16 @@
+services:
+  alpr-api-web-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8092:8092"
+    volumes:
+      - ./:/app
+    restart: always
+    networks:
+      - alpr-network
+  
+networks:
+  alpr-network:
+    external: true

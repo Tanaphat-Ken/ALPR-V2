@@ -1,0 +1,59 @@
+{
+  "extends": ["next/core-web-vitals", "next/typescript", "plugin:@typescript-eslint/recommended"],
+  "overrides": [
+    {
+      "files": ["**/*.{js,jsx,ts,tsx}"],
+      "excludedFiles": ["**/.config/**", "tsconfig.json"],
+      "parserOptions": {
+        "ecmaVersion": "latest"
+      },
+      "plugins": ["@typescript-eslint"],
+      "rules": {
+        "quotes": [
+          2,
+          "single",
+          {
+            "avoidEscape": true
+          }
+        ],
+        "semi": ["error", "never"],
+        "indent": ["error", 2],
+        "react/react-in-jsx-scope": 0,
+        "react/jsx-filename-extension": 0,
+        "jsx-a11y/href-no-hash": 0,
+        "no-underscore-dangle": 0,
+        "max-len": [
+          2,
+          {
+            "code": 200,
+            "tabWidth": 4,
+            "ignoreUrls": true
+          }
+        ],
+        "no-tabs": 0,
+        "no-nested-ternary": 0,
+        "react/jsx-closing-tag-location": 0,
+        "@typescript-eslint/no-unused-vars": [
+          1,
+          {
+            "argsIgnorePattern": "^_",
+            "varsIgnorePattern": "^_",
+            "caughtErrorsIgnorePattern": "^_"
+          }
+        ],
+        "react-hooks/exhaustive-deps": 0,
+        "no-console": [
+          1,
+          {
+            "allow": ["info", "warn", "error"]
+          }
+        ]
+      },
+      "settings": {
+        "react": {
+          "version": "detect"
+        }
+      }
+    }
+  ]
+}
