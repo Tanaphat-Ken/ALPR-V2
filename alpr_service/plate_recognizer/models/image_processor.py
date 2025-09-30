@@ -2,13 +2,15 @@ from constants import format_flag, reponse_message
 from models.localizers import CarLocalizer, PlateLocalizer, TextRegionDetector, CharacterReader
 from libs import utils
 from libs.logging import logger
+import numpy as np
 
 class ImageProcessor:
-  def __init__(self):
+  def __init__(self, use_craft: bool = False):
     self.car_localizer = CarLocalizer()
     self.plate_localizer = PlateLocalizer()
     self.text_region_detector = TextRegionDetector()
     self.characters_reader = CharacterReader()
+    self.use_craft = use_craft
   
   def _result_format(
     self, 
@@ -57,7 +59,37 @@ class ImageProcessor:
       plate_bbox = utils.find_largest_bbox(plate_detection_list)
       plate_image = car_image.crop(tuple(plate_bbox))
 
-    outputs = self.characters_reader.predict([plate_image]) 
+    # If requested, detect text regions with CRAFT inside plate_image
+    outputs = []
+    if self.use_craft:
+      try:
+        # CRAFT expects a numpy image (H, W, C)
+        np_img = np.array(plate_image)
+        polys = self.text_region_detector.predict(np_img) or []
+        # Sort by top-most Y to read top-to-bottom
+        def top_y(poly):
+          return min(p[1] for p in poly) if poly else 0
+        polys = [p for p in polys if p is not None]
+        polys.sort(key=top_y)
+
+        # Crop each polygon region (rectangular crop around polygon) and OCR
+        crops = []
+        for poly in polys:
+          try:
+            crop = utils.crop_4point_image(plate_image, poly)
+            crops.append(crop)
+          except Exception as e:
+            logger.warning(f"CRAFT crop failed: {e}")
+        if crops:
+          outputs = self.characters_reader.predict(crops)
+        else:
+          # Fallback to direct OCR on the plate crop
+          outputs = self.characters_reader.predict([plate_image])
+      except Exception as e:
+        logger.warning(f"CRAFT predict failed: {e}; falling back to direct OCR")
+        outputs = self.characters_reader.predict([plate_image])
+    else:
+      outputs = self.characters_reader.predict([plate_image])
 
     return self._result_format(
       car_bbox=utils.convert_2_to_4_point(car_bbox),

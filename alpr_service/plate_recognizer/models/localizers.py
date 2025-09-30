@@ -1,3 +1,4 @@
+import os
 import torch
 from PIL import Image
 from ultralytics import YOLO
@@ -107,9 +108,66 @@ class TextRegionDetector:
     return polys
     
 class CharacterReader:
-  def __init__(self):
-    self.processor = TrOCRProcessor.from_pretrained("kkatiz/thai-trocr-thaigov-v2")
-    self.model = VisionEncoderDecoderModel.from_pretrained("kkatiz/thai-trocr-thaigov-v2")
+  def __init__(self, weight_path: str | None = None, base_model_id: str = "openthaigpt/thai-trocr", device: str | None = None):
+    """Initialize character reader (TrOCR).
+
+    Loading priority:
+    1) Explicit weight_path argument
+    2) configs.CHARACTOR_READER_WEIGHT (can be a folder saved via save_pretrained, or a .pth state_dict)
+    3) Fallback to HF model id (base_model_id)
+    """
+
+    self.device = torch.device(device) if device in ("cpu", "cuda") else torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    source = weight_path or getattr(configs, "CHARACTOR_READER_WEIGHT", None)
+
+    def _load_from_dir(dir_path: str):
+      logger.info(f"Loading TrOCR from directory: {dir_path}")
+      processor = TrOCRProcessor.from_pretrained(dir_path)
+      model = VisionEncoderDecoderModel.from_pretrained(dir_path)
+      return processor, model
+
+    def _maybe_extract_state_dict(obj):
+      # support common checkpoint formats
+      if isinstance(obj, dict):
+        for key in ("state_dict", "model_state_dict", "model"):  # try typical wrappers
+          if key in obj and isinstance(obj[key], dict):
+            return obj[key]
+      return obj if isinstance(obj, dict) else obj
+
+    def _strip_prefix(sd: dict, prefix: str = "module."):
+      if not isinstance(sd, dict):
+        return sd
+      return { (k[len(prefix):] if k.startswith(prefix) else k): v for k, v in sd.items() }
+
+    try:
+      if isinstance(source, str) and os.path.isdir(source):
+        self.processor, self.model = _load_from_dir(source)
+      elif isinstance(source, str) and os.path.isfile(source):
+        logger.info(f"Loading TrOCR state_dict from file: {source}")
+        # load base arch then load state dict
+        self.processor = TrOCRProcessor.from_pretrained(base_model_id)
+        self.model = VisionEncoderDecoderModel.from_pretrained(base_model_id)
+        state = torch.load(source, map_location="cpu")
+        state_dict = _maybe_extract_state_dict(state)
+        state_dict = _strip_prefix(state_dict, prefix="module.")
+        missing, unexpected = self.model.load_state_dict(state_dict, strict=False)
+        if missing:
+          logger.warning(f"TrOCR load_state_dict missing keys: {len(missing)}")
+        if unexpected:
+          logger.warning(f"TrOCR load_state_dict unexpected keys: {len(unexpected)}")
+      else:
+        # fallback to HF model id
+        logger.info(f"Loading TrOCR from HF model: {base_model_id}")
+        self.processor = TrOCRProcessor.from_pretrained(base_model_id)
+        self.model = VisionEncoderDecoderModel.from_pretrained(base_model_id)
+    except Exception as e:
+      logger.error(f"Failed to load CharacterReader weights from '{source}': {e}. Falling back to base model '{base_model_id}'.")
+      self.processor = TrOCRProcessor.from_pretrained(base_model_id)
+      self.model = VisionEncoderDecoderModel.from_pretrained(base_model_id)
+
+    self.model.to(self.device)
+    self.model.eval()
 
   def predict(self, image_list):
     if not isinstance(image_list, list):
@@ -119,7 +177,7 @@ class CharacterReader:
       if not isinstance(image, Image.Image):
         raise TypeError(f"All elements in the list must be PIL images. Got: {type(image)}")
 
-    pixel_values = self.processor(images=image_list, return_tensors="pt").pixel_values
+    pixel_values = self.processor(images=image_list, return_tensors="pt").pixel_values.to(self.device)
     generated_ids = self.model.generate(pixel_values)
     generated_texts = self.processor.batch_decode(generated_ids, skip_special_tokens=True)
 
