@@ -3,3 +3,5 @@ models/weights
 /.venv
 /data
 /.vscode
+/outputs
+/train
