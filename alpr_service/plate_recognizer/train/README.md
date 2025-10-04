@@ -183,6 +183,13 @@ Run the full grid (training + evaluation):
   --output-root outputs\grid
 ```
 
+```powershell
+.\.venv\Scripts\python.exe train\run_experiments.py `
+  --csv data\8000\8000.csv `
+  --data-root data\8000 `
+  --output-root outputs\grid
+```
+
 Helpful switches:
 
 - `--stage train` / `--stage eval` to run only one stage
