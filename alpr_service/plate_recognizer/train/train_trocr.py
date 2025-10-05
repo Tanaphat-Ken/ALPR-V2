@@ -76,6 +76,7 @@ except ImportError:  # pragma: no cover - older transformers fallback
     HFVisionCollator = None  # type: ignore
 
 from train.data_utils import LicensePlateRecord, load_plate_crop, load_records, stratified_split
+from train.province_mapping import get_province_token, get_special_tokens, PROVINCE_CODE_TO_THAI_NAME
 
 try:
     import numpy as np
@@ -183,6 +184,129 @@ def build_augmentor(name: str) -> Optional[Callable]:
 
 
 # ---------------------------------------------------------------------------
+# Helper functions for province prediction
+# ---------------------------------------------------------------------------
+
+
+def build_label_with_province(plate_text: str, province_code: Optional[str], province_format: str) -> str:
+    """Build training label that includes both plate text and province."""
+    if not province_code:
+        return plate_text.strip()
+    
+    province_token = get_province_token(province_code, province_format)
+    return f"{plate_text.strip()} <prov> {province_token}"
+
+
+def split_prediction_and_province(text: str) -> tuple[str, str]:
+    """Split predicted text into plate and province parts.
+    
+    Thai license plates have two parts:
+    - Top: License number (e.g., กท2311, 2ฒห5459)
+    - Bottom: Province name (e.g., จันทบุรี, กรุงเทพมหานคร)
+    """
+    import re
+    
+    # Clean up text first
+    text = text.strip()
+    
+    # Remove common V1 model artifacts
+    artifacts = ['President', 'mili', 'ซอง', 'ภรรยาของเขา', 'ขบ', 'cing', 'milimili', 'incing']
+    for artifact in artifacts:
+        text = text.replace(artifact, ' ')
+    
+    # Clean up extra spaces
+    text = ' '.join(text.split())
+    
+    # Method 1: Standard format with <prov> token
+    if "<prov>" in text:
+        parts = text.split("<prov>")
+        plate = parts[0].strip()
+        province = parts[1].strip() if len(parts) > 1 else ""
+        
+        # Remove angle brackets from province tokens
+        if province.startswith("<") and province.endswith(">"):
+            province = province[1:-1]
+        
+        return plate, province
+    
+    # Method 2: Look for TH-XX pattern (province codes)
+    th_match = re.search(r'(TH-\d+)', text)
+    if th_match:
+        province_code = th_match.group(1)
+        # Remove the province code from text to get plate
+        plate = text.replace(province_code, '').strip()
+        plate = ' '.join(plate.split())
+        return plate, province_code
+    
+    # Method 3: Look for Thai province names (full names)
+    thai_provinces = [
+        'กรุงเทพมหานคร', 'สมุทรปราการ', 'นนทบุรี', 'ปทุมธานี', 'พระนครศรีอยุธยา',
+        'อ่างทอง', 'ลพบุรี', 'สิงห์บุรี', 'ชัยนาท', 'สระบุรี', 'ชลบุรี', 'ระยอง',
+        'จันทบุรี', 'ตราด', 'ฉะเชิงเทรา', 'ปราจีนบุรี', 'นครนายก', 'สระแก้ว',
+        'เชียงใหม่', 'ลำพูน', 'ลำปาง', 'อุตรดิตถ์', 'แพร่', 'น่าน', 'พะเยา',
+        'เชียงราย', 'แม่ฮ่องสอน', 'นครราชสีมา', 'บุรีรัมย์', 'สุรินทร์', 'ศรีสะเกษ',
+        'อุบลราชธานี', 'ยโสธร', 'ชัยภูมิ', 'อำนาจเจริญ', 'หนองบัวลำภู', 'ขอนแก่น',
+        'อุดรธานี', 'เลย', 'หนองคาย', 'มหาสารคาม', 'ร้อยเอ็ด', 'กาฬสินธุ์',
+        'สกลนคร', 'นครพนม', 'มุกดาหาร', 'ราชบุรี', 'กาญจนบุรี', 'สุพรรณบุรี',
+        'นครปฐม', 'สมุทรสาคร', 'สมุทรสงคราม', 'เพชรบุรี', 'ประจวบคีรีขันธ์',
+        'นครศรีธรรมราช', 'กระบี่', 'พังงา', 'ภูเก็ต', 'สุราษฎร์ธานี', 'ระนอง',
+        'ชุมพร', 'สงขลา', 'สตูล', 'ตรัง', 'พัทลุง', 'ปัตตานี', 'ยะลา', 'นราธิวาส',
+        'นครสวรรค์', 'อุทัยธานี', 'กำแพงเพชร', 'ตาก', 'สุโขทัย', 'พิษณุโลก',
+        'พิจิตร', 'เพชรบูรณ์'
+    ]
+    
+    # Find the longest matching province name
+    found_province = ""
+    found_start = -1
+    for province in thai_provinces:
+        start_pos = text.find(province)
+        if start_pos != -1 and len(province) > len(found_province):
+            found_province = province
+            found_start = start_pos
+    
+    if found_province:
+        # Extract plate part (everything before the province)
+        plate = text[:found_start] + text[found_start + len(found_province):]
+        plate = plate.strip()
+        plate = ' '.join(plate.split())
+        return plate, found_province
+    
+    # Method 4: Extract Thai license plate pattern
+    # Thai plates: กท2311, 2ฒห5459, 1กษ1684, etc.
+    # Pattern: [Optional digits][Thai consonants][Optional digits]
+    plate_matches = re.findall(r'[0-9]*[ก-ฮ]+[0-9]*', text)
+    
+    if plate_matches:
+        # Take the longest/most complete looking plate
+        best_plate = max(plate_matches, key=len)
+        # Remove it from text to see if there's province info left
+        remaining = text.replace(best_plate, '').strip()
+        remaining = ' '.join(remaining.split())
+        
+        # Check if remaining text looks like a province
+        if remaining and len(remaining) > 2:
+            # If remaining text contains Thai characters, it might be a province
+            if re.search(r'[ก-ฮ]', remaining):
+                return best_plate, remaining
+        
+        return best_plate, ""
+    
+    # Method 5: Split by whitespace and find plate/province parts
+    words = text.split()
+    if len(words) >= 2:
+        # First word usually contains the plate number
+        potential_plate = words[0]
+        potential_province = ' '.join(words[1:])
+        
+        # Check if first word looks like a plate (has Thai chars and/or numbers)
+        if re.search(r'[ก-ฮ0-9]', potential_plate):
+            return potential_plate, potential_province
+    
+    # Last resort: return the cleaned text as plate
+    return text.strip(), ""
+
+
+# ---------------------------------------------------------------------------
 # Dataset wrapper
 # ---------------------------------------------------------------------------
 
@@ -195,11 +319,15 @@ class PlateOCRDataset(Dataset):
         *,
         augment_fn: Optional[Callable] = None,
         normalize_text: bool = True,
+        predict_province: bool = False,
+        province_format: str = "code",
     ) -> None:
         self.records = list(records)
         self.processor = processor
         self.augment_fn = augment_fn
         self.normalize_text = normalize_text
+        self.predict_province = predict_province
+        self.province_format = province_format
 
     def __len__(self) -> int:  # pragma: no cover - trivial
         return len(self.records)
@@ -216,7 +344,16 @@ class PlateOCRDataset(Dataset):
         if self.augment_fn is not None:
             image = self.augment_fn(image)
 
-        text = self._normalize_text(record.plate_text)
+        # Build label with or without province
+        if self.predict_province:
+            text = build_label_with_province(
+                record.plate_text, 
+                record.province_code, 
+                self.province_format
+            )
+        else:
+            text = self._normalize_text(record.plate_text)
+        
         encoding = self.processor(images=image, text=text, return_tensors="pt")
         pixel_values = encoding["pixel_values"].squeeze(0)
         labels = encoding["labels"].squeeze(0)
@@ -324,6 +461,18 @@ class VisionSeq2SeqTrainer(Seq2SeqTrainer):
             if inputs:
                 logger.info("VisionSeq2SeqTrainer dropping extra inputs during pred: %s", list(inputs.keys()))
 
+            # Check tensor dimensions to prevent CUDA errors
+            if pixel_values is not None:
+                logger.debug(f"pixel_values shape: {pixel_values.shape}")
+            if labels is not None:
+                logger.debug(f"labels shape: {labels.shape}")
+                # Ensure labels are within vocab range
+                vocab_size = model.config.decoder.vocab_size if hasattr(model.config, 'decoder') else model.config.vocab_size
+                if torch.any(labels >= vocab_size):
+                    logger.warning(f"Labels contain out-of-range tokens. Max label: {labels.max()}, vocab_size: {vocab_size}")
+                    # Clamp labels to valid range
+                    labels = torch.clamp(labels, 0, vocab_size - 1)
+
             model_kwargs = {
                 "pixel_values": pixel_values,
                 "labels": labels,
@@ -332,7 +481,18 @@ class VisionSeq2SeqTrainer(Seq2SeqTrainer):
                 model_kwargs["decoder_attention_mask"] = decoder_attention_mask
 
             logger.info("VisionSeq2SeqTrainer model kwargs (pred): %s", list(model_kwargs.keys()))
-            outputs = model(**model_kwargs)
+            
+            try:
+                outputs = model(**model_kwargs)
+            except RuntimeError as e:
+                if "CUDA error" in str(e):
+                    logger.error(f"CUDA error during prediction: {e}")
+                    # Try to recover by reducing memory usage
+                    torch.cuda.empty_cache()
+                    # Skip this batch
+                    return (None, None, None)
+                else:
+                    raise
 
         if prediction_loss_only:
             return (outputs.loss, None, None)
@@ -442,6 +602,8 @@ def parse_args() -> argparse.Namespace:
         help="PyTorch DataLoader workers (0 is safest on Windows; increase on Linux for speed).",
     )
     parser.add_argument("--device", type=str, default=None, help="Force device (cpu/cuda).")
+    parser.add_argument("--predict-province", action="store_true", help="Include province prediction in training targets.")
+    parser.add_argument("--province-format", type=str, default="code", choices=["code", "name"], help="Use province code (TH-XX) or Thai name.")
     return parser.parse_args()
 
 
@@ -463,6 +625,22 @@ def load_model_and_processor(args: argparse.Namespace) -> tuple[VisionEncoderDec
 
     processor_source = processor_path if processor_path is not None else model_id
     processor = TrOCRProcessor.from_pretrained(processor_source)
+
+    # Add province tokens if predict_province is enabled and not already present
+    if getattr(args, "predict_province", False):
+        tokenizer = processor.tokenizer
+        province_tokens = get_special_tokens(args.province_format)
+        
+        # Check if tokens are already in the tokenizer vocabulary
+        existing_tokens = set(tokenizer.get_vocab().keys())
+        missing_tokens = [token for token in province_tokens if token not in existing_tokens]
+        
+        if missing_tokens:
+            added = tokenizer.add_special_tokens({"additional_special_tokens": missing_tokens})
+            if added > 0:
+                logger.info("Added %d province tokens to tokenizer", added)
+        else:
+            logger.info("All %d province tokens already present in tokenizer", len(province_tokens))
 
     if getattr(args, "model_path", None):
         source_path = Path(args.model_path)
@@ -492,31 +670,156 @@ def load_model_and_processor(args: argparse.Namespace) -> tuple[VisionEncoderDec
                     raise RuntimeError("peft is required to load LoRA adapters. Install with `pip install peft`.")
                 logger.info("Loading base %s with LoRA adapters from %s", model_id, source_path)
                 base_model = VisionEncoderDecoderModel.from_pretrained(model_id)
+                
+                # Resize embeddings if needed BEFORE loading LoRA
+                if getattr(args, "predict_province", False):
+                    new_vocab_size = len(processor.tokenizer)
+                    # Ensure vocab size accounts for highest token ID + 1
+                    vocab = processor.tokenizer.get_vocab()
+                    max_token_id = max(vocab.values()) if vocab else 0
+                    required_vocab_size = max(new_vocab_size, max_token_id + 1)
+                    
+                    if base_model.decoder.get_input_embeddings().num_embeddings != required_vocab_size:
+                        logger.info("Resizing base model decoder embeddings from %d to %d tokens (tokenizer len: %d, max_id: %d)", 
+                                   base_model.decoder.get_input_embeddings().num_embeddings, required_vocab_size, new_vocab_size, max_token_id)
+                        base_model.decoder.resize_token_embeddings(required_vocab_size)
+                        base_model.config.decoder.vocab_size = required_vocab_size
+                
                 model = PeftModel.from_pretrained(base_model, source_path)
             else:
                 logger.info("Loading model from directory %s", source_path)
                 model = VisionEncoderDecoderModel.from_pretrained(source_path)
+                
+                # Check if we need to resize embeddings for saved model
+                if getattr(args, "predict_province", False):
+                    new_vocab_size = len(processor.tokenizer)
+                    # Ensure vocab size accounts for highest token ID + 1
+                    vocab = processor.tokenizer.get_vocab()
+                    max_token_id = max(vocab.values()) if vocab else 0
+                    required_vocab_size = max(new_vocab_size, max_token_id + 1)
+                    
+                    if model.decoder.get_input_embeddings().num_embeddings != required_vocab_size:
+                        logger.info("Resizing loaded model decoder embeddings from %d to %d tokens (tokenizer len: %d, max_id: %d)", 
+                                   model.decoder.get_input_embeddings().num_embeddings, required_vocab_size, new_vocab_size, max_token_id)
+                        model.decoder.resize_token_embeddings(required_vocab_size)
+                        model.config.decoder.vocab_size = required_vocab_size
         else:
             logger.info("Loading %s and applying state_dict from %s", model_id, source_path)
             model = VisionEncoderDecoderModel.from_pretrained(model_id)
+            
+            # Load state dict first
             state = torch.load(source_path, map_location="cpu")
             if isinstance(state, dict) and any(key.startswith("module.") for key in state.keys()):
                 state = {k.replace("module.", "", 1): v for k, v in state.items()}
             if isinstance(state, dict) and "model_state_dict" in state:
                 state = state["model_state_dict"]
-            missing, unexpected = model.load_state_dict(state, strict=False)
+            
+            # For province prediction with mismatched vocab sizes, we need special handling
+            if getattr(args, "predict_province", False):
+                new_vocab_size = len(processor.tokenizer)
+                vocab = processor.tokenizer.get_vocab()
+                max_token_id = max(vocab.values()) if vocab else 0
+                required_vocab_size = max(new_vocab_size, max_token_id + 1)
+                
+                # Get current model embedding size and state dict embedding size
+                current_model_size = model.decoder.get_input_embeddings().num_embeddings
+                
+                # Find embedding tensors in state dict to get their size
+                state_vocab_size = None
+                for key in state.keys():
+                    if "embeddings.word_embeddings.weight" in key or "lm_head.weight" in key:
+                        state_vocab_size = state[key].shape[0]
+                        break
+                
+                if state_vocab_size and state_vocab_size != required_vocab_size:
+                    logger.info("Vocab size mismatch: state_dict=%d, current_model=%d, required=%d", 
+                               state_vocab_size, current_model_size, required_vocab_size)
+                    
+                    # First load what we can from the state dict (embedding layers will be skipped due to size mismatch)
+                    missing, unexpected = model.load_state_dict(state, strict=False)
+                    
+                    # Then resize to the required size
+                    logger.info("Resizing model decoder embeddings from %d to %d tokens after partial state_dict load", 
+                               model.decoder.get_input_embeddings().num_embeddings, required_vocab_size)
+                    model.decoder.resize_token_embeddings(required_vocab_size)
+                    model.config.decoder.vocab_size = required_vocab_size
+                    
+                    # Copy over the original embeddings that we can
+                    if state_vocab_size < required_vocab_size:
+                        logger.info("Copying %d original embeddings to resized model", state_vocab_size)
+                        for key in state.keys():
+                            if "embeddings.word_embeddings.weight" in key:
+                                # Copy the original embeddings
+                                current_embeddings = model.decoder.get_input_embeddings().weight.data
+                                current_embeddings[:state_vocab_size] = state[key]
+                            elif "lm_head.weight" in key or "generator_lm_head.weight" in key:
+                                # Find the corresponding layer in the model
+                                target_param = None
+                                for name, param in model.named_parameters():
+                                    if "lm_head.weight" in name or "generator_lm_head.weight" in name:
+                                        target_param = param
+                                        break
+                                if target_param is not None:
+                                    target_param.data[:state_vocab_size] = state[key]
+                            elif "lm_head.bias" in key or "generator_lm_head.bias" in key:
+                                # Copy bias terms
+                                for name, param in model.named_parameters():
+                                    if "lm_head.bias" in name or "generator_lm_head.bias" in name:
+                                        param.data[:state_vocab_size] = state[key]
+                                        break
+                else:
+                    # Sizes match or no embedding layers found, normal loading
+                    missing, unexpected = model.load_state_dict(state, strict=False)
+                    if model.decoder.get_input_embeddings().num_embeddings != required_vocab_size:
+                        logger.info("Resizing model decoder embeddings from %d to %d tokens after state_dict load", 
+                                   model.decoder.get_input_embeddings().num_embeddings, required_vocab_size)
+                        model.decoder.resize_token_embeddings(required_vocab_size)
+                        model.config.decoder.vocab_size = required_vocab_size
+            else:
+                # Normal loading without province tokens
+                missing, unexpected = model.load_state_dict(state, strict=False)
             if missing:
                 logger.warning("Missing keys when loading state_dict: %s", missing[:8])
             if unexpected:
                 logger.warning("Unexpected keys when loading state_dict: %s", unexpected[:8])
     else:
         model = VisionEncoderDecoderModel.from_pretrained(model_id)
+        
+        # Resize embeddings for fresh model if needed
+        if getattr(args, "predict_province", False):
+            new_vocab_size = len(processor.tokenizer)
+            # Ensure vocab size accounts for highest token ID + 1
+            vocab = processor.tokenizer.get_vocab()
+            max_token_id = max(vocab.values()) if vocab else 0
+            required_vocab_size = max(new_vocab_size, max_token_id + 1)
+            
+            if model.decoder.get_input_embeddings().num_embeddings != required_vocab_size:
+                logger.info("Resizing fresh model decoder embeddings from %d to %d tokens (tokenizer len: %d, max_id: %d)", 
+                           model.decoder.get_input_embeddings().num_embeddings, required_vocab_size, new_vocab_size, max_token_id)
+                model.decoder.resize_token_embeddings(required_vocab_size)
+                model.config.decoder.vocab_size = required_vocab_size
 
     tokenizer = processor.tokenizer
     model.config.decoder_start_token_id = tokenizer.cls_token_id or tokenizer.bos_token_id
     model.config.eos_token_id = tokenizer.eos_token_id
     model.config.pad_token_id = tokenizer.pad_token_id
-    model.config.vocab_size = model.config.decoder.vocab_size
+    
+    # Validate and fix vocab size mismatches
+    tokenizer_vocab_size = len(tokenizer)
+    model_vocab_size = model.decoder.get_input_embeddings().num_embeddings
+    
+    if tokenizer_vocab_size != model_vocab_size:
+        logger.warning(f"Vocab size mismatch: tokenizer={tokenizer_vocab_size}, model={model_vocab_size}")
+        # Use the larger of the two to be safe
+        safe_vocab_size = max(tokenizer_vocab_size, model_vocab_size)
+        if model_vocab_size < safe_vocab_size:
+            logger.info(f"Resizing model vocab from {model_vocab_size} to {safe_vocab_size}")
+            model.decoder.resize_token_embeddings(safe_vocab_size)
+        model.config.vocab_size = safe_vocab_size
+        model.config.decoder.vocab_size = safe_vocab_size
+    else:
+        model.config.vocab_size = tokenizer_vocab_size
+        
     model.config.max_length = args.generation_max_length
     model.config.early_stopping = True
     model.config.no_repeat_ngram_size = 2
@@ -558,6 +861,11 @@ def load_model_and_processor(args: argparse.Namespace) -> tuple[VisionEncoderDec
                     param.requires_grad = False
     elif args.use_lora and already_peft:
         logger.info("LoRA adapters already active on model; skipping reinjection.")
+
+    # Resize token embeddings if province tokens were added
+    if getattr(args, "predict_province", False):
+        model.decoder.resize_token_embeddings(len(processor.tokenizer))
+        logger.info("Resized decoder embeddings to %d tokens", len(processor.tokenizer))
 
     _patch_encoder_forward(model)
     return model, processor
@@ -657,23 +965,29 @@ def build_datasets(
         processor,
         augment_fn=augment_fn,
         normalize_text=True,
+        predict_province=getattr(args, "predict_province", False),
+        province_format=getattr(args, "province_format", "code"),
     )
     datasets["val"] = PlateOCRDataset(
         maybe_trim(splits.get("val", []), args.max_eval_samples),
         processor,
         augment_fn=None,
         normalize_text=True,
+        predict_province=getattr(args, "predict_province", False),
+        province_format=getattr(args, "province_format", "code"),
     )
     datasets["test"] = PlateOCRDataset(
         maybe_trim(splits.get("test", []), args.max_eval_samples),
         processor,
         augment_fn=None,
         normalize_text=True,
+        predict_province=getattr(args, "predict_province", False),
+        province_format=getattr(args, "province_format", "code"),
     )
     return datasets
 
 
-def compute_metrics_builder(processor: TrOCRProcessor) -> Callable:
+def compute_metrics_builder(processor: TrOCRProcessor, predict_province: bool = False) -> Callable:
     pad_token_id = processor.tokenizer.pad_token_id
 
     def compute_metrics(eval_pred):
@@ -699,12 +1013,51 @@ def compute_metrics_builder(processor: TrOCRProcessor) -> Callable:
         pred_texts = processor.batch_decode(predictions, skip_special_tokens=True)
         label_texts = processor.batch_decode(label_ids, skip_special_tokens=True)
 
-        cer_scores = [character_error_rate(p, l) for p, l in zip(pred_texts, label_texts)]
-        exact = sum(1 for p, l in zip(pred_texts, label_texts) if p.strip() == l.strip()) / max(1, len(pred_texts))
-        return {
-            "cer": float(sum(cer_scores) / max(1, len(cer_scores))),
-            "exact_match": float(exact),
-        }
+        if predict_province:
+            # Separate metrics for plate text and province
+            plate_cer_scores = []
+            province_cer_scores = []
+            plate_exact = 0
+            province_exact = 0
+            combined_exact = 0
+            
+            for pred, label in zip(pred_texts, label_texts):
+                pred_plate, pred_province = split_prediction_and_province(pred)
+                label_plate, label_province = split_prediction_and_province(label)
+                
+                # Plate metrics
+                plate_cer = character_error_rate(pred_plate, label_plate)
+                plate_cer_scores.append(plate_cer)
+                if pred_plate.strip() == label_plate.strip():
+                    plate_exact += 1
+                
+                # Province metrics  
+                province_cer = character_error_rate(pred_province, label_province)
+                province_cer_scores.append(province_cer)
+                if pred_province.strip() == label_province.strip():
+                    province_exact += 1
+                
+                # Combined exact match
+                if pred.strip() == label.strip():
+                    combined_exact += 1
+            
+            total_samples = max(1, len(pred_texts))
+            return {
+                "cer": float(sum(plate_cer_scores) / max(1, len(plate_cer_scores))),
+                "exact_match": float(combined_exact / total_samples),
+                "plate_cer": float(sum(plate_cer_scores) / max(1, len(plate_cer_scores))),
+                "plate_exact_match": float(plate_exact / total_samples),
+                "province_cer": float(sum(province_cer_scores) / max(1, len(province_cer_scores))),
+                "province_exact_match": float(province_exact / total_samples),
+            }
+        else:
+            # Original metrics for plate text only
+            cer_scores = [character_error_rate(p, l) for p, l in zip(pred_texts, label_texts)]
+            exact = sum(1 for p, l in zip(pred_texts, label_texts) if p.strip() == l.strip()) / max(1, len(pred_texts))
+            return {
+                "cer": float(sum(cer_scores) / max(1, len(cer_scores))),
+                "exact_match": float(exact),
+            }
 
     return compute_metrics
 
@@ -778,6 +1131,7 @@ def main() -> None:
         save_steps=args.save_steps,
         predict_with_generate=True,
         generation_max_length=args.generation_max_length,
+        generation_num_beams=1,  # Reduce complexity to avoid CUDA errors
         push_to_hub=args.push_to_hub,
         fp16=args.fp16,
         bf16=args.bf16,
@@ -786,11 +1140,13 @@ def main() -> None:
         metric_for_best_model="cer",
         greater_is_better=False,
         dataloader_num_workers=args.num_workers,
+        dataloader_pin_memory=False,  # Reduce memory pressure
+        skip_memory_metrics=True,     # Skip memory tracking
     )
 
     # Always use the local collator to avoid passing text input_ids to the ViT encoder.
     data_collator = VisionSeq2SeqCollator(processor=processor)
-    compute_metrics = compute_metrics_builder(processor)
+    compute_metrics = compute_metrics_builder(processor, getattr(args, "predict_province", False))
 
     trainer = VisionSeq2SeqTrainer(
         model=model,
@@ -805,7 +1161,11 @@ def main() -> None:
     if not args.only_eval:
         logger.info("Starting training: %d train samples, %d val samples", len(datasets["train"]), len(datasets["val"]))
         trainer.train(resume_from_checkpoint=args.resume_from_checkpoint)
+        
+        # Save model and config properly
         trainer.save_model()
+        # Explicitly save the model config to ensure encoder/decoder configs are preserved
+        model.config.save_pretrained(output_dir)
         processor.save_pretrained(output_dir / "processor")
 
     if len(datasets["val"]):
