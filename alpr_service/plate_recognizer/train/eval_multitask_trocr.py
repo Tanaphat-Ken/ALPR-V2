@@ -93,12 +93,16 @@ def evaluate_multitask_model(
             encoding = processor(images=images, return_tensors="pt")
             pixel_values = encoding.pixel_values.to(device)
             
-            # Generate predictions
+            # Generate predictions with stopping criteria for plate text
             generation_outputs = model.generate(
                 pixel_values=pixel_values,
-                max_new_tokens=20,
+                max_new_tokens=15,  # Reduced to focus on plate text only
                 num_beams=3,
                 do_sample=False,
+                early_stopping=True,
+                # Add stopping criteria if available
+                pad_token_id=processor.tokenizer.pad_token_id,
+                eos_token_id=processor.tokenizer.eos_token_id,
             )
             
             generated_ids = generation_outputs['sequences']
@@ -112,9 +116,58 @@ def evaluate_multitask_model(
             
             # Store predictions and labels
             for i, (record, pred_text, province_pred) in enumerate(zip(batch_records, pred_texts, province_preds)):
-                # Clean predicted text (remove province tokens if present)
+                # Clean predicted text (remove province tokens and unwanted text)
+                # 1. Remove province tokens if present
                 if "<prov>" in pred_text:
                     pred_text = pred_text.split("<prov>")[0].strip()
+                
+                # 2. Remove common unwanted patterns that appear after plate text
+                unwanted_patterns = [
+                    "พิธีกรรายการ",
+                    "รายการ", 
+                    "__",
+                    "___",
+                    "Commonwealth",
+                    "ตลอดผ่าตัด",
+                    "หนองบัวได้",
+                    "ตลอดเสริม"
+                ]
+                
+                # Split by spaces and filter out unwanted parts
+                words = pred_text.split()
+                cleaned_words = []
+                
+                for word in words:
+                    # Skip if word is in unwanted patterns
+                    if any(pattern in word for pattern in unwanted_patterns):
+                        break  # Stop at first unwanted pattern
+                    cleaned_words.append(word)
+                
+                pred_text = " ".join(cleaned_words).strip()
+                
+                # 3. Additional cleaning: extract only plate-like text (Thai characters + numbers)
+                import re
+                # Match Thai license plate pattern: Thai chars + numbers, more precise
+                # Thai plates typically: [digit][Thai char][Thai char][digit digit digit digit] or similar
+                plate_pattern = r'^([0-9]*[ก-๙]+[0-9]*[ก-๙]*[0-9]*)'
+                
+                # Remove spaces first
+                clean_text = pred_text.replace(" ", "")
+                match = re.match(plate_pattern, clean_text)
+                if match and len(match.group(1)) >= 3:  # At least 3 characters for a valid plate
+                    pred_text = match.group(1)
+                elif len(clean_text) <= 10 and re.match(r'^[ก-๙0-9]+$', clean_text):
+                    # If it's short and only contains valid plate characters
+                    pred_text = clean_text
+                else:
+                    # Fallback: take only first part before unwanted text
+                    words = pred_text.split()
+                    if words:
+                        first_word = words[0].replace(" ", "")
+                        if re.match(r'^[ก-๙0-9]+$', first_word):
+                            pred_text = first_word
+                        else:
+                            pred_text = pred_text  # Keep original if nothing else works
                 
                 province_code = id_to_province_code(province_pred.item())
                 

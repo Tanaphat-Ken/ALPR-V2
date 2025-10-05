@@ -250,9 +250,13 @@ def main() -> None:
                 [
                     "--csv", args.csv,
                     "--model-path", str(out_dir),
-                    "--max-samples", str(args.eval_max_samples or 50),
                 ] + exp.eval_args(),
             )
+            
+            # Only add max-samples if it's not None
+            if args.eval_max_samples is not None:
+                eval_cmd.extend(["--max-samples", str(args.eval_max_samples)])
+                
             for root in args.data_root:
                 eval_cmd.extend(["--data-root", root])
                 

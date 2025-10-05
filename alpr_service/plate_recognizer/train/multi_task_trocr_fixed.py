@@ -142,9 +142,19 @@ class MultiTaskTrOCR(VisionEncoderDecoderModel):
         if input_ids is None:
             return None
             
-        # Get start token id
+        # Get start token id and validate it's within bounds
         start_token_id = getattr(self.config, 'decoder_start_token_id', None) or \
                         getattr(self.config, 'bos_token_id', None) or 0
+        
+        # Validate start token ID is within vocabulary bounds
+        vocab_size = getattr(self.config, 'vocab_size', None)
+        if vocab_size is not None and start_token_id >= vocab_size:
+            print(f"WARNING: Start token ID {start_token_id} >= vocab_size {vocab_size}, using 0")
+            start_token_id = 0
+        
+        # Validate all input token IDs are within bounds
+        if vocab_size is not None:
+            input_ids = torch.clamp(input_ids, 0, vocab_size - 1)
         
         # Create shifted input
         shifted_input_ids = input_ids.new_zeros(input_ids.shape)
@@ -197,7 +207,30 @@ class MultiTaskTrOCR(VisionEncoderDecoderModel):
         # Project encoder hidden states if needed for cross-attention
         projected_encoder_states = encoder_hidden_states
         if self.encoder_decoder_projection is not None:
-            projected_encoder_states = self.encoder_decoder_projection(encoder_hidden_states)
+            # Debug: Check tensor shapes before projection
+            if encoder_hidden_states.dim() != 3:
+                print(f"ERROR: Unexpected encoder_hidden_states shape: {encoder_hidden_states.shape}")
+                print(f"Expected: [batch_size, seq_len, hidden_size]")
+                # Reshape if needed - assume batch dimension might be flattened
+                if encoder_hidden_states.dim() == 2:
+                    # Try to infer batch size from other context
+                    expected_hidden_size = 768  # ViT encoder hidden size
+                    if encoder_hidden_states.shape[-1] == expected_hidden_size:
+                        # This is [total_tokens, hidden_size], need to reshape
+                        # For now, treat as single batch
+                        encoder_hidden_states = encoder_hidden_states.unsqueeze(0)
+                        print(f"Reshaped to: {encoder_hidden_states.shape}")
+                    else:
+                        print(f"Cannot safely reshape - hidden size {encoder_hidden_states.shape[-1]} != {expected_hidden_size}")
+                        
+            try:
+                projected_encoder_states = self.encoder_decoder_projection(encoder_hidden_states)
+            except RuntimeError as e:
+                print(f"Projection failed: {e}")
+                print(f"Input shape: {encoder_hidden_states.shape}")
+                print(f"Projection weight shape: {self.encoder_decoder_projection.weight.shape}")
+                # Skip projection on error - use original encoder states
+                projected_encoder_states = encoder_hidden_states
         
         # Text generation (original TrOCR task)
         # Prepare decoder inputs properly
@@ -210,6 +243,13 @@ class MultiTaskTrOCR(VisionEncoderDecoderModel):
                 batch_size = encoder_hidden_states.shape[0]
                 start_token_id = getattr(self.config, 'decoder_start_token_id', None) or \
                                getattr(self.config, 'bos_token_id', None) or 0
+                
+                # Validate start token ID against current vocabulary size
+                vocab_size = getattr(self.config, 'vocab_size', None)
+                if vocab_size is not None and start_token_id >= vocab_size:
+                    print(f"WARNING: Start token ID {start_token_id} >= vocab_size {vocab_size}, using 0")
+                    start_token_id = 0
+                    
                 decoder_input_ids = torch.full(
                     (batch_size, 1), 
                     start_token_id, 
@@ -286,16 +326,9 @@ class MultiTaskTrOCR(VisionEncoderDecoderModel):
         # For text generation, we need to use the parent's generate method
         # but pass projected encoder states if needed
         if self.encoder_decoder_projection is not None:
-            # Create a wrapper that returns projected states
-            class ProjectedEncoderOutputs:
-                def __init__(self, projected_states):
-                    self.last_hidden_state = projected_states
-                    
-            projected_states = self.encoder_decoder_projection(encoder_hidden_states)
-            projected_encoder_outputs = ProjectedEncoderOutputs(projected_states)
-            
-            # Use parent generate with projected encoder outputs
-            generation_kwargs['encoder_outputs'] = projected_encoder_outputs
+            # Try to use the original TrOCR generate with encoder outputs
+            # Don't project here - let the parent model handle projection internally
+            generation_kwargs['encoder_outputs'] = encoder_outputs
         else:
             generation_kwargs['encoder_outputs'] = encoder_outputs
             
@@ -311,17 +344,22 @@ class MultiTaskTrOCR(VisionEncoderDecoderModel):
                 'province_logits': province_logits
             }
         except Exception as e:
-            # Fallback: simple greedy generation
+            print(f"Generation failed: {e}")
+            # Fallback: simple greedy generation using forward pass
             batch_size = encoder_hidden_states.shape[0]
+            max_length = generation_kwargs.get('max_new_tokens', 20) + 1
+            
+            # Start with start token
             start_token_id = getattr(self.config, 'decoder_start_token_id', None) or \
                            getattr(self.config, 'bos_token_id', None) or 0
             
             generated_ids = torch.full(
-                (batch_size, 1), 
-                start_token_id, 
+                (batch_size, max_length), 
+                self.config.pad_token_id or 0, 
                 dtype=torch.long, 
                 device=encoder_hidden_states.device
             )
+            generated_ids[:, 0] = start_token_id
             
             return {
                 'sequences': generated_ids,

@@ -209,7 +209,22 @@ def main():
     # Resize embeddings if needed
     if len(new_tokens) > 0:
         model.decoder.resize_token_embeddings(len(processor.tokenizer))
+        # Update the config's vocab_size to match the resized embeddings
+        model.config.vocab_size = len(processor.tokenizer)
         logger.info(f"Resized decoder embeddings to {len(processor.tokenizer)} tokens")
+        logger.info(f"Updated config vocab_size to {model.config.vocab_size}")
+        
+    # Debug: Check key token IDs are within bounds
+    vocab_size = len(processor.tokenizer)
+    start_token_id = getattr(model.config, 'decoder_start_token_id', None) or \
+                    getattr(model.config, 'bos_token_id', None) or 0
+    eos_token_id = getattr(model.config, 'eos_token_id', None) or processor.tokenizer.eos_token_id
+    pad_token_id = processor.tokenizer.pad_token_id
+    
+    logger.info(f"Token bounds check - vocab_size: {vocab_size}")
+    logger.info(f"start_token_id: {start_token_id} (valid: {0 <= start_token_id < vocab_size})")
+    logger.info(f"eos_token_id: {eos_token_id} (valid: {eos_token_id is None or 0 <= eos_token_id < vocab_size})")
+    logger.info(f"pad_token_id: {pad_token_id} (valid: {pad_token_id is None or 0 <= pad_token_id < vocab_size})")
     
     # Load existing weights if specified
     if args.model_path:
