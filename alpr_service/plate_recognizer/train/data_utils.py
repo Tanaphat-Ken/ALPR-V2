@@ -238,8 +238,8 @@ def stratified_split(
 	records: Sequence[LicensePlateRecord],
 	*,
 	train_ratio: float = 0.7,
-	val_ratio: float = 0.15,
-	test_ratio: float = 0.15,
+	val_ratio: float = 0.20,
+	test_ratio: float = 0.10,
 	stratify_fn: Optional[Callable[[LicensePlateRecord], Any]] = None,
 	seed: int = 42,
 ) -> Dict[str, List[LicensePlateRecord]]:

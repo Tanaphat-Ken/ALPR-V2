@@ -16,6 +16,7 @@ The model uses:
 
 import argparse
 import logging
+import os
 import sys
 from pathlib import Path
 from typing import Dict, Any
@@ -150,9 +151,9 @@ def parse_args():
     parser.add_argument("--max-eval-samples", type=int, help="Limit evaluation samples")
     
     # Logging
-    parser.add_argument("--logging-steps", type=int, default=10)
-    parser.add_argument("--eval-steps", type=int, default=100)
-    parser.add_argument("--save-steps", type=int, default=500)
+    parser.add_argument("--logging-steps", type=int, default=20)
+    parser.add_argument("--eval-steps", type=int, default=1000)
+    parser.add_argument("--save-steps", type=int, default=1000)
     
     return parser.parse_args()
 
@@ -296,7 +297,9 @@ def main():
         eval_dataset=val_dataset,
         data_collator=data_collator,
         compute_metrics=compute_multitask_metrics(processor, predict_province=True),
-        callbacks=[EarlyStoppingCallback(early_stopping_patience=3)] if val_dataset else [],
+        # Disable early stopping to allow full training
+        # callbacks=[EarlyStoppingCallback(early_stopping_patience=5)] if val_dataset else [],
+        callbacks=[],
     )
     
     # Train
@@ -307,6 +310,11 @@ def main():
     logger.info(f"Saving model to {args.output_dir}")
     trainer.save_model()
     processor.save_pretrained(args.output_dir)
+    
+    # Also save the full model state dict manually to avoid missing weights
+    model_state_path = os.path.join(args.output_dir, "full_model_state.pt")
+    torch.save(model.state_dict(), model_state_path)
+    logger.info(f"Saved full model state dict to {model_state_path}")
     
     # Skip evaluation for now - training pipeline works!
     logger.info("Training completed successfully - evaluation skipped for testing")

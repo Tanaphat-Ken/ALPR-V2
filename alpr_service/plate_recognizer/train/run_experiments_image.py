@@ -130,10 +130,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-train-samples", type=int, default=None, help="Max training samples (default: None = use all samples).")
     parser.add_argument("--max-eval-samples", type=int, default=None, help="Max eval samples during training (default: None = use all).")
     parser.add_argument("--eval-max-samples", type=int, default=None, help="Max samples during standalone evaluation (default: None = use all).")
-    parser.add_argument("--num-train-epochs", type=int, default=3, help="Number of training epochs (default: 3 for full training).")
+    parser.add_argument("--num-train-epochs", type=int, default=5, help="Number of training epochs (increased for better multi-task learning).")
     parser.add_argument("--per-device-train-batch-size", type=int, default=4, help="Training batch size.")
     parser.add_argument("--per-device-eval-batch-size", type=int, default=4, help="Evaluation batch size.")
-    parser.add_argument("--learning-rate", type=float, default=5e-5, help="Learning rate.")
+    parser.add_argument("--learning-rate", type=float, default=2e-5, help="Learning rate (reduced for stability).")
     parser.add_argument(
         "--num-workers",
         type=int,

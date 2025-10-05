@@ -216,6 +216,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--eval-max-samples", type=int, help="Optional cap on samples during standalone evaluation.")
     parser.add_argument("--eval-num-beams", type=int, default=5)
     parser.add_argument("--eval-batch-size", type=int, default=4)
+    parser.add_argument("--num-train-epochs", type=int, default=5, help="Number of training epochs (increased for better learning).")
+    parser.add_argument("--per-device-train-batch-size", type=int, default=4, help="Training batch size.")
+    parser.add_argument("--per-device-eval-batch-size", type=int, default=4, help="Evaluation batch size.")
+    parser.add_argument("--learning-rate", type=float, default=2e-5, help="Learning rate (reduced for stability).")
     parser.add_argument(
         "--num-workers",
         type=int,
@@ -226,6 +230,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--skip-existing", action="store_true", help="Skip training if output dir already has weights.")
     parser.add_argument("--dry-run", action="store_true", help="Print commands without executing them.")
     parser.add_argument("--continue-on-error", action="store_true", help="Keep going even if a command fails.")
+    parser.add_argument("--cpu-only", action="store_true", help="Force CPU training to avoid CUDA errors.")
     return parser.parse_args()
 
 
@@ -267,7 +272,13 @@ def main() -> None:
     output_root = Path(args.output_root).resolve()
     output_root.mkdir(parents=True, exist_ok=True)
 
-    train_common: List[str] = ["--csv", args.csv]
+    train_common: List[str] = [
+        "--csv", args.csv,
+        "--num-train-epochs", str(args.num_train_epochs),
+        "--per-device-train-batch-size", str(args.per_device_train_batch_size),
+        "--per-device-eval-batch-size", str(args.per_device_eval_batch_size),
+        "--learning-rate", str(args.learning_rate),
+    ]
     for root in args.data_root:
         train_common.extend(["--data-root", root])
 
@@ -277,6 +288,8 @@ def main() -> None:
         train_common.extend(["--max-train-samples", str(args.max_train_samples)])
     if args.max_eval_samples is not None:
         train_common.extend(["--max-eval-samples", str(args.max_eval_samples)])
+    if args.cpu_only:
+        train_common.extend(["--no-cuda"])
 
     eval_common: List[str] = [
         "--csv",

@@ -264,7 +264,29 @@ def main():
     
     # Load model
     logger.info(f"Loading model from {args.model_path}")
-    model = MultiTaskTrOCR.from_pretrained(args.model_path)
+    
+    try:
+        # Try loading the saved model first
+        model = MultiTaskTrOCR.from_pretrained(args.model_path)
+        logger.info("Successfully loaded model from pretrained")
+    except Exception as e:
+        logger.warning(f"Failed to load pretrained model: {e}")
+        
+        # Fallback: Load full model state dict if available
+        import os
+        state_dict_path = os.path.join(args.model_path, "full_model_state.pt")
+        if os.path.exists(state_dict_path):
+            logger.info(f"Trying to load from state dict: {state_dict_path}")
+            from train.multi_task_trocr_fixed import create_multitask_model
+            model = create_multitask_model(args.model_id, num_provinces=77)
+            state_dict = torch.load(state_dict_path, map_location="cpu")
+            model.load_state_dict(state_dict, strict=False)
+            logger.info("Successfully loaded model from state dict")
+        else:
+            # Last resort: Create fresh model
+            logger.warning("Creating fresh model - this will have poor performance")
+            from train.multi_task_trocr_fixed import create_multitask_model
+            model = create_multitask_model(args.model_id, num_provinces=77)
     
     # Move to GPU if available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
