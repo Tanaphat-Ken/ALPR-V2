@@ -4,3 +4,4 @@ models/weights
 /data
 /.vscode
 /outputs
+/debug
