@@ -92,6 +92,18 @@ class MultiTaskPlateOCRDataset(PlateOCRDataset):
         )
         labels = text_encoding.input_ids.squeeze(0)
         
+        # Validate all token IDs are within vocabulary range
+        # Note: vocab_size might have changed after adding tokens
+        current_vocab_size = len(self.processor.tokenizer)
+        validated_labels = []
+        for token_id in labels:
+            if 0 <= token_id < current_vocab_size:
+                validated_labels.append(token_id)
+            else:
+                print(f"WARNING: Token ID {token_id} out of range [0, {current_vocab_size}), using pad token")
+                validated_labels.append(self.processor.tokenizer.pad_token_id or 0)
+        labels = torch.tensor(validated_labels, dtype=torch.long)
+        
         result = {
             "pixel_values": pixel_values,
             "labels": labels,
@@ -126,6 +138,7 @@ def parse_args():
     parser.add_argument("--warmup-steps", type=int, default=300, help="Warmup steps")
     parser.add_argument("--weight-decay", type=float, default=0.01, help="Weight decay")
     parser.add_argument("--fp16", action="store_true", help="Use mixed precision training")
+    parser.add_argument("--no-cuda", action="store_true", help="Force CPU training")
     
     # Multi-task arguments  
     parser.add_argument("--text-loss-weight", type=float, default=1.0, help="Weight for text loss")
@@ -257,6 +270,7 @@ def main():
         predict_with_generate=True,
         generation_max_length=32,
         generation_num_beams=1,
+        no_cuda=args.no_cuda,  # Force CPU if specified
     )
     
     # Create trainer

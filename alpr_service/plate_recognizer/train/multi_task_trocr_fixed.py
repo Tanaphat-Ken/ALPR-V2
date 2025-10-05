@@ -27,8 +27,15 @@ THAI_PROVINCES = [
 def province_code_to_id(province_code: str) -> int:
     """Convert province code to class ID (0-76)."""
     try:
-        return THAI_PROVINCES.index(province_code)
+        if not province_code:
+            return 0  # Default to first province if empty
+        index = THAI_PROVINCES.index(province_code)
+        if index < 0 or index >= len(THAI_PROVINCES):
+            print(f"WARNING: Province code '{province_code}' index {index} out of range [0, {len(THAI_PROVINCES)-1}]")
+            return 0
+        return index
     except ValueError:
+        print(f"WARNING: Unknown province code '{province_code}', defaulting to TH-10 (Bangkok)")
         return 0  # Default to first province if not found
 
 

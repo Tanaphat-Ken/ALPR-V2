@@ -24,12 +24,17 @@ from tqdm import tqdm
 # Add current directory to path for imports
 sys.path.append(str(Path(__file__).parent))
 
-from multi_task_trocr import (
+from multi_task_trocr_fixed import (
     MultiTaskTrOCR,
     province_code_to_id,
-    id_to_province_code,
     THAI_PROVINCES
 )
+
+def id_to_province_code(province_id: int) -> str:
+    """Convert province ID back to province code."""
+    if 0 <= province_id < len(THAI_PROVINCES):
+        return THAI_PROVINCES[province_id]
+    return "TH-10"  # Default to Bangkok
 from train_trocr import (
     load_records,
     stratified_split,
@@ -77,7 +82,8 @@ def evaluate_multitask_model(
             batch_province_labels = []
             
             for record in batch_records:
-                image = record.load_image()
+                from train.data_utils import load_plate_crop
+                image = load_plate_crop(record)
                 images.append(image)
                 batch_text_labels.append(record.plate_text)
                 batch_province_labels.append(record.province_code)
@@ -95,7 +101,7 @@ def evaluate_multitask_model(
                 do_sample=False,
             )
             
-            generated_ids = generation_outputs['generated_ids']
+            generated_ids = generation_outputs['sequences']
             province_preds = generation_outputs['province_predictions']
             
             batch_time = time.time() - start_time
@@ -113,7 +119,7 @@ def evaluate_multitask_model(
                 province_code = id_to_province_code(province_pred.item())
                 
                 result = {
-                    "image_path": str(record.image_path),
+                    "image_name": str(record.plate_image_path.name),
                     "ground_truth_text": record.plate_text,
                     "predicted_text": pred_text,
                     "ground_truth_province": record.province_code,

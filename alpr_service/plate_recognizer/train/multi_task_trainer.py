@@ -145,6 +145,7 @@ def create_multitask_data_collator(processor, province_label_key="province_code"
     """
     Create a data collator that handles both text and province labels.
     """
+    tokenizer = processor.tokenizer
     
     def collate_fn(features):
         # Extract pixel values from features
@@ -158,13 +159,24 @@ def create_multitask_data_collator(processor, province_label_key="province_code"
         # Text labels
         if "labels" in features[0]:
             labels = [f["labels"] for f in features]
-            # Pad labels
+            # Pad labels and validate token IDs
             max_length = max(len(label) for label in labels)
             padded_labels = []
             for label in labels:
+                # Validate all token IDs are within vocabulary range
+                validated_label = []
+                current_vocab_size = len(tokenizer)  # Use len(tokenizer) for updated vocab size
+                for token_id in label:
+                    if 0 <= token_id < current_vocab_size:
+                        validated_label.append(token_id)
+                    else:
+                        print(f"WARNING: Token ID {token_id} out of range [0, {current_vocab_size}), using pad token")
+                        validated_label.append(tokenizer.pad_token_id if tokenizer.pad_token_id is not None else 0)
+                validated_tensor = torch.tensor(validated_label, dtype=torch.long)
+                
                 padded = torch.cat([
-                    label,
-                    torch.full((max_length - len(label),), -100, dtype=label.dtype)
+                    validated_tensor,
+                    torch.full((max_length - len(validated_tensor),), -100, dtype=validated_tensor.dtype)
                 ])
                 padded_labels.append(padded)
             batch["labels"] = torch.stack(padded_labels)
@@ -173,9 +185,15 @@ def create_multitask_data_collator(processor, province_label_key="province_code"
         if province_label_key in features[0]:
             province_codes = [f[province_label_key] for f in features]
             province_ids = [province_code_to_id(code) for code in province_codes]
-            # Handle unknown provinces
-            province_ids = [pid if pid != -1 else 0 for pid in province_ids]  # Default to Bangkok
-            batch["province_labels"] = torch.tensor(province_ids, dtype=torch.long)
+            # Validate all province IDs are in valid range
+            valid_province_ids = []
+            for i, (code, pid) in enumerate(zip(province_codes, province_ids)):
+                if pid < 0 or pid >= 77:  # 77 Thai provinces
+                    print(f"WARNING: Invalid province ID {pid} for code '{code}' at index {i}, using 0")
+                    valid_province_ids.append(0)
+                else:
+                    valid_province_ids.append(pid)
+            batch["province_labels"] = torch.tensor(valid_province_ids, dtype=torch.long)
         
         return batch
     
