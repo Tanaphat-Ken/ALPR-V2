@@ -62,20 +62,70 @@ class User(Base):
             check_email = result.scalars().first()
 
             if check_email:
-                return {"message": "This email is unavailable."}
-
-        
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="This email is already registered"
+                )
 
             # Insert new user into the database
-            stmt = insert(User).values(email=email, password=password, is_activate=True, created_at=time_now, updated_at=time_now)
-            await db.execute(stmt)
+            stmt = insert(User).values(
+                email=email, 
+                password=password, 
+                is_activate=True, 
+                created_at=time_now, 
+                updated_at=time_now
+            ).returning(User.user_id, User.email)
+            
+            result = await db.execute(stmt)
             await db.commit()
-
-            return {"message": "User created successfully."}
+            
+            new_user_data = result.fetchone()
+            
+            return {
+                "user_id": new_user_data[0],
+                "email": new_user_data[1],
+                "message": "User created successfully"
+            }
         
+        except HTTPException:
+            raise
         except Exception as e:
             await db.rollback()
-            return HTTPException(
+            raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"An unexpected error occurred. {e}"
+                detail=f"An unexpected error occurred: {str(e)}"
             )
+    
+    @staticmethod
+    async def get_user_by_email(email: str, db: AsyncSession):
+        """Get user by email address"""
+        try:
+            result = await db.execute(select(User).where(User.email == email))
+            user = result.scalars().first()
+            return user
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Database error: {str(e)}"
+            )
+    
+    @staticmethod
+    async def verify_user_password(email: str, password: str, db: AsyncSession):
+        """Verify user credentials for login"""
+        user = await User.get_user_by_email(email, db)
+        
+        if not user:
+            return None
+        
+        # Verify password
+        if not pwd_context.verify(password, user.password):
+            return None
+        
+        # Check if user is active
+        if not user.is_activate:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User account is deactivated"
+            )
+        
+        return user

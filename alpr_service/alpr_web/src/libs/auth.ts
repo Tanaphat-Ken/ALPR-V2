@@ -6,21 +6,29 @@ export type LoginRequest = {
 }
 
 export type LoginResponse = {
-  token: string
-  userId: number
+  access_token: string
+  token_type: string
+  user_id: number
   email: string
+  message: string
 }
 
 export type RegisterRequest = {
-  name: string
   email: string
   password: string
 }
 
 export type RegisterResponse = {
-  userId: number
+  user_id: number
   email: string
   message: string
+}
+
+export type UserInfoResponse = {
+  user_id: number
+  email: string
+  created_at: string
+  updated_at: string
 }
 
 /**
@@ -35,6 +43,32 @@ export const login = async (data: LoginRequest): Promise<LoginResponse> => {
  */
 export const register = async (data: RegisterRequest): Promise<RegisterResponse> => {
   return await apiClient.post<RegisterResponse>('/auth/register', data)
+}
+
+/**
+ * Get current user information (requires authentication)
+ */
+export const getCurrentUser = async (): Promise<UserInfoResponse> => {
+  const token = getToken()
+  return await apiClient.get<UserInfoResponse>('/auth/me', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+}
+
+/**
+ * Logout user (API call + clear local storage)
+ */
+export const logoutAPI = async (): Promise<{ message: string; user_id: number }> => {
+  const token = getToken()
+  const result = await apiClient.post<{ message: string; user_id: number }>('/auth/logout', {}, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+  logout() // Clear local storage
+  return result
 }
 
 /**

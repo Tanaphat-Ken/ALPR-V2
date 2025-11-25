@@ -6,6 +6,7 @@ import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import styled from 'styled-components'
+import { register } from '@/libs/auth'
 
 const { Title, Text } = Typography
 
@@ -154,166 +155,165 @@ const TermsText = styled.span`
 `
 
 type RegisterFormValues = {
-    name: string
-    email: string
-    password: string
-    confirmPassword: string
-    agree: boolean
+  email: string
+  password: string
+  confirmPassword: string
+  agree: boolean
 }
 
 const RegisterPage = () => {
-    const [loading, setLoading] = useState(false)
-    const router = useRouter()
-    const [form] = Form.useForm()
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+  const [form] = Form.useForm()
 
-    const onFinish = async (values: RegisterFormValues) => {
-        setLoading(true)
-        try {
-            // TODO: Uncomment when backend API is ready
-            // await register({
-            //   name: values.name,
-            //   email: values.email,
-            //   password: values.password
-            // })
+  const onFinish = async (values: RegisterFormValues) => {
+    setLoading(true)
+    try {
+      // TODO: Uncomment when backend is ready
+      // await register({
+      //   email: values.email,
+      //   password: values.password
+      // })
 
-            // Simulate API call for now
-            await new Promise(resolve => setTimeout(resolve, 1500))
-            void values
-
-            message.success('Registration successful! Please login.')
-            router.push('/login')
-        } catch (error) {
-            message.error('Registration failed. Please try again.')
-            // eslint-disable-next-line no-console
-            console.error('Register error:', error)
-        } finally {
-            setLoading(false)
-        }
+      // Mock success for now
+      message.success('Registration successful! Please login. (Mock)')
+      // eslint-disable-next-line no-console
+      console.log('Register values:', { email: values.email })
+      router.push('/login')
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { detail?: string } } }
+      const errorMessage = err.response?.data?.detail || 'Registration failed. Please try again.'
+      message.error(errorMessage)
+      // eslint-disable-next-line no-console
+      console.error('Register error:', error)
+    } finally {
+      setLoading(false)
     }
+  }
 
-    return (
-        <AuthContainer>
-            <AuthCard>
-                <LogoSection>
-                    <Logo>A</Logo>
-                    <AuthTitle level={2}>Create Account</AuthTitle>
-                    <AuthSubtitle>Sign up for ALPR V2 and get started</AuthSubtitle>
-                </LogoSection>
+  return (
+    <AuthContainer>
+      <AuthCard>
+        <LogoSection>
+          <Logo>A</Logo>
+          <AuthTitle level={2}>Create Account</AuthTitle>
+          <AuthSubtitle>Sign up for ALPR V2 and get started</AuthSubtitle>
+        </LogoSection>
 
-                <StyledForm
-                    form={form}
-                    name="register"
-                    onFinish={onFinish as (values: unknown) => void}
-                    autoComplete="off"
-                    layout="vertical"
-                >
-                    <Form.Item
-                        name="name"
-                        rules={[
-                            { required: true, message: 'Please input your name!' },
-                            { min: 2, message: 'Name must be at least 2 characters!' }
-                        ]}
-                    >
-                        <StyledInput
-                            prefix={<UserOutlined style={{ color: '#9ca3af' }} />}
-                            placeholder="Full name"
-                            size="large"
-                        />
-                    </Form.Item>
+        <StyledForm
+          form={form}
+          name="register"
+          onFinish={onFinish as (values: unknown) => void}
+          autoComplete="off"
+          layout="vertical"
+        >
+          <Form.Item
+            name="name"
+            rules={[
+              { required: true, message: 'Please input your name!' },
+              { min: 2, message: 'Name must be at least 2 characters!' }
+            ]}
+          >
+            <StyledInput
+              prefix={<UserOutlined style={{ color: '#9ca3af' }} />}
+              placeholder="Full name"
+              size="large"
+            />
+          </Form.Item>
 
-                    <Form.Item
-                        name="email"
-                        rules={[
-                            { required: true, message: 'Please input your email!' },
-                            { type: 'email', message: 'Please enter a valid email!' }
-                        ]}
-                    >
-                        <StyledInput
-                            prefix={<MailOutlined style={{ color: '#9ca3af' }} />}
-                            placeholder="Email address"
-                            size="large"
-                        />
-                    </Form.Item>
+          <Form.Item
+            name="email"
+            rules={[
+              { required: true, message: 'Please input your email!' },
+              { type: 'email', message: 'Please enter a valid email!' }
+            ]}
+          >
+            <StyledInput
+              prefix={<MailOutlined style={{ color: '#9ca3af' }} />}
+              placeholder="Email address"
+              size="large"
+            />
+          </Form.Item>
 
-                    <Form.Item
-                        name="password"
-                        rules={[
-                            { required: true, message: 'Please input your password!' },
-                            { min: 6, message: 'Password must be at least 6 characters!' }
-                        ]}
-                    >
-                        <StyledPasswordInput
-                            prefix={<LockOutlined style={{ color: '#9ca3af' }} />}
-                            placeholder="Password"
-                            size="large"
-                        />
-                    </Form.Item>
+          <Form.Item
+            name="password"
+            rules={[
+              { required: true, message: 'Please input your password!' },
+              { min: 6, message: 'Password must be at least 6 characters!' }
+            ]}
+          >
+            <StyledPasswordInput
+              prefix={<LockOutlined style={{ color: '#9ca3af' }} />}
+              placeholder="Password"
+              size="large"
+            />
+          </Form.Item>
 
-                    <Form.Item
-                        name="confirmPassword"
-                        dependencies={['password']}
-                        rules={[
-                            { required: true, message: 'Please confirm your password!' },
-                            ({ getFieldValue }) => ({
-                                validator(_, value) {
-                                    if (!value || getFieldValue('password') === value) {
-                                        return Promise.resolve()
-                                    }
-                                    return Promise.reject(new Error('Passwords do not match!'))
-                                },
-                            }),
-                        ]}
-                    >
-                        <StyledPasswordInput
-                            prefix={<LockOutlined style={{ color: '#9ca3af' }} />}
-                            placeholder="Confirm password"
-                            size="large"
-                        />
-                    </Form.Item>
+          <Form.Item
+            name="confirmPassword"
+            dependencies={['password']}
+            rules={[
+              { required: true, message: 'Please confirm your password!' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('password') === value) {
+                    return Promise.resolve()
+                  }
+                  return Promise.reject(new Error('Passwords do not match!'))
+                },
+              }),
+            ]}
+          >
+            <StyledPasswordInput
+              prefix={<LockOutlined style={{ color: '#9ca3af' }} />}
+              placeholder="Confirm password"
+              size="large"
+            />
+          </Form.Item>
 
-                    <Form.Item
-                        name="agree"
-                        valuePropName="checked"
-                        rules={[
-                            {
-                                validator: (_, value) =>
-                                    value ? Promise.resolve() : Promise.reject(new Error('Please accept the terms and conditions')),
-                            },
-                        ]}
-                    >
-                        <Checkbox>
-                            <TermsText>
-                                I agree to the <Link href="/terms">Terms of Service</Link> and{' '}
-                                <Link href="/privacy">Privacy Policy</Link>
-                            </TermsText>
-                        </Checkbox>
-                    </Form.Item>
+          <Form.Item
+            name="agree"
+            valuePropName="checked"
+            rules={[
+              {
+                validator: (_, value) =>
+                  value ? Promise.resolve() : Promise.reject(new Error('Please accept the terms and conditions')),
+              },
+            ]}
+          >
+            <Checkbox>
+              <TermsText>
+                I agree to the <Link href="/terms">Terms of Service</Link> and{' '}
+                <Link href="/privacy">Privacy Policy</Link>
+              </TermsText>
+            </Checkbox>
+          </Form.Item>
 
-                    <Form.Item>
-                        <SubmitButton
-                            type="primary"
-                            htmlType="submit"
-                            loading={loading}
-                            size="large"
-                        >
-                            Create Account
-                        </SubmitButton>
-                    </Form.Item>
-                </StyledForm>
+          <Form.Item>
+            <SubmitButton
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              size="large"
+            >
+              Create Account
+            </SubmitButton>
+          </Form.Item>
+        </StyledForm>
 
-                <DividerText>or</DividerText>
+        <DividerText>or</DividerText>
 
-                <LinkText>
-                    Already have an account?
-                    <Link href="/login">Sign in</Link>
-                </LinkText>
+        <LinkText>
+          Already have an account?
+          <Link href="/login">Sign in</Link>
+        </LinkText>
 
-                <LinkText style={{ marginTop: 16 }}>
-                    <Link href="/">← Back to Home</Link>
-                </LinkText>
-            </AuthCard>
-        </AuthContainer>
-    )
+        <LinkText style={{ marginTop: 16 }}>
+          <Link href="/">← Back to Home</Link>
+        </LinkText>
+      </AuthCard>
+    </AuthContainer>
+  )
 }
 
 export default RegisterPage

@@ -6,6 +6,7 @@ import { LockOutlined, MailOutlined } from '@ant-design/icons'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import styled from 'styled-components'
+import { login } from '@/libs/auth'
 
 const { Title, Text } = Typography
 
@@ -152,113 +153,114 @@ const ForgotPasswordLink = styled(Link)`
 `
 
 type LoginFormValues = {
-    email: string
-    password: string
+  email: string
+  password: string
 }
 
 const LoginPage = () => {
-    const [loading, setLoading] = useState(false)
-    const router = useRouter()
-    const [form] = Form.useForm()
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+  const [form] = Form.useForm()
 
-    const onFinish = async (values: LoginFormValues) => {
-        setLoading(true)
-        try {
-            // TODO: Uncomment when backend API is ready
-            // const response = await login(values)
-            // localStorage.setItem('token', response.token)
-            // localStorage.setItem('userId', response.userId.toString())
+  const onFinish = async (values: LoginFormValues) => {
+    setLoading(true)
+    try {
+      // TODO: Uncomment when backend is ready
+      // const response = await login(values)
+      // localStorage.setItem('token', response.access_token)
+      // localStorage.setItem('userId', response.user_id.toString())
 
-            // Simulate API call for now
-            await new Promise(resolve => setTimeout(resolve, 1500))
-            void values
-
-            message.success('Login successful!')
-            router.push('/dashboard')
-        } catch (error) {
-            message.error('Login failed. Please check your credentials.')
-            // eslint-disable-next-line no-console
-            console.error('Login error:', error)
-        } finally {
-            setLoading(false)
-        }
+      // Mock success for now
+      message.success('Login successful! (Mock)')
+      // eslint-disable-next-line no-console
+      console.log('Login values:', values)
+      router.push('/dashboard')
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { detail?: string } } }
+      const errorMessage = err.response?.data?.detail || 'Login failed. Please check your credentials.'
+      message.error(errorMessage)
+      // eslint-disable-next-line no-console
+      console.error('Login error:', error)
+    } finally {
+      setLoading(false)
     }
+  }
 
-    return (
-        <AuthContainer>
-            <AuthCard>
-                <LogoSection>
-                    <Logo>A</Logo>
-                    <AuthTitle level={2}>Welcome Back</AuthTitle>
-                    <AuthSubtitle>Sign in to your ALPR V2 account</AuthSubtitle>
-                </LogoSection>
+  return (
+    <AuthContainer>
+      <AuthCard>
+        <LogoSection>
+          <Logo>A</Logo>
+          <AuthTitle level={2}>Welcome Back</AuthTitle>
+          <AuthSubtitle>Sign in to your ALPR V2 account</AuthSubtitle>
+        </LogoSection>
 
-                <StyledForm
-                    form={form}
-                    name="login"
-                    onFinish={onFinish as (values: unknown) => void}
-                    autoComplete="off"
-                    layout="vertical"
-                >
-                    <Form.Item
-                        name="email"
-                        rules={[
-                            { required: true, message: 'Please input your email!' },
-                            { type: 'email', message: 'Please enter a valid email!' }
-                        ]}
-                    >
-                        <StyledInput
-                            prefix={<MailOutlined style={{ color: '#9ca3af' }} />}
-                            placeholder="Email address"
-                            size="large"
-                        />
-                    </Form.Item>
+        <StyledForm
+          form={form}
+          name="login"
+          onFinish={onFinish as (values: unknown) => void}
+          autoComplete="off"
+          layout="vertical"
+        >
+          <Form.Item
+            name="email"
+            rules={[
+              { required: true, message: 'Please input your email!' },
+              { type: 'email', message: 'Please enter a valid email!' }
+            ]}
+          >
+            <StyledInput
+              prefix={<MailOutlined style={{ color: '#9ca3af' }} />}
+              placeholder="Email address"
+              size="large"
+            />
+          </Form.Item>
 
-                    <Form.Item
-                        name="password"
-                        rules={[
-                            { required: true, message: 'Please input your password!' },
-                            { min: 6, message: 'Password must be at least 6 characters!' }
-                        ]}
-                    >
-                        <StyledPasswordInput
-                            prefix={<LockOutlined style={{ color: '#9ca3af' }} />}
-                            placeholder="Password"
-                            size="large"
-                        />
-                    </Form.Item>
+          <Form.Item
+            name="password"
+            rules={[
+              { required: true, message: 'Please input your password!' },
+              { min: 6, message: 'Password must be at least 6 characters!' }
+            ]}
+          >
+            <StyledPasswordInput
+              prefix={<LockOutlined style={{ color: '#9ca3af' }} />}
+              placeholder="Password"
+              size="large"
+            />
+          </Form.Item>
 
-                    <Form.Item style={{ marginBottom: 0 }}>
-                        <ForgotPasswordLink href="/forgot-password">
-                            Forgot password?
-                        </ForgotPasswordLink>
-                    </Form.Item>
+          <Form.Item style={{ marginBottom: 0 }}>
+            <ForgotPasswordLink href="/forgot-password">
+              Forgot password?
+            </ForgotPasswordLink>
+          </Form.Item>
 
-                    <Form.Item>
-                        <SubmitButton
-                            type="primary"
-                            htmlType="submit"
-                            loading={loading}
-                            size="large"
-                        >
-                            Sign In
-                        </SubmitButton>
-                    </Form.Item>
-                </StyledForm>
+          <Form.Item>
+            <SubmitButton
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              size="large"
+            >
+              Sign In
+            </SubmitButton>
+          </Form.Item>
+        </StyledForm>
 
-                <DividerText>or</DividerText>
+        <DividerText>or</DividerText>
 
-                <LinkText>
-                    Don&apos;t have an account?
-                    <Link href="/register">Sign up</Link>
-                </LinkText>
+        <LinkText>
+          Don&apos;t have an account?
+          <Link href="/register">Sign up</Link>
+        </LinkText>
 
-                <LinkText style={{ marginTop: 16 }}>
-                    <Link href="/">← Back to Home</Link>
-                </LinkText>
-            </AuthCard>
-        </AuthContainer>
-    )
+        <LinkText style={{ marginTop: 16 }}>
+          <Link href="/">← Back to Home</Link>
+        </LinkText>
+      </AuthCard>
+    </AuthContainer>
+  )
 }
 
 export default LoginPage
