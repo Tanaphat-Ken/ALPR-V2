@@ -1,7 +1,7 @@
+import LandingPage from '@/modules/public/landing'
+
 const Home = () => {
-  return (
-    <div>Hello World</div>
-  )
+  return <LandingPage />
 }
 
 export default Home
