@@ -13,10 +13,35 @@ const { Title, Text } = Typography
 const AuthContainer = styled.div`
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
+  background: #f9fafb;
+`
+
+const TopNavBar = styled.div`
+  background: #150E4B;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 48px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 768px) {
+    padding: 0 20px;
+  }
+`
+
+const NavLogo = styled.div`
+  color: white;
+  font-size: 24px;
+  font-weight: 700;
+`
+
+const ContentWrapper = styled.div`
+  flex: 1;
+  display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
+  padding: 40px 20px;
 `
 
 const AuthCard = styled.div`
@@ -40,8 +65,8 @@ const LogoSection = styled.div`
 const Logo = styled.div`
   width: 64px;
   height: 64px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 16px;
+  background: #150E4B;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -95,6 +120,13 @@ const SubmitButton = styled(Button)`
   font-size: 16px;
   font-weight: 600;
   margin-top: 8px;
+  background: #584AC7;
+  border-color: #584AC7;
+
+  &:hover {
+    background: #4a3fb0 !important;
+    border-color: #4a3fb0 !important;
+  }
 `
 
 const DividerText = styled.div`
@@ -128,13 +160,13 @@ const LinkText = styled.div`
   color: #6b7280;
 
   a {
-    color: #667eea;
+    color: #584AC7;
     font-weight: 600;
     text-decoration: none;
     margin-left: 4px;
 
     &:hover {
-      color: #764ba2;
+      color: #2563EB;
       text-decoration: underline;
     }
   }
@@ -145,10 +177,11 @@ const TermsText = styled.span`
   font-size: 14px;
 
   a {
-    color: #667eea;
+    color: #584AC7;
     text-decoration: none;
 
     &:hover {
+      color: #2563EB;
       text-decoration: underline;
     }
   }
@@ -193,125 +226,132 @@ const RegisterPage = () => {
 
   return (
     <AuthContainer>
-      <AuthCard>
-        <LogoSection>
-          <Logo>A</Logo>
-          <AuthTitle level={2}>Create Account</AuthTitle>
-          <AuthSubtitle>Sign up for ALPR V2 and get started</AuthSubtitle>
-        </LogoSection>
+      <TopNavBar>
+        <Link href="/" style={{ textDecoration: 'none' }}>
+          <NavLogo>ALPR VER 2</NavLogo>
+        </Link>
+      </TopNavBar>
+      <ContentWrapper>
+        <AuthCard>
+          <LogoSection>
+            <Logo>A</Logo>
+            <AuthTitle level={2}>Create Account</AuthTitle>
+            <AuthSubtitle>Sign up for ALPR V2 and get started</AuthSubtitle>
+          </LogoSection>
 
-        <StyledForm
-          form={form}
-          name="register"
-          onFinish={onFinish as (values: unknown) => void}
-          autoComplete="off"
-          layout="vertical"
-        >
-          <Form.Item
-            name="name"
-            rules={[
-              { required: true, message: 'Please input your name!' },
-              { min: 2, message: 'Name must be at least 2 characters!' }
-            ]}
+          <StyledForm
+            form={form}
+            name="register"
+            onFinish={onFinish as (values: unknown) => void}
+            autoComplete="off"
+            layout="vertical"
           >
-            <StyledInput
-              prefix={<UserOutlined style={{ color: '#9ca3af' }} />}
-              placeholder="Full name"
-              size="large"
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="email"
-            rules={[
-              { required: true, message: 'Please input your email!' },
-              { type: 'email', message: 'Please enter a valid email!' }
-            ]}
-          >
-            <StyledInput
-              prefix={<MailOutlined style={{ color: '#9ca3af' }} />}
-              placeholder="Email address"
-              size="large"
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="password"
-            rules={[
-              { required: true, message: 'Please input your password!' },
-              { min: 6, message: 'Password must be at least 6 characters!' }
-            ]}
-          >
-            <StyledPasswordInput
-              prefix={<LockOutlined style={{ color: '#9ca3af' }} />}
-              placeholder="Password"
-              size="large"
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="confirmPassword"
-            dependencies={['password']}
-            rules={[
-              { required: true, message: 'Please confirm your password!' },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  if (!value || getFieldValue('password') === value) {
-                    return Promise.resolve()
-                  }
-                  return Promise.reject(new Error('Passwords do not match!'))
-                },
-              }),
-            ]}
-          >
-            <StyledPasswordInput
-              prefix={<LockOutlined style={{ color: '#9ca3af' }} />}
-              placeholder="Confirm password"
-              size="large"
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="agree"
-            valuePropName="checked"
-            rules={[
-              {
-                validator: (_, value) =>
-                  value ? Promise.resolve() : Promise.reject(new Error('Please accept the terms and conditions')),
-              },
-            ]}
-          >
-            <Checkbox>
-              <TermsText>
-                I agree to the <Link href="/terms">Terms of Service</Link> and{' '}
-                <Link href="/privacy">Privacy Policy</Link>
-              </TermsText>
-            </Checkbox>
-          </Form.Item>
-
-          <Form.Item>
-            <SubmitButton
-              type="primary"
-              htmlType="submit"
-              loading={loading}
-              size="large"
+            <Form.Item
+              name="name"
+              rules={[
+                { required: true, message: 'Please input your name!' },
+                { min: 2, message: 'Name must be at least 2 characters!' }
+              ]}
             >
-              Create Account
-            </SubmitButton>
-          </Form.Item>
-        </StyledForm>
+              <StyledInput
+                prefix={<UserOutlined style={{ color: '#9ca3af' }} />}
+                placeholder="Full name"
+                size="large"
+              />
+            </Form.Item>
 
-        <DividerText>or</DividerText>
+            <Form.Item
+              name="email"
+              rules={[
+                { required: true, message: 'Please input your email!' },
+                { type: 'email', message: 'Please enter a valid email!' }
+              ]}
+            >
+              <StyledInput
+                prefix={<MailOutlined style={{ color: '#9ca3af' }} />}
+                placeholder="Email address"
+                size="large"
+              />
+            </Form.Item>
 
-        <LinkText>
-          Already have an account?
-          <Link href="/login">Sign in</Link>
-        </LinkText>
+            <Form.Item
+              name="password"
+              rules={[
+                { required: true, message: 'Please input your password!' },
+                { min: 6, message: 'Password must be at least 6 characters!' }
+              ]}
+            >
+              <StyledPasswordInput
+                prefix={<LockOutlined style={{ color: '#9ca3af' }} />}
+                placeholder="Password"
+                size="large"
+              />
+            </Form.Item>
 
-        <LinkText style={{ marginTop: 16 }}>
-          <Link href="/">← Back to Home</Link>
-        </LinkText>
-      </AuthCard>
+            <Form.Item
+              name="confirmPassword"
+              dependencies={['password']}
+              rules={[
+                { required: true, message: 'Please confirm your password!' },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue('password') === value) {
+                      return Promise.resolve()
+                    }
+                    return Promise.reject(new Error('Passwords do not match!'))
+                  },
+                }),
+              ]}
+            >
+              <StyledPasswordInput
+                prefix={<LockOutlined style={{ color: '#9ca3af' }} />}
+                placeholder="Confirm password"
+                size="large"
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="agree"
+              valuePropName="checked"
+              rules={[
+                {
+                  validator: (_, value) =>
+                    value ? Promise.resolve() : Promise.reject(new Error('Please accept the terms and conditions')),
+                },
+              ]}
+            >
+              <Checkbox>
+                <TermsText>
+                  I agree to the <Link href="/terms">Terms of Service</Link> and{' '}
+                  <Link href="/privacy">Privacy Policy</Link>
+                </TermsText>
+              </Checkbox>
+            </Form.Item>
+
+            <Form.Item>
+              <SubmitButton
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                size="large"
+              >
+                Create Account
+              </SubmitButton>
+            </Form.Item>
+          </StyledForm>
+
+          <DividerText>or</DividerText>
+
+          <LinkText>
+            Already have an account?
+            <Link href="/login">Sign in</Link>
+          </LinkText>
+
+          <LinkText style={{ marginTop: 16 }}>
+            <Link href="/">← Back to Home</Link>
+          </LinkText>
+        </AuthCard>
+      </ContentWrapper>
     </AuthContainer>
   )
 }
