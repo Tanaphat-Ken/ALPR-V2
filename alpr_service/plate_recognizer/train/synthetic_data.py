@@ -122,25 +122,36 @@ class ThaiLicensePlateGenerator:
         """Load fonts for license plate text"""
         try:
             if self.font_path:
-                # License number (top) - same size for chars and digits for better alignment
-                self.font_large = ImageFont.truetype(self.font_path, 50)
-                # Province name (bottom) - larger for better visibility
-                self.font_small = ImageFont.truetype(self.font_path, 30)
+                # Thai characters (letters) - larger size
+                self.font_thai_chars = ImageFont.truetype(self.font_path, 50)
+                # Numbers - smaller size to balance with Thai characters
+                self.font_numbers = ImageFont.truetype(self.font_path, 42)
+                # Province name (bottom) - medium size for better visibility
+                self.font_province = ImageFont.truetype(self.font_path, 30)
             else:
-                self.font_large = ImageFont.load_default()
-                self.font_small = ImageFont.load_default()
+                self.font_thai_chars = ImageFont.load_default()
+                self.font_numbers = ImageFont.load_default()
+                self.font_province = ImageFont.load_default()
         except Exception as e:
             print(f"Error loading font: {e}")
-            self.font_large = ImageFont.load_default()
-            self.font_small = ImageFont.load_default()
+            self.font_thai_chars = ImageFont.load_default()
+            self.font_numbers = ImageFont.load_default()
+            self.font_province = ImageFont.load_default()
     
-    def generate_plate_text(self, special_plate_ratio: float = 0.0) -> Tuple[str, str]:
+    def generate_plate_text(self, special_plate_ratio: float = 0.0) -> Tuple[Dict[str, str], str]:
         """
-        Generate Thai license plate text
-        Returns: (license_number, province)
+        Generate Thai license plate text in 3 parts
+        Returns: (plate_parts, province)
+        
+        plate_parts format:
+        {
+            'prefix_number': '1' or '',  # Optional prefix number (for some formats)
+            'thai_chars': 'กข' or 'หล่อ',  # Thai characters or word
+            'suffix_number': '1234' or '999'  # Suffix numbers
+        }
         
         Format: 
-        - Standard: 2-3 Thai consonants + 4 digits (e.g., "กข 1234" or "กขค 5678")
+        - Standard: [optional: 1 digit] + 2-3 Thai consonants + 4 digits (e.g., "1กข 1234" or "กขค 5678")
         - Special: Thai word + 3-4 digits (e.g., "หล่อ 999" or "รวย 1234")
         
         Args:
@@ -154,19 +165,36 @@ class ThaiLicensePlateGenerator:
             word = random.choice(THAI_SPECIAL_WORDS)
             # Special plates often have 3 digits, but can have 4
             num_digits = random.choice([3, 3, 3, 4])  # 75% chance for 3 digits
-            digits = ''.join([str(random.randint(0, 9)) for _ in range(num_digits)])
-            license_number = f"{word} {digits}"
+            suffix_digits = ''.join([str(random.randint(0, 9)) for _ in range(num_digits)])
+            
+            plate_parts = {
+                'prefix_number': '',
+                'thai_chars': word,
+                'suffix_number': suffix_digits
+            }
         else:
-            # Generate standard license number: 2-3 Thai consonants + space + 4 digits
+            # Generate standard license number
+            # Some plates have prefix number (e.g., "1กข 1234"), some don't (e.g., "กข 1234")
+            has_prefix = random.random() < 0.3  # 30% chance for prefix number
+            prefix = str(random.randint(1, 9)) if has_prefix else ''
+            
+            # 2-3 Thai consonants
             num_consonants = random.choice([2, 3])
             consonants = ''.join(random.choices(THAI_CONSONANTS, k=num_consonants))
-            digits = ''.join([str(random.randint(0, 9)) for _ in range(4)])
-            license_number = f"{consonants} {digits}"
+            
+            # 4 digits suffix
+            suffix_digits = ''.join([str(random.randint(0, 9)) for _ in range(4)])
+            
+            plate_parts = {
+                'prefix_number': prefix,
+                'thai_chars': consonants,
+                'suffix_number': suffix_digits
+            }
         
         # Select random province
         province = random.choice(THAI_PROVINCES)
         
-        return license_number, province
+        return plate_parts, province
     
     def generate_background_color(self) -> Tuple[int, int, int]:
         """Generate random background color for license plate"""
@@ -186,12 +214,16 @@ class ThaiLicensePlateGenerator:
     
     def create_plate_image(
         self,
-        license_number: str,
+        plate_parts: Dict[str, str],
         province: str
-    ) -> Tuple[Image.Image, Dict]:
+    ) -> Tuple[Image.Image, str]:
         """
-        Create license plate image with text
-        Returns: (image, bounding_boxes)
+        Create license plate image with text in 3 parts
+        Returns: (image, full_license_text)
+        
+        Args:
+            plate_parts: Dictionary with 'prefix_number', 'thai_chars', 'suffix_number'
+            province: Province name in Thai
         """
         # Create blank image with background color
         bg_color = self.generate_background_color()
@@ -210,78 +242,101 @@ class ThaiLicensePlateGenerator:
         # Text color (black on light background)
         text_color = (0, 0, 0)
 
-        # Draw license number (top, centered) - Use same font size for all characters
-        # This ensures perfect alignment between Thai chars and digits
-        try:
-            bbox_license = draw.textbbox((0, 0), license_number, font=self.font_large, anchor='lt')
-            license_width = bbox_license[2] - bbox_license[0]
-            license_height = bbox_license[3] - bbox_license[1]
-            license_offset_y = -bbox_license[1]  # offset to start from actual top
-        except:
-            license_width = len(license_number) * 35
-            license_height = 50
-            license_offset_y = 0
-
-        license_x = (self.image_width - license_width) // 2
-        license_y = 30  # Top position like real Thai plates
+        # Calculate dimensions for each part
+        prefix_number = plate_parts['prefix_number']
+        thai_chars = plate_parts['thai_chars']
+        suffix_number = plate_parts['suffix_number']
         
-        # Draw license number with top-left anchor for precise positioning
+        # Get bounding boxes for each part to calculate widths
+        prefix_width = 0
+        if prefix_number:
+            try:
+                bbox_prefix = draw.textbbox((0, 0), prefix_number, font=self.font_numbers, anchor='ls')
+                prefix_width = bbox_prefix[2] - bbox_prefix[0]
+            except:
+                prefix_width = len(prefix_number) * 30
+        
+        try:
+            bbox_thai = draw.textbbox((0, 0), thai_chars, font=self.font_thai_chars, anchor='ls')
+            thai_width = bbox_thai[2] - bbox_thai[0]
+        except:
+            thai_width = len(thai_chars) * 35
+        
+        try:
+            bbox_suffix = draw.textbbox((0, 0), suffix_number, font=self.font_numbers, anchor='ls')
+            suffix_width = bbox_suffix[2] - bbox_suffix[0]
+        except:
+            suffix_width = len(suffix_number) * 30
+        
+        # Calculate spacing and total width
+        space_prefix_thai = 3  # Smaller space between prefix number and Thai chars
+        space_thai_suffix = 10  # Normal space between Thai chars and suffix number
+        total_width = prefix_width + (space_prefix_thai if prefix_number else 0) + thai_width + space_thai_suffix + suffix_width
+        
+        # Starting x position (centered)
+        start_x = (self.image_width - total_width) // 2
+        
+        # Use baseline anchor 'ls' (left-baseline) for consistent alignment
+        # This ensures all characters align at the same baseline regardless of descenders (หาง)
+        baseline_y = 70  # Baseline position (adjusted from top)
+        
+        # Draw prefix number (if exists)
+        current_x = start_x
+        if prefix_number:
+            draw.text(
+                (current_x, baseline_y),
+                prefix_number,
+                font=self.font_numbers,
+                fill=text_color,
+                anchor='ls'  # left-baseline anchor
+            )
+            current_x += prefix_width + space_prefix_thai
+        
+        # Draw Thai characters
         draw.text(
-            (license_x, license_y + license_offset_y),
-            license_number,
-            font=self.font_large,
+            (current_x, baseline_y),
+            thai_chars,
+            font=self.font_thai_chars,
             fill=text_color,
-            anchor='lt'
+            anchor='ls'  # left-baseline anchor
+        )
+        current_x += thai_width + space_thai_suffix
+        
+        # Draw suffix number
+        draw.text(
+            (current_x, baseline_y),
+            suffix_number,
+            font=self.font_numbers,
+            fill=text_color,
+            anchor='ls'  # left-baseline anchor
         )
 
-        # Calculate actual bounding box for license
-        license_bbox_x_min = license_x
-        license_bbox_y_min = license_y
-        license_bbox_x_max = license_x + license_width
-        license_bbox_y_max = license_y + license_height
-
-        # Draw province name (bottom, centered) - More space from bottom
+        # Draw province name (bottom, centered)
         try:
-            bbox_province = draw.textbbox((0, 0), province, font=self.font_small, anchor='lt')
+            bbox_province = draw.textbbox((0, 0), province, font=self.font_province, anchor='lt')
             province_width = bbox_province[2] - bbox_province[0]
             province_height = bbox_province[3] - bbox_province[1]
-            province_offset_y = -bbox_province[1]  # offset to align top
+            province_offset_y = -bbox_province[1]
         except:
             province_width = len(province) * 15
             province_height = 25
             province_offset_y = 0
 
         province_x = (self.image_width - province_width) // 2
-        # Position province name near bottom with safe margin
         province_y = self.image_height - province_height - 20
 
         draw.text(
             (province_x, province_y + province_offset_y),
             province,
-            font=self.font_small,
+            font=self.font_province,
             fill=text_color,
             anchor='lt'
         )
 
-        # Create bounding boxes (normalized coordinates [0, 1])
-        bounding_boxes = {
-            "license": {
-                "x_min": license_bbox_x_min / self.image_width,
-                "y_min": license_bbox_y_min / self.image_height,
-                "x_max": license_bbox_x_max / self.image_width,
-                "y_max": license_bbox_y_max / self.image_height,
-                "text": license_number
-            },
-            "province": {
-                "x_min": province_x / self.image_width,
-                "y_min": province_y / self.image_height,
-                "x_max": (province_x + province_width) / self.image_width,
-                "y_max": (province_y + province_height) / self.image_height,
-                "text": province
-            }
-        }
+        # Create full license text for CSV output
+        full_license = f"{prefix_number}{thai_chars} {suffix_number}".strip()
 
-        return img, bounding_boxes
+        return img, full_license
     
     def apply_homography(self, img: np.ndarray) -> np.ndarray:
         """
@@ -406,11 +461,11 @@ class ThaiLicensePlateGenerator:
         
         Note: Bounding boxes are NOT needed for TrOCR training as it reads the entire image.
         """
-        # Generate text
-        license_number, province = self.generate_plate_text(special_plate_ratio)
+        # Generate text parts
+        plate_parts, province = self.generate_plate_text(special_plate_ratio)
         
-        # Create base image (we don't need bboxes for TrOCR)
-        img_pil, _ = self.create_plate_image(license_number, province)
+        # Create base image with 3-part rendering
+        img_pil, full_license = self.create_plate_image(plate_parts, province)
         
         # Convert to numpy array
         img_np = np.array(img_pil)
@@ -443,7 +498,7 @@ class ThaiLicensePlateGenerator:
         # Create CSV row data matching train_trocr.py format
         # Only includes fields actually used by TrOCR training
         label_data = {
-            "plate": license_number,
+            "plate": full_license,
             "province_code": province_code,
             "province_description": province,
             "image_name_gray": f"images/{image_filename}",
