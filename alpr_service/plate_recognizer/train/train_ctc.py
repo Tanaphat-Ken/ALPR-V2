@@ -372,10 +372,8 @@ class CTCPlateDataset(Dataset):
         img_array = np.array(image).astype(np.float32) / 255.0
         img_tensor = torch.from_numpy(img_array).permute(2, 0, 1)  # HWC -> CHW
         
-        # Normalize using ImageNet stats (common for pretrained models)
-        mean = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
-        std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
-        img_tensor = (img_tensor - mean) / std
+        # Normalize using Simple normalization
+        img_tensor = (img_tensor - 0.5) / 0.5
         
         # Encode label
         label_text = self._build_label(record)
