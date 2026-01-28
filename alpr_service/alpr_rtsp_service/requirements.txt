@@ -1,0 +1,14 @@
+fastapi>=0.100.0
+uvicorn>=0.23.0
+opencv-python
+numpy
+httpx>=0.24.0
+python-multipart
+websockets
+pillow
+python-dotenv
+sqlalchemy[asyncio]
+asyncpg
+supervision
+ultralytics
+pytz

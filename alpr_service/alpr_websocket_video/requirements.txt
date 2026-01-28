@@ -1,7 +1,7 @@
 supervision==0.25.0
 opencv-python
 fastapi[standard]==0.115.6
-numpy==1.23.2
+numpy>=1.23.3
 ultralytics==8.2.98
 python-dotenv==1.0.1
 shapely==2.0.6

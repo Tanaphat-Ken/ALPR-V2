@@ -1,5 +1,6 @@
 import signal
 import asyncio
+from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
@@ -10,7 +11,16 @@ from src.handlers import video
 from src.utils.logging import logger
 from src.utils.cleanup import shutdown_tasks
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+  # Startup
+  logger.info("Application startup complete")
+  yield
+  # Shutdown
+  await shutdown_tasks()
+  logger.info("Application shutdown complete")
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
   CORSMiddleware,
@@ -33,10 +43,6 @@ app.add_api_websocket_route("/video/{token}", video.websocket_endpoint)
 @app.get("/readyz")
 async def readyz():
   return { "message": "service is ready!" }
-
-@app.on_event("shutdown")
-async def shutdown():
-  await shutdown_tasks()
 
 if __name__ == "__main__":
   is_reload = configs.ENVIRONMENT == 'dev'
