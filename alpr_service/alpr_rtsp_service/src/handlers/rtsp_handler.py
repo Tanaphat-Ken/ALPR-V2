@@ -9,7 +9,7 @@ from datetime import datetime
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.responses import JSONResponse
 
-from src.services import CameraManager, PlateRecognizerService
+from src.services import CameraManager, PlateRecognizerService, DatabaseService
 from src.utils.logging import logger
 from src.constants import configs
 
@@ -18,6 +18,7 @@ router = APIRouter()
 # Global instances
 camera_manager = CameraManager()
 plate_recognizer = PlateRecognizerService()
+database_service = DatabaseService(enabled=configs.DATABASE_ENABLED)
 
 # WebSocket clients สำหรับแต่ละกล้อง
 camera_viewers: Dict[str, Set[WebSocket]] = {}
@@ -94,7 +95,7 @@ async def process_detection(camera_id: str, car_image: np.ndarray, bbox, origina
             filename=f"{camera_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
         )
         
-        # บันทึกรูป (optional)
+        # บันทึกรูป (local storage)
         save_path = os.path.join(configs.IMAGES_PATH, image_file.filename)
         cv2.imwrite(save_path, car_image)
         logger.info(f"[{camera_id}] Car image saved: {save_path}")
@@ -104,6 +105,14 @@ async def process_detection(camera_id: str, car_image: np.ndarray, bbox, origina
             response = await plate_recognizer.process_image(bbox, image_file)
             result = response.json()
             logger.info(f"[{camera_id}] Plate: {result.get('full_plate', 'N/A')}")
+            
+            # 💾 บันทึกข้อมูลลง database/log (MVP: แค่ log)
+            await database_service.save_detection(
+                camera_id=camera_id,
+                image_filename=image_file.filename,
+                plate_data=result,
+                bbox=bbox
+            )
             
             # ส่งผลลัพธ์ไปยัง viewers
             await broadcast_detection(camera_id, result, car_image)
@@ -115,6 +124,15 @@ async def process_detection(camera_id: str, car_image: np.ndarray, bbox, origina
                 "province": "N/A",
                 "format_flag": False
             }
+            
+            # 💾 บันทึกแม้ไม่มี AI
+            await database_service.save_detection(
+                camera_id=camera_id,
+                image_filename=image_file.filename,
+                plate_data=fake_result,
+                bbox=bbox
+            )
+            
             await broadcast_detection(camera_id, fake_result, car_image)
         
     except Exception as e:
@@ -244,4 +262,10 @@ async def stop_camera(camera_id: str):
 @router.get("/status")
 async def get_status():
     """ดูสถานะระบบ"""
-    return JSONResponse(camera_manager.get_status())
+    camera_status = camera_manager.get_status()
+    db_stats = database_service.get_stats()
+    
+    return JSONResponse({
+        **camera_status,
+        "database": db_stats
+    })

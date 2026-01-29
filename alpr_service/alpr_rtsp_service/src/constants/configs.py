@@ -37,3 +37,6 @@ ALLOW_HEADERS = ["*"]
 # Paths
 IMAGES_PATH = "images_logs"
 CAMERAS_CONFIG_PATH = "configs/cameras.json"
+
+# Database (MVP: ปิดไว้ก่อน)
+DATABASE_ENABLED = os.getenv("DATABASE_ENABLED", "false").lower() == "true"

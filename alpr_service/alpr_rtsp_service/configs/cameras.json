@@ -2,11 +2,11 @@
   {
     "id": "camera_001",
     "name": "Main Entrance",
-    "rtsp_url": "rtsp://admin:password@192.168.1.100:554/stream1",
+    "rtsp_url": "rtsp://admin:Alprceproj15@192.168.1.168:554/stream2",
     "location": "Building A - Floor 1",
-    "enabled": false,
-    "fps": 10,
-    "frame_skip": 3
+    "enabled": true,
+    "fps": 5,
+    "frame_skip": 5
   },
   {
     "id": "camera_002",

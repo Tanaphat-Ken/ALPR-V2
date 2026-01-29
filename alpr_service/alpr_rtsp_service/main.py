@@ -7,6 +7,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
+# แก้ปัญหา Intel MKL + OpenCV threading บน Windows
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
+os.environ['FOR_DISABLE_CONSOLE_CTRL_HANDLER'] = '1'
+os.environ['OMP_NUM_THREADS'] = '1'
+os.environ['MKL_NUM_THREADS'] = '1'
+
 from src.constants import configs
 from src.handlers import rtsp_handler
 from src.utils.logging import logger
@@ -66,11 +72,11 @@ async def readyz():
 
 
 if __name__ == "__main__":
-    is_reload = configs.ENVIRONMENT == 'dev'
+    # Windows: ปิด reload เพื่อหลีกเลี่ยงปัญหา multiprocessing
     uvicorn.run(
         "main:app",
         host=configs.HOST,
         port=configs.PORT,
         log_level="info",
-        reload=is_reload
+        reload=False
     )
