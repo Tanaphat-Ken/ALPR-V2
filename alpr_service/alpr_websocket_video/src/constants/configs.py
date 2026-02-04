@@ -11,7 +11,7 @@ ALLOW_ORIGINS = ast.literal_eval(os.getenv("ALLOW_ORIGINS", "[*]"))
 ALLOW_METHODS = ast.literal_eval(os.getenv("ALLOW_METHODS", "[*]"))
 ALLOW_HEADERS = ast.literal_eval(os.getenv("ALLOW_HEADERS", "[*]"))
 MAX_FILE_SIZE = 50 * 1024 * 1024
-TRACKER_WEIGHT = "./src/models/weights/yolov8l.pt"
+TRACKER_WEIGHT = "./src/models/weights/yolov8n.pt" # Change from yolov8l.pt to yolov8n.pt
 PLATE_RECOG_BASE_URL = os.getenv("PLATE_RECOG_BASE_URL", "http://localhost:5000/api/v1")
 
 DB_NAME = os.getenv("DB_NAME", "alpr_service")
