@@ -2,7 +2,7 @@ supervision==0.25.0
 opencv-python
 fastapi[standard]==0.115.6
 numpy>=1.23.3
-ultralytics==8.2.98
+ultralytics==8.4.11
 python-dotenv==1.0.1
 shapely==2.0.6
 pillow==11.0.0
@@ -10,3 +10,4 @@ httpx==0.28.1
 sqlalchemy==2.0.36
 asyncpg==0.30.0
 psycopg2==2.9.10
+pytz==2024.1

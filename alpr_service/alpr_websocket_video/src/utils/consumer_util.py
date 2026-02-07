@@ -7,21 +7,23 @@ import numpy as np
 from fastapi import UploadFile
 
 from .logging import logger
-from src.models.tracker import VideoCarTracker
+from src.models.tracker import VideoPlateTracker, VideoCarTracker
 from src.constants import configs
 
-def process_frame(frame_bytes: bytes, tracker: VideoCarTracker):
+def process_frame(frame_bytes: bytes, tracker):
+  """Process frame with any tracker (VideoPlateTracker or VideoCarTracker)"""
   image = cv2.imdecode(np.frombuffer(frame_bytes, dtype=np.uint8), cv2.IMREAD_COLOR)
   if image is None:
-    return None
-  
+    return None, None
+
   result = tracker.process_frame(image)
   return result
 
-async def process_frame_async(frame_bytes: bytes, tracker: VideoCarTracker):
+async def process_frame_async(frame_bytes: bytes, tracker):
+  """Async wrapper for process_frame"""
   loop = asyncio.get_event_loop()
-  image, bbox = await loop.run_in_executor(None, process_frame, frame_bytes, tracker)
-  return image, bbox
+  result = await loop.run_in_executor(None, process_frame, frame_bytes, tracker)
+  return result
 
 def numpy_to_upload_file(image: np.ndarray, filename: str = "image.jpg"):
   success, encoded_image = cv2.imencode('.jpg', image)
