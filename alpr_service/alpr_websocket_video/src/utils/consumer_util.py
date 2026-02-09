@@ -57,3 +57,20 @@ async def encode_image_to_byte(image: np.ndarray):
     return encoded_image.tobytes()
   else:
     return False
+
+def resize_image(image: np.ndarray, max_width: int = 640):
+  """Resize image to reduce resolution while maintaining aspect ratio"""
+  height, width = image.shape[:2]
+  if width > max_width:
+    ratio = max_width / width
+    new_width = max_width
+    new_height = int(height * ratio)
+    resized = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
+    return resized
+  return image
+
+async def resize_image_async(image: np.ndarray, max_width: int = 640):
+  """Async wrapper for resize_image"""
+  loop = asyncio.get_event_loop()
+  result = await loop.run_in_executor(None, resize_image, image, max_width)
+  return result

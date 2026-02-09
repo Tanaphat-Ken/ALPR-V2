@@ -1,10 +1,11 @@
 type ProcessedImage = {
-  image: string | null
-  carBbox: number[][] | null
-  plateBbox: number[][] | null
-  plateId: string | null
-  province: string | null
-  timeStamp: string
-}
+  image: string | null;
+  plateCropImage: string | null;
+  carBbox: number[][] | null;
+  plateBbox: number[][] | null;
+  plateId: string | null;
+  province: string | null;
+  timeStamp: string;
+};
 
-export type { ProcessedImage }
+export type { ProcessedImage };

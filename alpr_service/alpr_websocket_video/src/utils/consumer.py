@@ -1,7 +1,10 @@
 import uuid
+import base64
 import asyncio
 from datetime import datetime
 
+import cv2
+import numpy as np
 from fastapi import WebSocket
 
 from .logging import logger
@@ -20,6 +23,9 @@ async def consume(websocket: WebSocket, token: str, user_id: str, client_queue: 
       frame_bytes = await client_queue.get()
       logger.info(f"Processing frame #{frame_counter}, size: {len(frame_bytes)} bytes")
 
+      # Decode frame_bytes to get full image
+      full_image = cv2.imdecode(np.frombuffer(frame_bytes, dtype=np.uint8), cv2.IMREAD_COLOR)
+
       # process_frame_async now returns (plate_crop, plate_detected_flag)
       plate_crop, plate_detected = await process_frame_async(frame_bytes, video_tracker)
 
@@ -37,8 +43,19 @@ async def consume(websocket: WebSocket, token: str, user_id: str, client_queue: 
           await commit_websocket_log(response.json(), token, user_id, filename)
 
           result_data = response.json()
-          # Don't send image back, just send detection results + filename
           result_data['filename'] = filename
+
+          # Send resized full image as base64 for web display (to see full context)
+          if full_image is not None:
+            resized_image = await resize_image_async(full_image, max_width=480)
+            image_bytes = await encode_image_to_byte(resized_image)
+            image_base64 = base64.b64encode(image_bytes).decode('utf-8')
+            result_data['image'] = f"data:image/jpeg;base64,{image_base64}"
+
+          # Send plate crop image as base64 for web display
+          plate_crop_bytes = await encode_image_to_byte(plate_crop)
+          plate_crop_base64 = base64.b64encode(plate_crop_bytes).decode('utf-8')
+          result_data['plateCropImage'] = f"data:image/jpeg;base64,{plate_crop_base64}"
 
           await websocket.send_json(result_data)
           logger.info(f"Frame #{frame_counter}: Response sent successfully")

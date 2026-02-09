@@ -20,13 +20,19 @@ const tokenTabItems = [
   },
   { 
     key: 'WEBSOCKET',
-    label: 'WEBSOCKET',
+    label: 'WebSocket',
     children: <TokenTable />,
     icon: <ApiOutlined />
   }, 
   {
-    key: 'VIDEO',
-    label: 'VIDEO',
+    key: 'VIDEO_WEBSOCKET',
+    label: 'Video',
+    children: <TokenTable />,
+    icon: <VideoCameraOutlined />
+  }, 
+  {
+    key: 'RTSP',
+    label: 'Streams',
     children: <TokenTable />,
     icon: <VideoCameraOutlined />
   }
