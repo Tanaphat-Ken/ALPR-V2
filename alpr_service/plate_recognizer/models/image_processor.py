@@ -150,3 +150,87 @@ class ImageProcessor:
       format_flag=flag,
       message=msg
     )
+  
+  def read_from_plate_crop(self, plate_crop_image):
+    """
+    Process plate crop directly, skipping PlateDetector step.
+    Use this when you already have a cropped plate image from external detector.
+    
+    Args:
+      plate_crop_image: PIL Image or numpy array (BGR) of cropped plate
+    
+    Returns:
+      dict with plate_id, province, full_plate, etc.
+    """
+    
+    # Convert to numpy if PIL
+    if isinstance(plate_crop_image, Image.Image):
+      plate_crop = np.array(plate_crop_image)
+      # PIL is RGB, convert to BGR for consistency
+      if len(plate_crop.shape) == 3 and plate_crop.shape[2] == 3:
+        plate_crop = cv2.cvtColor(plate_crop, cv2.COLOR_RGB2BGR)
+    else:
+      plate_crop = plate_crop_image
+    
+    if plate_crop.size == 0:
+      logger.warning("Empty plate crop")
+      return self._result_format(
+        format_flag=format_flag.WARNING,
+        message="Empty plate crop"
+      )
+    
+    # Step 1: Split plate into text/province regions (skip PlateDetector)
+    split_result = self.plate_splitter.predict(plate_crop, conf=0.25, iou=0.6, imgsz=640)
+    
+    text_region = split_result.get('license_text')
+    prov_region = split_result.get('province')
+    
+    plate_id = None
+    province = None
+    
+    # Step 2a: OCR on license_text region
+    if text_region is not None:
+      try:
+        tx1, ty1, tx2, ty2 = map(int, text_region['bbox'])
+        text_crop = plate_crop[ty1:ty2, tx1:tx2]
+        plate_id = self.ocr_reader.predict(text_crop)
+      except Exception as e:
+        logger.warning(f"OCR failed: {e}")
+    else:
+      logger.warning("No license_text region detected by splitter")
+    
+    # Step 2b: Province classification
+    if prov_region is not None:
+      try:
+        px1, py1, px2, py2 = map(int, prov_region['bbox'])
+        prov_crop = plate_crop[py1:py2, px1:px2]
+        prov_results = self.province_classifier.predict(prov_crop, topk=1)
+        if prov_results:
+          province = prov_results[0][0]  # top-1 province label
+      except Exception as e:
+        logger.warning(f"Province classification failed: {e}")
+    else:
+      logger.warning("No province region detected by splitter")
+    
+    # Build full_plate
+    parts = []
+    if plate_id:
+      parts.append(plate_id)
+    if province:
+      parts.append(province)
+    full_plate = " ".join(parts) if parts else None
+    
+    # Success flag
+    flag = format_flag.COMPLETE if (plate_id or province) else format_flag.WARNING
+    msg = "OK" if (plate_id or province) else "OCR/Province recognition failed"
+    
+    return self._result_format(
+      car_bbox=None,
+      plate_bbox=None,  # We don't have plate bbox since we skipped detection
+      text_bbox_list=None,
+      plate_id=plate_id,
+      province=province,
+      full_plate=full_plate,
+      format_flag=flag,
+      message=msg
+    )

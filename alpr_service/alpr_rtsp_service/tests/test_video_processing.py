@@ -1,206 +1,235 @@
-"""
-Test script for ALPR RTSP Service - Video Processing
-สามารถรันได้โดยตรงด้วยคำสั่ง: python tests/test_video_processing.py
-"""
+# test_video_rtsp_detection.py
 import sys
 import os
 from pathlib import Path
 
-# เพิ่ม root directory เข้า path เพื่อ import modules
-sys.path.insert(0, str(Path(__file__).parent.parent))
+root_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(root_dir))
+os.chdir(str(root_dir))
 
 import cv2
-from src.services.plate_recognizer import PlateRecognizerService
-from src.constants.configs import PLATE_RECOGNIZER_URL
+import httpx
+import numpy as np
+from src.models.tracker import VideoPlateTracker
+import json
+import time
+from datetime import datetime
 
-def test_video_file():
+def send_to_plate_recognizer(frame: np.ndarray):
     """
-    เทสต์การประมวลผลวิดีโอไฟล์
+    ส่ง frame ไปที่ plate_recognizer และคืนผลลัพธ์
+    
+    Args:
+        frame: numpy array (BGR) ของ frame ต้นฉบับ
+        
+    Returns:
+        dict: ผลลัพธ์จาก API หรือ None ถ้าไม่สำเร็จ
     """
-    print("=" * 50)
-    print("🎥 Testing Video File Processing")
-    print("=" * 50)
+    PLATE_RECOG_HOST = os.getenv("PLATE_RECOG_HOST", "http://localhost:5000")
+    endpoint = f"{PLATE_RECOG_HOST}/api/v1/image/process/from-plate-crop"
     
-    # หาไฟล์วิดีโอใน tests folder
-    test_dir = Path(__file__).parent
-    video_files = list(test_dir.glob("*.mp4")) + list(test_dir.glob("*.avi"))
+    try:
+        # แปลง frame เป็น jpg bytes
+        _, buffer = cv2.imencode('.jpg', frame)
+        image_bytes = buffer.tobytes()
+        
+        files = {"file": ("frame.jpg", image_bytes, "image/jpeg")}
+        response = httpx.post(endpoint, files=files, timeout=30.0)
+        
+        if response.status_code == 200:
+            result = response.json()
+            print(f"   📥 Response: {json.dumps(result, ensure_ascii=False, indent=2)}")
+            return result
+        else:
+            print(f"   ⚠️  API Error: {response.status_code}")
+            return None
+            
+    except httpx.ConnectError:
+        print(f"   ❌ ไม่สามารถเชื่อมต่อไปที่ {endpoint}")
+        return None
+    except Exception as e:
+        print(f"   ❌ Error: {e}")
+        return None
+
+def test_video_with_tracking(video_path: str, max_frames: int = None, skip_frames: int = 0):
+    """
+    ทดสอบการประมวลผลวิดีโอด้วย tracking + plate recognition
     
-    if not video_files:
-        print("❌ ไม่พบไฟล์วิดีโอในโฟลเดอร์ tests/")
-        print("💡 กรุณาวางไฟล์วิดีโอ (.mp4 หรือ .avi) ในโฟลเดอร์ tests/")
-        return False
+    Args:
+        video_path: path ไฟล์วิดีโอ
+        max_frames: จำนวน frame สูงสุดที่จะประมวลผล (None = ทั้งหมด)
+        skip_frames: ข้าม frame ที่ไม่ต้องการประมวลผล (เพิ่มความเร็ว)
+    """
     
-    video_path = str(video_files[0])
-    print(f"📹 ใช้ไฟล์: {Path(video_path).name}")
+    print("🚗 กำลังโหลด tracker...")
+    tracker = VideoPlateTracker()
     
     # เปิดวิดีโอ
+    if not os.path.exists(video_path):
+        print(f"❌ ไม่เจอไฟล์ {video_path}")
+        return
+    
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
-        print(f"❌ ไม่สามารถเปิดไฟล์วิดีโอได้: {video_path}")
-        return False
+        print(f"❌ ไม่สามารถเปิดวิดีโอได้")
+        return
     
-    # ดึงข้อมูลวิดีโอ
+    # ข้อมูลวิดีโอ
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    fps = int(cap.get(cv2.CAP_PROP_FPS))
+    fps = cap.get(cv2.CAP_PROP_FPS)
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     
-    print(f"📊 ข้อมูลวิดีโอ:")
+    print(f"\n📹 ข้อมูลวิดีโอ:")
+    print(f"   - ไฟล์: {Path(video_path).name}")
     print(f"   - ความละเอียด: {width}x{height}")
-    print(f"   - FPS: {fps}")
+    print(f"   - FPS: {fps:.2f}")
     print(f"   - จำนวนเฟรม: {total_frames}")
     print(f"   - ระยะเวลา: {total_frames/fps:.2f} วินาที")
     
-    # อ่านเฟรมแรก
-    ret, frame = cap.read()
-    if not ret:
-        print("❌ ไม่สามารถอ่านเฟรมได้")
-        cap.release()
-        return False
+    if max_frames:
+        print(f"   - จำกัดประมวลผล: {max_frames} เฟรม")
+    if skip_frames:
+        print(f"   - ข้ามเฟรมทุกๆ: {skip_frames} เฟรม")
     
-    print(f"✅ อ่านเฟรมแรกสำเร็จ (shape: {frame.shape})")
-    cap.release()
+    print(f"\n🔍 เริ่มประมวลผล...\n")
     
-    print("\n" + "=" * 50)
-    print("✅ Video Processing Test PASSED")
-    print("=" * 50)
-    return True
-
-
-def test_plate_recognizer():
-    """
-    เทสต์การเชื่อมต่อกับ Plate Recognizer API
-    """
-    print("\n" + "=" * 50)
-    print("🔍 Testing Plate Recognizer Connection")
-    print("=" * 50)
+    # สถิติ
+    frame_count = 0
+    processed_count = 0
+    plate_detected_count = 0
+    plate_recognized_count = 0
+    results = []
+    
+    start_time = time.time()
     
     try:
-        print(f"🌐 API URL: {PLATE_RECOGNIZER_URL}")
-        recognizer = PlateRecognizerService()
-        print("✅ Plate Recognizer instance created")
-        
-        print("\n" + "=" * 50)
-        print("✅ Plate Recognizer Test PASSED")
-        print("=" * 50)
-        return True
-        
-    except Exception as e:
-        print(f"❌ Error: {e}")
-        print("\n" + "=" * 50)
-        print("❌ Plate Recognizer Test FAILED")
-        print("=" * 50)
-        return False
-
-
-def test_frame_processing():
-    """
-    เทสต์การประมวลผลเฟรมจากวิดีโอ และส่งไปยัง Plate Recognizer
-    """
-    print("\n" + "=" * 50)
-    print("🎯 Testing Frame Processing with Plate Recognition")
-    print("=" * 50)
-    
-    # หาไฟล์วิดีโอ
-    test_dir = Path(__file__).parent
-    video_files = list(test_dir.glob("*.mp4")) + list(test_dir.glob("*.avi"))
-    
-    if not video_files:
-        print("❌ ไม่พบไฟล์วิดีโอ")
-        return False
-    
-    video_path = str(video_files[0])
-    cap = cv2.VideoCapture(video_path)
-    
-    if not cap.isOpened():
-        print("❌ ไม่สามารถเปิดวิดีโอได้")
-        return False
-    
-    try:
-        recognizer = PlateRecognizerService()
-        
-        # ประมวลผลเฟรมแรก 10 เฟรม
-        frames_to_test = 10
-        print(f"📝 กำลังประมวลผล {frames_to_test} เฟรมแรก...")
-        
-        frame_count = 0
-        success_count = 0
-        
-        while frame_count < frames_to_test:
+        while True:
             ret, frame = cap.read()
             if not ret:
                 break
             
             frame_count += 1
             
-            # ลองส่งเฟรมไปยัง recognizer (แบบไม่รอผลลัพธ์)
-            try:
-                # แปลงเป็น bytes
-                _, buffer = cv2.imencode('.jpg', frame)
-                image_bytes = buffer.tobytes()
-                
-                print(f"   Frame {frame_count}: Image size = {len(image_bytes)} bytes")
-                success_count += 1
-                
-            except Exception as e:
-                print(f"   Frame {frame_count}: ❌ Error - {e}")
-        
-        cap.release()
-        
-        print(f"\n📊 ผลลัพธ์:")
-        print(f"   - ประมวลผลสำเร็จ: {success_count}/{frame_count} เฟรม")
-        
-        if success_count == frame_count:
-            print("\n" + "=" * 50)
-            print("✅ Frame Processing Test PASSED")
-            print("=" * 50)
-            return True
-        else:
-            print("\n" + "=" * 50)
-            print("⚠️ Frame Processing Test PARTIALLY PASSED")
-            print("=" * 50)
-            return False
+            # ข้าม frame ถ้าต้องการ
+            if skip_frames > 0 and frame_count % (skip_frames + 1) != 0:
+                continue
             
-    except Exception as e:
-        print(f"❌ Error: {e}")
+            # จำกัดจำนวน frame
+            if max_frames and processed_count >= max_frames:
+                break
+            
+            processed_count += 1
+            
+            # ประมวลผล frame ด้วย tracker
+            plate_crop, detected = tracker.process_frame(frame)
+            
+            if detected and plate_crop is not None:
+                plate_detected_count += 1
+                timestamp = frame_count / fps
+                
+                print(f"✅ Frame {frame_count} ({timestamp:.2f}s): Detected plate!")
+                
+                # บันทึกรูป plate
+                output_dir = Path("tests/output_plates")
+                output_dir.mkdir(exist_ok=True)
+                plate_filename = f"plate_frame_{frame_count:06d}.jpg"
+                plate_path = output_dir / plate_filename
+                cv2.imwrite(str(plate_path), plate_crop)
+                print(f"   💾 Saved: {plate_filename}")
+                
+                # ส่งไป recognizer
+                print(f"   📤 Sending to recognizer...")
+                result = send_to_plate_recognizer(plate_crop)  # ส่ง plate_crop แทน frame
+                
+                if result and result.get('format_flag') == 'complete':
+                    plate_recognized_count += 1
+                    plate_id = result.get('plate_id', 'N/A')
+                    province = result.get('province', 'N/A')
+                    full_plate = result.get('full_plate', 'N/A')
+                    
+                    print(f"   🎯 Result: {full_plate}")
+                    print(f"      - Plate: {plate_id}")
+                    print(f"      - Province: {province}")
+                    
+                    results.append({
+                        'frame': frame_count,
+                        'timestamp': timestamp,
+                        'plate_id': plate_id,
+                        'province': province,
+                        'full_plate': full_plate,
+                        'saved_path': str(plate_path)
+                    })
+                else:
+                    print(f"   ⚠️  Recognition failed or incomplete")
+                
+                print()  # blank line
+            
+            # แสดง progress ทุกๆ 30 frame
+            if processed_count % 30 == 0:
+                elapsed = time.time() - start_time
+                fps_processing = processed_count / elapsed
+                print(f"📊 Progress: {processed_count}/{total_frames if not max_frames else max_frames} frames, "
+                      f"{fps_processing:.1f} fps, {plate_detected_count} plates detected")
+    
+    except KeyboardInterrupt:
+        print("\n⚠️  หยุดการประมวลผลโดยผู้ใช้")
+    
+    finally:
         cap.release()
-        return False
-
-
-def run_all_tests():
-    """
-    รันทุก test
-    """
-    print("\n" + "🚀 " * 20)
-    print("Starting ALPR RTSP Service Tests")
-    print("🚀 " * 20 + "\n")
-    
-    results = {
-        "Video Processing": test_video_file(),
-        "Plate Recognizer": test_plate_recognizer(),
-        "Frame Processing": test_frame_processing(),
-    }
-    
-    print("\n\n" + "📋 " * 20)
-    print("Test Summary")
-    print("📋 " * 20)
-    
-    for test_name, result in results.items():
-        status = "✅ PASSED" if result else "❌ FAILED"
-        print(f"{test_name}: {status}")
-    
-    all_passed = all(results.values())
-    
-    print("\n" + "=" * 50)
-    if all_passed:
-        print("🎉 All Tests PASSED!")
-    else:
-        print("⚠️ Some Tests FAILED")
-    print("=" * 50 + "\n")
-    
-    return all_passed
-
+        elapsed_time = time.time() - start_time
+        
+        # สรุปผล
+        print("\n" + "="*60)
+        print("📊 สรุปผลการทดสอบ")
+        print("="*60)
+        print(f"⏱️  เวลาที่ใช้: {elapsed_time:.2f} วินาที")
+        print(f"📹 Frame ที่ประมวลผล: {processed_count}")
+        print(f"🎯 Plate ที่ detect ได้: {plate_detected_count}")
+        print(f"✅ Plate ที่อ่านได้: {plate_recognized_count}")
+        print(f"⚡ ความเร็วประมวลผล: {processed_count/elapsed_time:.2f} fps")
+        
+        if results:
+            print(f"\n📋 รายการป้ายที่อ่านได้ทั้งหมด:")
+            print("-"*60)
+            for i, r in enumerate(results, 1):
+                print(f"{i}. Frame {r['frame']} ({r['timestamp']:.2f}s): {r['full_plate']}")
+            
+            # บันทึกผลลัพธ์เป็น JSON
+            output_json = Path("tests/recognition_results.json")
+            with open(output_json, 'w', encoding='utf-8') as f:
+                json.dump({
+                    'test_time': datetime.now().isoformat(),
+                    'video_file': str(video_path),
+                    'summary': {
+                        'total_frames': total_frames,
+                        'processed_frames': processed_count,
+                        'plates_detected': plate_detected_count,
+                        'plates_recognized': plate_recognized_count,
+                        'processing_time': elapsed_time,
+                        'fps': processed_count/elapsed_time
+                    },
+                    'results': results
+                }, f, indent=2, ensure_ascii=False)
+            
+            print(f"\n💾 บันทึกผลลัพธ์ที่: {output_json}")
+        
+        print("="*60 + "\n")
 
 if __name__ == "__main__":
-    success = run_all_tests()
-    sys.exit(0 if success else 1)
+    print("\n" + "="*60)
+    print("🧪 RTSP Video Processing + Plate Recognition Test")
+    print("="*60 + "\n")
+    
+    # ระบุ path วิดีโอ
+    video_path = r"tests/TC2ML_L 192.168.40.226_001_2025-08-12-07-00-00_2025-08-12-07-21-03.mp4"
+    
+    # ทดสอบ - ประมวลผล 300 เฟรมแรก (ประมาณ 10 วินาที ถ้า 30fps)
+    # ข้ามเฟรมทุกๆ 2 เฟรม (ประมวลผลเฟรมที่ 1, 4, 7, 10, ... เพื่อเพิ่มความเร็ว)
+    test_video_with_tracking(
+        video_path=video_path,
+        max_frames=None,      #
+        skip_frames=2        # ข้าม 2 เฟรม (ประมวลผลทุกเฟรมที่ 3)
+    )
+    
+    print("✅ Test Complete\n")

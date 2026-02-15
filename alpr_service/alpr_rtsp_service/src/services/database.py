@@ -47,21 +47,32 @@ class DatabaseService:
             camera_id: ID ของกล้อง
             image_filename: ชื่อไฟล์รูปที่บันทึก
             plate_data: ข้อมูลป้ายทะเบียน (จาก AI)
-            bbox: ตำแหน่งรถ [x1, y1, x2, y2]
+            bbox: ตำแหน่งป้าย (อาจเป็น numpy array หรือ list)
         
         Returns:
             bool: สำเร็จหรือไม่
         """
         try:
+            # แปลง bbox ให้เป็น list (รองรับทั้ง numpy array และ list)
+            bbox_list = None
+            if bbox is not None:
+                if hasattr(bbox, 'tolist'):  # numpy array
+                    bbox_list = bbox.tolist()
+                elif isinstance(bbox, list):  # list อยู่แล้ว
+                    bbox_list = bbox
+                else:
+                    bbox_list = list(bbox)  # อื่นๆ
+            
             # สร้าง detection record
             detection = {
                 "camera_id": camera_id,
                 "timestamp": datetime.now().isoformat(),
                 "image_path": f"images_logs/{image_filename}",
-                "plate_number": plate_data.get("full_plate", "N/A"),
+                "plate_number": plate_data.get("plate_id", "N/A"),  # ✅ เปลี่ยนจาก full_plate
                 "province": plate_data.get("province", "N/A"),
-                "format_valid": plate_data.get("format_flag", False),
-                "bbox": bbox.tolist() if bbox is not None else None,
+                "full_plate": plate_data.get("full_plate", "N/A"),  # ✅ เพิ่มฟิลด์นี้
+                "format_valid": plate_data.get("format_flag") == "complete",  # ✅ แก้การเช็ค
+                "bbox": bbox_list,
                 "confidence": plate_data.get("confidence", 0.0)
             }
             
@@ -76,6 +87,8 @@ class DatabaseService:
             
         except Exception as e:
             logger.error(f"Failed to save detection: {e}")
+            import traceback
+            traceback.print_exc()  # ✅ เพิ่ม traceback เพื่อ debug
             return False
     
     async def _log_to_file(self, detection: Dict[str, Any]):

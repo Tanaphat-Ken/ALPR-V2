@@ -5,13 +5,14 @@ import numpy as np
 from typing import Optional, Callable
 from datetime import datetime
 
-from src.models import Camera, VideoCarTracker
+from src.models import Camera, VideoPlateTracker
 from src.utils.logging import logger
 
 class RTSPReader:
     """
     อ่าน RTSP stream จากกล้อง IP Camera
     รองรับทั้ง RTSP URL และไฟล์วิดีโอ (สำหรับทดสอบ)
+    ใช้ VideoPlateTracker เพื่อ detect ป้ายทะเบียนโดยตรง
     """
     
     def __init__(self, camera: Camera):
@@ -19,7 +20,7 @@ class RTSPReader:
         self.cap: Optional[cv2.VideoCapture] = None
         self.is_running = False
         self.frame_count = 0
-        self.tracker = VideoCarTracker()
+        self.tracker = VideoPlateTracker()  # ✅ เปลี่ยนเป็น VideoPlateTracker
         
     async def connect(self) -> bool:
         """เชื่อมต่อกับกล้อง"""
@@ -62,7 +63,7 @@ class RTSPReader:
         
         Args:
             on_frame: callback สำหรับส่ง frame ทุกๆ frame (สำหรับแสดงผล)
-            on_detection: callback เมื่อเจอรถ (สำหรับอ่านป้าย)
+            on_detection: callback เมื่อเจอป้ายทะเบียน (สำหรับอ่านป้าย)
         """
         self.is_running = True
         reconnect_delay = 5
@@ -97,10 +98,10 @@ class RTSPReader:
                     
                     # ประมวลผลเฉพาะบาง frames (เพื่อประหยัด CPU)
                     if self.frame_count % self.camera.frame_skip == 0:
-                        car_image, bbox = await self._process_frame(frame)
+                        plate_crop, plate_detected = await self._process_frame(frame)  # ✅ เปลี่ยนตรงนี้
                         
-                        if car_image is not None:
-                            await on_detection(self.camera.id, car_image, bbox, frame)
+                        if plate_crop is not None and plate_detected:  # ✅ เปลี่ยนตรงนี้
+                            await on_detection(self.camera.id, plate_crop, None, frame)  # ✅ ส่ง plate_crop แทน car_image
                     
                     self.frame_count += 1
                     

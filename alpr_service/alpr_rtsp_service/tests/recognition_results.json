@@ -1,0 +1,22 @@
+{
+  "test_time": "2026-02-15T21:59:55.068732",
+  "video_file": "tests/TC2ML_L 192.168.40.226_001_2025-08-12-07-00-00_2025-08-12-07-21-03.mp4",
+  "summary": {
+    "total_frames": 28377,
+    "processed_frames": 104,
+    "plates_detected": 1,
+    "plates_recognized": 1,
+    "processing_time": 7.586414813995361,
+    "fps": 13.708715190229459
+  },
+  "results": [
+    {
+      "frame": 6,
+      "timestamp": 0.2727272727272727,
+      "plate_id": "7กท962",
+      "province": "กรุงเทพมหานคร",
+      "full_plate": "7กท962 กรุงเทพมหานคร",
+      "saved_path": "tests\\output_plates\\plate_frame_000006.jpg"
+    }
+  ]
+}

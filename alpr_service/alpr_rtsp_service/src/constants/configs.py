@@ -9,8 +9,9 @@ PORT = int(os.getenv("PORT", 5003))
 ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
 
 # AI Model Configuration
-PLATE_RECOGNIZER_URL = os.getenv("PLATE_RECOGNIZER_URL", "http://localhost:5000/api/v1/image/process")
+PLATE_RECOG_BASE_URL = os.getenv("PLATE_RECOG_BASE_URL", "http://localhost:5000/api/v1")
 TRACKER_WEIGHT = os.getenv("TRACKER_WEIGHT", "yolov8n.pt")
+PLATE_DETECTOR_WEIGHT = os.getenv("PLATE_DETECTOR_WEIGHT", "src/models/weights/plate_detector_best.pt")
 
 # Database Configuration
 DB_HOST = os.getenv("DB_HOST", "localhost")
