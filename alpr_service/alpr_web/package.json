@@ -13,10 +13,10 @@
     "@reduxjs/toolkit": "2.5.*",
     "@tanstack/react-query": "5.66.*",
     "antd": "5.23.*",
-    "axios": "1.7.*",
+    "axios": "^1.13.5",
     "chart.js": "4.4.*",
     "moment": "2.30.*",
-    "next": "14.2.*",
+    "next": "^16.1.6",
     "react": "18",
     "react-chartjs-2": "5.3.*",
     "react-dom": "18",
@@ -30,7 +30,7 @@
     "@typescript-eslint/eslint-plugin": "8.22.*",
     "@typescript-eslint/parser": "8.22.*",
     "eslint": "8",
-    "eslint-config-next": "14.2.*",
+    "eslint-config-next": "^16.1.6",
     "typescript": "5"
   }
 }

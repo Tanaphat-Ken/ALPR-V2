@@ -5,3 +5,4 @@ models/weights/old
 /.vscode
 /outputs
 /debug
+/testing/output_video

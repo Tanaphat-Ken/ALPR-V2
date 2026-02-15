@@ -4,7 +4,7 @@ scipy
 fastapi[standard]
 numpy
 pillow
-ultralytics==8.2.98
+ultralytics==8.4.11
 timm
 torch
 torchvision

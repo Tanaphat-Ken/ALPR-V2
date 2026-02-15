@@ -34,7 +34,7 @@ class TokenNew(BaseModel):
 
     @validator('service_type')
     def service_type_validator2(cls, value):
-        if value != "API" and value != "WEBSOCKET" and value != "RTSP":
+        if value != "API" and value != "WEBSOCKET" and value != "RTSP" and value != "VIDEO_WEBSOCKET":
             raise ValueError('service_type not in choice')
         return value
 
