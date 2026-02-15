@@ -7,21 +7,23 @@ import numpy as np
 from fastapi import UploadFile
 
 from .logging import logger
-from src.models.tracker import VideoCarTracker
+from src.models.tracker import VideoPlateTracker, VideoCarTracker
 from src.constants import configs
 
-def process_frame(frame_bytes: bytes, tracker: VideoCarTracker):
+def process_frame(frame_bytes: bytes, tracker):
+  """Process frame with any tracker (VideoPlateTracker or VideoCarTracker)"""
   image = cv2.imdecode(np.frombuffer(frame_bytes, dtype=np.uint8), cv2.IMREAD_COLOR)
   if image is None:
-    return None
-  
+    return None, None
+
   result = tracker.process_frame(image)
   return result
 
-async def process_frame_async(frame_bytes: bytes, tracker: VideoCarTracker):
+async def process_frame_async(frame_bytes: bytes, tracker):
+  """Async wrapper for process_frame"""
   loop = asyncio.get_event_loop()
-  image, bbox = await loop.run_in_executor(None, process_frame, frame_bytes, tracker)
-  return image, bbox
+  result = await loop.run_in_executor(None, process_frame, frame_bytes, tracker)
+  return result
 
 def numpy_to_upload_file(image: np.ndarray, filename: str = "image.jpg"):
   success, encoded_image = cv2.imencode('.jpg', image)
@@ -55,3 +57,20 @@ async def encode_image_to_byte(image: np.ndarray):
     return encoded_image.tobytes()
   else:
     return False
+
+def resize_image(image: np.ndarray, max_width: int = 640):
+  """Resize image to reduce resolution while maintaining aspect ratio"""
+  height, width = image.shape[:2]
+  if width > max_width:
+    ratio = max_width / width
+    new_width = max_width
+    new_height = int(height * ratio)
+    resized = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
+    return resized
+  return image
+
+async def resize_image_async(image: np.ndarray, max_width: int = 640):
+  """Async wrapper for resize_image"""
+  loop = asyncio.get_event_loop()
+  result = await loop.run_in_executor(None, resize_image, image, max_width)
+  return result

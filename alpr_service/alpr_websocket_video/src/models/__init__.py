@@ -1,1 +1,1 @@
-from .tracker import VideoCarTracker
+from .tracker import VideoPlateTracker, VideoCarTracker

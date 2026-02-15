@@ -46,4 +46,14 @@ async def readyz():
 
 if __name__ == "__main__":
   is_reload = configs.ENVIRONMENT == 'dev'
-  uvicorn.run("main:app", host=configs.HOST, port=configs.PORT, log_level="info", reload=is_reload) 
+  # Use Config object to properly set ws_max_size even with reload
+  config = uvicorn.Config(
+    "main:app",
+    host=configs.HOST,
+    port=configs.PORT,
+    log_level="info",
+    reload=is_reload,
+    ws_max_size=configs.WS_MAX_SIZE  # 5MB to support full frame images
+  )
+  server = uvicorn.Server(config)
+  server.run() 
