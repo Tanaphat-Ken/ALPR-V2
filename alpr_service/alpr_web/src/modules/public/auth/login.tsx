@@ -101,15 +101,27 @@ const StyledInput = styled(Input)`
   height: 48px;
   border-radius: 8px;
   font-size: 16px;
+  display: flex;
+  align-items: center; /* Ensure vertical alignment */
+
+  .ant-input-prefix {
+    margin-right: 12px;
+  }
 `
 
 const StyledPasswordInput = styled(Input.Password)`
   height: 48px;
   border-radius: 8px;
   font-size: 16px;
+  display: flex !important; /* Ensure flex container */
+  align-items: center; /* Ensure vertical alignment */
 
   .ant-input {
-    height: 46px;
+    height: 100%; /* Fix height to match container */
+  }
+
+  .ant-input-prefix {
+    margin-right: 12px;
   }
 `
 
@@ -197,22 +209,23 @@ const LoginPage = () => {
   const onFinish = async (values: LoginFormValues) => {
     setLoading(true)
     try {
-      // TODO: Uncomment when backend is ready
-      // const response = await login(values)
-      // localStorage.setItem('token', response.access_token)
-      // localStorage.setItem('userId', response.user_id.toString())
+      // Call actual login API
+      const response = await login(values)
 
-      // Mock success for now
-      message.success('Login successful! (Mock)')
-      // eslint-disable-next-line no-console
-      console.log('Login values:', values)
+      // Store auth data
+      localStorage.setItem('token', response.access_token)
+      localStorage.setItem('userId', response.user_id.toString())
+
+      // Set cookies for middleware/SSR support if needed
+      document.cookie = `token=${response.access_token}; path=/; max-age=604800` // 7 days
+      document.cookie = `userId=${response.user_id}; path=/; max-age=604800`
+
+      message.success('Login successful!')
       router.push('/dashboard')
     } catch (error: unknown) {
       const err = error as { response?: { data?: { detail?: string } } }
-      const errorMessage = err.response?.data?.detail || 'Login failed. Please check your credentials.'
+      const errorMessage = err?.response?.data?.detail || 'Login failed. Please check your credentials.'
       message.error(errorMessage)
-      // eslint-disable-next-line no-console
-      console.error('Login error:', error)
     } finally {
       setLoading(false)
     }

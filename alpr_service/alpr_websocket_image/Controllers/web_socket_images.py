@@ -111,6 +111,9 @@ async def websocket_endpoint(websocket: WebSocket, db_session: AsyncSession = De
                     # await websocket.send_text(f"Model API response: {token_value}")
                     res = await save_image_log(result, user_id, filename, token_value, db_session)
 
+                    # Deduct quota after successful processing
+                    await UserSubscription.devalue_user_quota_web_socket(user_id, websocket, db_session)
+
                     # Notify the client of the processing result
                     await websocket.send_text(f"Model API response: {str(res)}")
 

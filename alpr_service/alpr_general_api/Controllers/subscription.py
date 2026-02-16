@@ -4,15 +4,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 from Configs.dbconfig import get_db
 from Libs.except_err import response_exception
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from Models.subscription import Subscription
-from sqlalchemy import select, insert
-from fastapi import Query
-from Models.schemas_subscription import UserSubscriptionRequest
+from sqlalchemy import select, insert, update
+from Models.schemas_subscription import *
 from Models.user_subscription import UserSubscription
 from Models.users import User
 import pytz
-import datetime
 from dateutil.relativedelta import relativedelta
 
 router = APIRouter()
@@ -21,8 +19,18 @@ router = APIRouter()
 @router.get("/get_all_service")
 async def get_all_service(db: AsyncSession = Depends(get_db)):
     try:
-        res = await Subscription.get_all_subscription(db)
-        return res
+        # Only return TIER subscriptions (TIER_1, TIER_2, TIER_3)
+        query = select(Subscription).where(Subscription.service_type.like('TIER_%'))
+        result = await db.execute(query)
+        subscriptions = result.scalars().all()
+        
+        if not subscriptions:
+            raise HTTPException(
+                status_code=404,
+                detail="No tier subscriptions found"
+            )
+        
+        return subscriptions
     except Exception as e:
         return response_exception(e)
 
@@ -33,7 +41,7 @@ async def new_user_subscription(
 ):
     try:
         # Get the current time in Bangkok timezone (without timezone info)
-        now_utc = datetime.datetime.now(pytz.utc)
+        now_utc = datetime.now(pytz.utc)
         bangkok_tz = pytz.timezone("Asia/Bangkok")
         now_bangkok = now_utc.astimezone(bangkok_tz)
         time_now = now_bangkok.replace(tzinfo=None)
@@ -71,7 +79,7 @@ async def new_user_subscription(
                 start_date=time_now,
                 end_date=end_date,
                 is_activate=True,
-                request_quota=sub_info.request_limit,
+                request_quota=sub_info.api_request_limit,
                 sub_id=sub_info.sub_id,
                 user_id=user_info.user_id
             )
@@ -97,3 +105,154 @@ def check_billing_period(billing_period, start_date):
         end_date = start_date + relativedelta(months=12)
     
     return end_date
+
+@router.get("/get_user_subscriptions/{user_id}", response_model=List[UserSubscriptionResponse])
+async def get_user_subscriptions(
+    user_id: int = Path(..., description="The ID of the user"),
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        # Fetch user subscriptions including the related subscription details
+        # Using join to get subscription details
+        stmt = select(UserSubscription, Subscription).join(
+            Subscription, UserSubscription.sub_id == Subscription.sub_id
+        ).where(
+            UserSubscription.user_id == user_id, 
+            UserSubscription.is_activate == True
+        )
+        
+        result = await db.execute(stmt)
+        user_subs = result.all()
+        
+        response = []
+        for user_sub, sub in user_subs:
+            response.append(UserSubscriptionResponse(
+                user_sub_id=user_sub.user_sub_id,
+                is_activate=user_sub.is_activate,
+                start_date=str(user_sub.start_date) if user_sub.start_date else None,
+                end_date=str(user_sub.end_date) if user_sub.end_date else None,
+                request_quota=user_sub.request_quota,
+                subscription_details=SubscriptionDetailsResponse(
+                    sub_id=sub.sub_id,
+                    billing_period=sub.billing_period,
+                    service_type=sub.service_type,
+                    price=sub.price,
+                    description=sub.description,
+                    api_request_limit=sub.api_request_limit,
+                    video_upload_limit=sub.video_upload_limit,
+                    has_api_access=bool(sub.has_api_access),
+                    has_websocket_access=bool(sub.has_websocket_access),
+                    has_video_upload=bool(sub.has_video_upload),
+                    has_rtsp_stream=bool(sub.has_rtsp_stream)
+                )
+            ))
+            
+        return response
+
+    except Exception as e:
+        # Log the error properly in a real app
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/change_subscription")
+async def change_subscription(
+    request: UserSubscriptionRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        # 1. Get the new subscription details to know the service type
+        new_sub_query = select(Subscription).where(Subscription.sub_id == request.sub_id)
+        new_sub_result = await db.execute(new_sub_query)
+        new_sub = new_sub_result.scalars().first()
+        
+        if not new_sub:
+             raise HTTPException(status_code=404, detail="New subscription plan not found.")
+
+        # 2. Find existing active subscription for the same service type
+        find_existing_stmt = select(UserSubscription).join(Subscription).where(
+            UserSubscription.user_id == request.user_id,
+            Subscription.service_type == new_sub.service_type,
+            UserSubscription.is_activate == True
+        )
+        
+        existing_result = await db.execute(find_existing_stmt)
+        existing_sub = existing_result.scalars().first()
+        
+        now_utc = datetime.now(pytz.utc)
+        bangkok_tz = pytz.timezone("Asia/Bangkok")
+        now_bangkok = now_utc.astimezone(bangkok_tz)
+        time_now = now_bangkok.replace(tzinfo=None)
+        
+        end_date = check_billing_period(new_sub.billing_period, time_now)
+
+        if existing_sub:
+            if existing_sub.sub_id == request.sub_id:
+                 return {"message": "User is already subscribed to this plan."}
+            
+            # Deactivate old subscription
+            # We need to update using ORM object or update statement
+            stmt_update = update(UserSubscription).where(
+                UserSubscription.user_sub_id == existing_sub.user_sub_id
+            ).values(is_activate=False)
+            await db.execute(stmt_update)
+            
+            # Create new subscription
+            stmt_insert = insert(UserSubscription).values(
+                user_id=request.user_id,
+                sub_id=request.sub_id,
+                is_activate=True,
+                start_date=time_now,
+                end_date=end_date,
+                request_quota=new_sub.api_request_limit
+            )
+            await db.execute(stmt_insert)
+            await db.commit()
+            
+            return {"message": "Subscription changed successfully."}
+            
+        else:
+            # If no existing subscription, just create new
+            stmt_insert = insert(UserSubscription).values(
+                user_id=request.user_id,
+                sub_id=request.sub_id,
+                is_activate=True,
+                start_date=time_now,
+                end_date=end_date,
+                request_quota=new_sub.api_request_limit
+            )
+            await db.execute(stmt_insert)
+            await db.commit()
+            
+            return {"message": "Subscription created successfully."}
+
+    except Exception as e:
+        await db.rollback()
+        return response_exception(e)
+
+@router.delete("/cancel_subscription/{user_sub_id}")
+async def cancel_subscription(
+    user_sub_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        # Check if subscription exists
+        stmt = select(UserSubscription).where(
+            UserSubscription.user_sub_id == user_sub_id
+        )
+        result = await db.execute(stmt)
+        user_sub = result.scalars().first()
+        
+        if not user_sub:
+            raise HTTPException(status_code=404, detail="User subscription not found.")
+            
+        # Deactivate
+        stmt_update = update(UserSubscription).where(
+            UserSubscription.user_sub_id == user_sub_id
+        ).values(is_activate=False)
+        await db.execute(stmt_update)
+        await db.commit()
+        
+        return {"message": "Subscription cancelled successfully."}
+        
+    except Exception as e:
+        await db.rollback()
+        return response_exception(e)

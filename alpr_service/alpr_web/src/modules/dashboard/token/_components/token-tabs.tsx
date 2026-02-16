@@ -1,7 +1,5 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
-
 import { useDispatch } from 'react-redux'
 import { Tabs, Button } from 'antd'
 import { SwapOutlined, ApiOutlined, VideoCameraOutlined, PlusOutlined } from '@ant-design/icons'
@@ -12,24 +10,24 @@ import TokenTable from './token-table'
 import type { ServiceType } from '@/shared/types/subscription'
 
 const tokenTabItems = [
-  { 
+  {
     key: 'API',
     label: 'API',
     children: <TokenTable />,
     icon: <SwapOutlined />
   },
-  { 
+  {
     key: 'WEBSOCKET',
     label: 'WebSocket',
     children: <TokenTable />,
     icon: <ApiOutlined />
-  }, 
+  },
   {
     key: 'VIDEO_WEBSOCKET',
     label: 'Video',
     children: <TokenTable />,
     icon: <VideoCameraOutlined />
-  }, 
+  },
   {
     key: 'RTSP',
     label: 'Streams',
@@ -44,7 +42,6 @@ const CreateNewModelButton = ({ onClick }: { onClick: () => void }) => {
 
 const TokenTabs = () => {
   const dispatch = useDispatch<AppDispatch>()
-  const tokenType = usePathname().split('/')[3]
 
   const handleTabChange = (key: string) => dispatch(setActiveTab(key as ServiceType))
   const handleOpenCreateTokenModal = () => dispatch(setIsCreateModalOpen(true))
@@ -53,12 +50,12 @@ const TokenTabs = () => {
     <div style={{ backgroundColor: 'white', padding: 16 }}>
       <Tabs
         onChange={handleTabChange}
-        defaultActiveKey={tokenType.toUpperCase()}
+        defaultActiveKey='API'
         tabBarExtraContent={<CreateNewModelButton onClick={() => handleOpenCreateTokenModal()} />}
         items={tokenTabItems}
       />
     </div>
-  ) 
+  )
 }
 
 export default TokenTabs

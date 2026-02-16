@@ -16,7 +16,7 @@ const SubmitButton = () => {
   const uploadedImage = useSelector((state: RootState) => state.uploadImagePage.image)
   const imageName = useSelector((state: RootState) => state.uploadImagePage.imageName)
   const [selectedToken, setSelectedToken] = useState<string>()
-  const { data: tokenList } = useTokens(userId, 'API')
+  const { data: tokenList } = useTokens(userId, 'WEBSOCKET')
   const { mutate: processImage, isPending } = useProcessImage()
 
   const tokenOptionList = tokenList
@@ -36,14 +36,14 @@ const SubmitButton = () => {
 
   return (
     <Flex align="center" justify="center" gap={16} style={{ marginTop: 16 }}>
-      <Select 
-        placeholder="Please Select Token" 
-        style={{ width: 200 }} 
-        options={tokenOptionList} 
+      <Select
+        placeholder="Please Select Token"
+        style={{ width: 200 }}
+        options={tokenOptionList}
         onChange={(value: string) => setSelectedToken(value)}
       />
-      <Button 
-        type='primary' 
+      <Button
+        type='primary'
         disabled={uploadedImage && selectedToken ? false : true}
         onClick={handleOnClick}
         loading={isPending}

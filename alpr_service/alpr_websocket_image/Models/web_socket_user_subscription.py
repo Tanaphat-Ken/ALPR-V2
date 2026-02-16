@@ -101,11 +101,14 @@ class UserSubscription(Base):
     @staticmethod
     async def validate_user_subscription_web_socket(user_id: int, websocket: WebSocket, db: AsyncSession):
         try:
-            query = select(UserSubscription).where(
+            query = select(UserSubscription).join(
+                Subscription,
+                UserSubscription.sub_id == Subscription.sub_id
+            ).where(
                 UserSubscription.user_id == user_id,
                 UserSubscription.is_activate == True,
                 UserSubscription.request_quota > 0,
-                UserSubscription.sub_id == 2  # Your specific subscription ID
+                Subscription.has_websocket_access == 1
             )
 
             result = await db.execute(query)
@@ -114,48 +117,41 @@ class UserSubscription(Base):
                 await websocket.send_text("No active subscription")
                 raise WebSocketException("No active subscription")
 
-            # Decrement request_quota
-            # subscription.request_quota -= 1
-            await websocket.send_text(f"Subscription updated. Remaining quota: {subscription.request_quota}")
-            # No need to start a new transaction manually, just add and commit
+            await websocket.send_text(f"Subscription valid. Remaining quota: {subscription.request_quota}")
             db.add(subscription)
-            # Commit the transaction
             await db.commit()
-            # Notify the client
 
         except WebSocketException as e:
             await db.rollback()
-
             await websocket.send_text(f"Error: Subscription update failed: {e}")
             raise
 
     @staticmethod
     async def devalue_user_quota_web_socket(user_id: int, websocket: WebSocket, db: AsyncSession):
         try:
-            query = select(UserSubscription).where(
+            query = select(UserSubscription).join(
+                Subscription,
+                UserSubscription.sub_id == Subscription.sub_id
+            ).where(
                 UserSubscription.user_id == user_id,
                 UserSubscription.is_activate == True,
                 UserSubscription.request_quota > 0,
-                UserSubscription.sub_id == 2  # Your specific subscription ID
+                Subscription.has_websocket_access == 1
             )
 
             result = await db.execute(query)
             subscription = result.scalar()
             if subscription is None:
-                await websocket.send_text("No active subscription")
-                raise WebSocketException("No active subscription")
+                await websocket.send_text("No active subscription with WebSocket access")
+                raise WebSocketException("No active subscription with WebSocket access")
 
             # Decrement request_quota
             subscription.request_quota -= 1
-            await websocket.send_text(f"Subscription updated. Remaining quota: {subscription.request_quota}")
-            # No need to start a new transaction manually, just add and commit
+            await websocket.send_text(f"Quota deducted. Remaining: {subscription.request_quota}")
             db.add(subscription)
-            # Commit the transaction
             await db.commit()
-            # Notify the client
 
         except WebSocketException as e:
             await db.rollback()
-
-            await websocket.send_text(f"Error: Subscription update failed: {e}")
+            await websocket.send_text(f"Error: Quota deduction failed: {e}")
             raise

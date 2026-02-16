@@ -54,8 +54,13 @@ async def get_user_subscriptions(user_id: int, db: AsyncSession = Depends(get_db
                     billing_period=sub.subscription.billing_period,
                     service_type=sub.subscription.service_type,
                     price=sub.subscription.price,
-                    request_limit=sub.subscription.request_limit,
                     description=sub.subscription.description,
+                    api_request_limit=sub.subscription.api_request_limit,
+                    video_upload_limit=sub.subscription.video_upload_limit,
+                    has_api_access=bool(sub.subscription.has_api_access),
+                    has_websocket_access=bool(sub.subscription.has_websocket_access),
+                    has_video_upload=bool(sub.subscription.has_video_upload),
+                    has_rtsp_stream=bool(sub.subscription.has_rtsp_stream),
                 ),
             )
             for sub in user_subscriptions

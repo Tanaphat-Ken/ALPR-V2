@@ -15,6 +15,7 @@ class Token(Base):
     user_sub_id = Column(Integer, ForeignKey(
         "user_subscription.user_sub_id", ondelete="CASCADE"), nullable=True)
     name = Column(String(255), nullable=True)
+    service_type = Column(String(50), nullable=True)
     expire_time = Column(TIMESTAMP, nullable=True)
     create_at = Column(TIMESTAMP, nullable=True)
     update_at = Column(TIMESTAMP, nullable=True)
