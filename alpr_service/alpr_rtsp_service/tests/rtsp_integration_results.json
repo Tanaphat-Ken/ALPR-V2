@@ -1,0 +1,25 @@
+{
+  "test_time": "2026-02-16T22:00:41.744265",
+  "video_file": "tests/TC2ML_L 192.168.40.226_001_2025-08-12-07-00-00_2025-08-12-07-21-03.mp4",
+  "summary": {
+    "total_frames": 28377,
+    "processed_frames": 157,
+    "corrupted_frames": 0,
+    "plates_detected": 1,
+    "plates_recognized": 1,
+    "success_rate": 100.0,
+    "processing_time": 5.844000000011874,
+    "fps": 26.865160848679157
+  },
+  "results": [
+    {
+      "frame": 4,
+      "timestamp": 0.18181818181818182,
+      "plate_id": "7กห9962",
+      "province": "ปทุมธานี",
+      "full_plate": "7กห9962 ปทุมธานี",
+      "format_flag": "complete",
+      "saved_path": "tests\\output_plates\\plate_test_camera_20260216_220036_558195.jpg"
+    }
+  ]
+}

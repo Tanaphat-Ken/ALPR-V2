@@ -81,15 +81,16 @@ async def broadcast_frame(camera_id: str, frame: np.ndarray, frame_count: int):
 
 async def process_detection(camera_id: str, plate_crop: np.ndarray, bbox, original_frame: np.ndarray):
     """
-    ประมวลผลเมื่อเจอป้ายทะเบียน → ส่งรูปต้นฉบับไปอ่านป้าย
+    ประมวลผลเมื่อเจอป้ายทะเบียน → ส่ง plate_crop ที่ detect แล้วไป recognizer
+    (เหมือน websocket_video - ข้าม PlateDetector step เพื่อความเร็วและแม่นยำ)
     """
     try:
         logger.info(f"[{camera_id}] Plate detected, processing...")
         
-        # ใช้รูปต้นฉบับแทน plate crop
-        success, encoded = cv2.imencode('.jpg', original_frame)
+        # ✅ ส่ง plate_crop แทน original_frame (ไม่ให้ AI detect plate ซ้ำ)
+        success, encoded = cv2.imencode('.jpg', plate_crop)
         if not success:
-            logger.error("Failed to encode frame")
+            logger.error("Failed to encode plate crop")
             return
         
         from fastapi import UploadFile
@@ -107,9 +108,9 @@ async def process_detection(camera_id: str, plate_crop: np.ndarray, bbox, origin
         cv2.imwrite(save_path, plate_crop)
         logger.info(f"[{camera_id}] Plate crop saved: {save_path}")
         
-        # ส่งรูปต้นฉบับไป AI
+        # ✅ ส่ง plate_crop ไป AI (เรียก process_plate_crop ที่ใช้ /from-plate-crop endpoint)
         try:
-            response = await plate_recognizer.process_image(image_file)
+            response = await plate_recognizer.process_plate_crop(image_file)  # ✅ เปลี่ยนจาก process_image
             result = response.json()
             
             plate_id = result.get('plate_id', 'N/A')

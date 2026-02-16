@@ -36,11 +36,11 @@ class PlateRecognizerService:
     
     async def process_plate_crop(self, upload_file: UploadFile, headers: Dict[str, Any] = None) -> Response:
         """
-        ส่ง cropped plate ไปให้ AI ประมวลผล
-        ใช้ /process endpoint (AI จะ detect plate อีกรอบ แต่เนื่องจากเป็น plate crop แล้ว จะเร็วและแม่น)
+        ส่ง cropped plate ไปให้ AI ประมวลผล (ข้าม PlateDetector step)
+        ใช้ /image/process/from-plate-crop endpoint เพื่อความเร็วและแม่นยำ
         
         Args:
-            upload_file: ไฟล์รูปป้ายทะเบียนที่ crop แล้ว
+            upload_file: ไฟล์รูปป้ายทะเบียนที่ crop แล้ว (จาก VideoPlateTracker)
             headers: HTTP headers (optional)
         """
         files = {
@@ -48,7 +48,8 @@ class PlateRecognizerService:
         }
 
         try:
-            response = await self.client.post("/image/process", files=files, headers=headers)
+            # เรียก endpoint ที่ข้าม PlateDetector (เพราะเรา detect แล้วด้วย VideoPlateTracker)
+            response = await self.client.post("/image/process/from-plate-crop", files=files, headers=headers)
             response.raise_for_status()
             return response
         except HTTPStatusError as e:
