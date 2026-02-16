@@ -1,14 +1,20 @@
-type ServiceType = 'API' | 'WEBSOCKET' | 'VIDEO' | 'VIDEO_WEBSOCKET'
+type ServiceType = 'API' | 'WEBSOCKET' | 'VIDEO_WEBSOCKET' | 'RTSP'
 
-type BillingPeriodType = 'ANNUALLY' | 'MONTHLY' | 'YEARLY'
+type BillingPeriodType = 'ANNUALLY' | 'MONTHLY' | 'YEARLY' | 'QUARTERLY' | 'SEMI ANNUALLY'
 
 type SubscriptionDetailsType = {
   sub_id: number
   billing_period: BillingPeriodType
   service_type: ServiceType
   price: number
-  request_limit: number
   description: string
+  // Quotas & Features
+  api_request_limit?: number
+  video_upload_limit?: number
+  has_api_access?: boolean
+  has_websocket_access?: boolean
+  has_video_upload?: boolean
+  has_rtsp_stream?: boolean
 }
 
 type SubscriptionType = {

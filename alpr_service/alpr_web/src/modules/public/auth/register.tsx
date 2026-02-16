@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Button, Form, Input, Typography, message, Checkbox } from 'antd'
-import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons'
+import { LockOutlined, MailOutlined } from '@ant-design/icons'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import styled from 'styled-components'
@@ -101,15 +101,27 @@ const StyledInput = styled(Input)`
   height: 48px;
   border-radius: 8px;
   font-size: 16px;
+  display: flex;
+  align-items: center;
+
+  .ant-input-prefix {
+    margin-right: 12px;
+  }
 `
 
 const StyledPasswordInput = styled(Input.Password)`
   height: 48px;
   border-radius: 8px;
   font-size: 16px;
+  display: flex !important;
+  align-items: center;
 
   .ant-input {
-    height: 46px;
+    height: 100%; 
+  }
+
+  .ant-input-prefix {
+    margin-right: 12px;
   }
 `
 
@@ -202,23 +214,18 @@ const RegisterPage = () => {
   const onFinish = async (values: RegisterFormValues) => {
     setLoading(true)
     try {
-      // TODO: Uncomment when backend is ready
-      // await register({
-      //   email: values.email,
-      //   password: values.password
-      // })
+      // Call actual register API
+      await register({
+        email: values.email,
+        password: values.password
+      })
 
-      // Mock success for now
-      message.success('Registration successful! Please login. (Mock)')
-      // eslint-disable-next-line no-console
-      console.log('Register values:', { email: values.email })
+      message.success('Registration successful! Please login.')
       router.push('/login')
     } catch (error: unknown) {
       const err = error as { response?: { data?: { detail?: string } } }
-      const errorMessage = err.response?.data?.detail || 'Registration failed. Please try again.'
+      const errorMessage = err?.response?.data?.detail || 'Registration failed. Please try again.'
       message.error(errorMessage)
-      // eslint-disable-next-line no-console
-      console.error('Register error:', error)
     } finally {
       setLoading(false)
     }
@@ -246,20 +253,6 @@ const RegisterPage = () => {
             autoComplete="off"
             layout="vertical"
           >
-            <Form.Item
-              name="name"
-              rules={[
-                { required: true, message: 'Please input your name!' },
-                { min: 2, message: 'Name must be at least 2 characters!' }
-              ]}
-            >
-              <StyledInput
-                prefix={<UserOutlined style={{ color: '#9ca3af' }} />}
-                placeholder="Full name"
-                size="large"
-              />
-            </Form.Item>
-
             <Form.Item
               name="email"
               rules={[

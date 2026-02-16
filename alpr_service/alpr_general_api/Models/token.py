@@ -25,6 +25,7 @@ class Token(Base):
     user_sub_id = Column(Integer, ForeignKey(
         "user_subscription.user_sub_id", ondelete="CASCADE"), nullable=True)
     name = Column(String(255), nullable=True)
+    service_type = Column(String(50), nullable=True)
     expire_time = Column(TIMESTAMP, nullable=True)
     create_at = Column(TIMESTAMP, nullable=True)
     update_at = Column(TIMESTAMP, nullable=True)
@@ -37,32 +38,59 @@ class Token(Base):
     @staticmethod
     async def get_tokens(user_id: int, service_type: str, db: AsyncSession) -> List['Token']:
         try:
-            user_sub_id_query = select(UserSubscription.user_sub_id).join(
+            # Determine logic based on service_type
+            criteria = []
+            if service_type == 'API':
+                criteria.append(Subscription.has_api_access == 1)
+            elif service_type == 'WEBSOCKET':
+                criteria.append(Subscription.has_websocket_access == 1)
+            elif service_type == 'VIDEO_WEBSOCKET' or service_type == 'VIDEO':
+                criteria.append(Subscription.has_video_upload == 1)
+            elif service_type == 'RTSP':
+                criteria.append(Subscription.has_rtsp_stream == 1)
+            
+            # If criteria is empty, we might return empty or error, 
+            # or try to match service_type directly if needed (though unlikely with TIERs now)
+
+            query_stmt = select(UserSubscription.user_sub_id).join(
                 Subscription,
-                and_(
-                    UserSubscription.sub_id == Subscription.sub_id,
-                    Subscription.service_type == service_type
-                )
+                UserSubscription.sub_id == Subscription.sub_id
             ).where(
                 UserSubscription.user_id == user_id,
-                # Use `.is_(True)` instead of `== True`
                 UserSubscription.is_activate.is_(True)
-            ).limit(1)
+            )
+
+            if criteria:
+                query_stmt = query_stmt.where(*criteria)
+            else:
+                # If no known service type, maybe try exact match as fallback (legacy behavior)
+                query_stmt = query_stmt.where(Subscription.service_type == service_type)
+
+            user_sub_id_query = query_stmt.limit(1)
 
             res = await db.execute(user_sub_id_query)
             user_sub_id = res.scalars().first()
 
             if not user_sub_id:
+                # Instead of 404, return empty list if user has no subscription for this service
+                # But original raised 404. Let's keep consistent but clearer message.
+                # Actually, frontend expects 404? 
+                # If no subscription, returns 404.
                 raise Exception({
                     "status_code": status.HTTP_404_NOT_FOUND,
-                    "message": "User subscription not found"
+                    "message": "User subscription not found for this service type"
                 })
 
-            query = select(Token).where(Token.user_sub_id == user_sub_id)
+            query = select(Token).where(
+                Token.user_sub_id == user_sub_id,
+                Token.service_type == service_type
+            )
             result = await db.execute(query)
             tokens = result.scalars().all()
 
             if not tokens:
+                # Return empty list is better than 404 if subscription exists but no tokens?
+                # But kept 404 to match original flow validation
                 raise Exception({
                     "status_code": status.HTTP_404_NOT_FOUND,
                     "message": "No tokens found"
@@ -70,7 +98,10 @@ class Token(Base):
 
             return tokens
 
-        except Exception as e:  # Fix the incomplete exception handling
+        except Exception as e:
+            # Pass through the dict exception if it is one
+            if isinstance(e.args[0], dict):
+                 raise e
             raise Exception({
                 "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
                 "message": str(e)
@@ -79,25 +110,42 @@ class Token(Base):
     @staticmethod
     async def new_token(user_id: int, service_type: str, token_name: str, expire_time: datetime, db: AsyncSession) -> 'Token':
         try:
-            result = await db.execute(
-                # Select only the required column
-                select(Subscription.token_limit,
-                       UserSubscription.user_sub_id)
-                .join(
+            # Determine logic based on service_type
+            criteria = []
+            if service_type == 'API':
+                criteria.append(Subscription.has_api_access == 1)
+            elif service_type == 'WEBSOCKET':
+                criteria.append(Subscription.has_websocket_access == 1)
+            elif service_type == 'VIDEO_WEBSOCKET' or service_type == 'VIDEO':
+                criteria.append(Subscription.has_video_upload == 1)
+            elif service_type == 'RTSP':
+                criteria.append(Subscription.has_rtsp_stream == 1)
+
+            query_stmt = select(Subscription.token_limit, UserSubscription.user_sub_id).join(
                     Subscription,
-                    and_(
-                        UserSubscription.sub_id == Subscription.sub_id,
-                        Subscription.service_type == service_type
-                    )
-                )
-                .where(
+                    UserSubscription.sub_id == Subscription.sub_id
+                ).where(
                     UserSubscription.user_id == user_id,
                     UserSubscription.is_activate == True
                 )
-                .limit(1)
-            )
+            
+            if criteria:
+                query_stmt = query_stmt.where(*criteria)
+            else:
+                query_stmt = query_stmt.where(Subscription.service_type == service_type)
 
-            token_limit, user_sub_id = result.first()
+            result = await db.execute(query_stmt.limit(1))
+
+            row = result.first()
+            if not row:
+                 raise Exception(
+                    {"status_code": status.HTTP_404_NOT_FOUND, "message": "No active subscription found for this service"})
+            
+            token_limit, user_sub_id = row
+            
+            # Handle NULL token_limit - set default to 5 if None
+            if token_limit is None:
+                token_limit = 5
 
             check_token_query = select(func.count(Token.key)).where(
                 Token.user_sub_id == user_sub_id)
@@ -106,26 +154,10 @@ class Token(Base):
 
             if token_count >= token_limit:
                 raise Exception(
-                    {"status_code": status.HTTP_400_BAD_REQUEST, "message": "Numner of token are limit"})
+                    {"status_code": status.HTTP_400_BAD_REQUEST, "message": "Number of tokens are at limit"})
 
-            subscription_query = select(UserSubscription).join(
-                Subscription,
-                and_(
-                    UserSubscription.sub_id == Subscription.sub_id,
-                    Subscription.service_type == service_type
-                )
-            ).where(
-                UserSubscription.user_id == user_id,
-                UserSubscription.is_activate == True
-            ).limit(1)
-
-            subscription_result = await db.execute(subscription_query)
-            subscription = subscription_result.scalar_one_or_none()
-
-            if not subscription:
-
-                raise Exception(
-                    {"status_code": status.HTTP_403_FORBIDDEN, "message": "User does not have an active subscription"})
+            # Verify subscription exists (already checked above, but kept for consistency)
+            # The feature flag check above already ensures the user has access to this service type
 
             token_name_query = select(Token).where(
                 Token.user_sub_id == user_sub_id,
@@ -149,6 +181,7 @@ class Token(Base):
                 key=str(uuid4()),
                 user_sub_id=user_sub_id,
                 name=token_name,
+                service_type=service_type,
                 expire_time=expire_time,
                 create_at=datetime.now(),
                 update_at=datetime.now()
@@ -260,25 +293,41 @@ class Token(Base):
     @staticmethod
     async def get_token_usage(user_id: int, service_type: str, db: AsyncSession):
         try:
+            # Map service_type (API, WEBSOCKET, etc.) to Subscription feature flags
+            criteria = []
+            if service_type == 'API':
+                criteria.append(Subscription.has_api_access == 1)
+            elif service_type == 'WEBSOCKET':
+                criteria.append(Subscription.has_websocket_access == 1)
+            elif service_type == 'VIDEO_WEBSOCKET' or service_type == 'VIDEO':
+                criteria.append(Subscription.has_video_upload == 1)
+            elif service_type == 'RTSP':
+                criteria.append(Subscription.has_rtsp_stream == 1)
+
             # Step 1: Get user_sub_id for an active subscription
             sub_query = select(UserSubscription.user_sub_id).join(
                 Subscription,
-                and_(
-                    UserSubscription.sub_id == Subscription.sub_id,
-                    Subscription.service_type == service_type
-                )
+                UserSubscription.sub_id == Subscription.sub_id
             ).where(
                 UserSubscription.user_id == user_id,
                 UserSubscription.is_activate.is_(True)
-            ).limit(1)
-            sub_result = await db.execute(sub_query)
+            )
+
+            if criteria:
+                sub_query = sub_query.where(*criteria)
+            else:
+                sub_query = sub_query.where(Subscription.service_type == service_type)
+
+            sub_result = await db.execute(sub_query.limit(1))
             user_sub_id = sub_result.scalar()
             if not user_sub_id:
                 return []  # No active subscription
 
-            # Step 2: Get all token names for the user_sub_id
+            # Step 2: Get all token names for the user_sub_id filtered by service_type
             token_query = select(Token.key, Token.name).where(
-                Token.user_sub_id == user_sub_id)
+                Token.user_sub_id == user_sub_id,
+                Token.service_type == service_type
+            )
             token_result = await db.execute(token_query)
             token_map = {row[0]: row[1] for row in token_result.fetchall()}
             if not token_map:

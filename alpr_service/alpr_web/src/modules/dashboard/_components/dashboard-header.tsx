@@ -1,5 +1,5 @@
 'use client'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Flex } from 'antd'
 import { Header } from 'antd/lib/layout/layout'
@@ -14,8 +14,17 @@ import { AppDispatch } from '@/shared/store'
 import { setUser } from '@/shared/store/dashboard/user-slice'
 
 const DashboardHeader = () => {
-  const userId = 4
-  const { data: userInfo, isSuccess, error } = useUserInfo(userId)
+  const [userId, setUserId] = useState<number | null>(null)
+
+  // Get userId from localStorage on component mount
+  useEffect(() => {
+    const storedUserId = localStorage.getItem('userId')
+    if (storedUserId) {
+      setUserId(parseInt(storedUserId, 10))
+    }
+  }, [])
+
+  const { data: userInfo, isSuccess, error } = useUserInfo(userId || 0)
   const dispatch = useDispatch<AppDispatch>()
 
   useEffect(() => { // temporary fetch user by header
@@ -28,6 +37,10 @@ const DashboardHeader = () => {
       }))
     }
   }, [isSuccess, userInfo, dispatch])
+
+  if (!userId) {
+    return null // Don't render if userId is not available yet
+  }
 
   if (error) {
     return <div>Error</div>

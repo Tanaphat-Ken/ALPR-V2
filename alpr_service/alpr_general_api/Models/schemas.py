@@ -44,13 +44,13 @@ class TokenNew(BaseModel):
 
 class TokenUpdate(BaseModel):
     key: str
-    token_name: Optional[str]
-    expire_time: Optional[datetime]
+    token_name: Optional[str] = None
+    expire_time: Optional[datetime] = None
 
     @validator('key')
     def key_validator(cls, value):
         if not value.strip():
-            raise ValueError('user_id must not be empty')
+            raise ValueError('key must not be empty')
         return value
 
 
@@ -58,6 +58,7 @@ class TokenResponse(BaseModel):
     key: Optional[str]
     user_sub_id: Optional[int]
     name: Optional[str]
+    service_type: Optional[str]
     expire_time: Optional[datetime]
 
     class Config:
