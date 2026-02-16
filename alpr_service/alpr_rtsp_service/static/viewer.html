@@ -379,7 +379,7 @@
                             <div class="stat-label">Frames</div>
                         </div>
                         <div class="stat-box">
-                            <div class="stat-value" id="detections-${camera.id}">0</div>
+                            <div class="stat-value" id="stat-detections-${camera.id}">0</div>
                             <div class="stat-label">Detections</div>
                         </div>
                     </div>
@@ -387,7 +387,7 @@
                     <h3 style="margin-top: 20px; margin-bottom: 10px; color: #333;">
                         Recent Detections
                     </h3>
-                    <div class="detections" id="detections-${camera.id}">
+                    <div class="detections" id="detections-list-${camera.id}">
                         <p style="color: #999; text-align: center; padding: 20px;">
                             No detections yet
                         </p>
@@ -437,6 +437,7 @@
                     }
                     else if (data.type === 'detection') {
                         // แสดงผลลัพธ์
+                        console.log('🎯 Detection received:', data); // ✅ Debug log
                         this.addDetection(cameraId, data);
                     }
                 };
@@ -455,7 +456,13 @@
             }
 
             addDetection(cameraId, data) {
-                const container = document.getElementById(`detections-${cameraId}`);
+                console.log(`📋 Adding detection for ${cameraId}:`, data); // ✅ Debug log
+                const container = document.getElementById(`detections-list-${cameraId}`);
+                
+                if (!container) {
+                    console.error(`❌ Container not found: detections-list-${cameraId}`);
+                    return;
+                }
                 
                 // ลบข้อความ "No detections"
                 if (container.querySelector('p')) {
@@ -487,11 +494,13 @@
                     container.removeChild(container.lastChild);
                 }
                 
-                // อัพเดทจำนวน detections ของกล้องนี้
-                const cameraDetectionCount = document.getElementById(`detections-${cameraId}`);
-                let count = parseInt(cameraDetectionCount.textContent) || 0;
-                count++;
-                cameraDetectionCount.textContent = count;
+                // ✅ อัพเดทจำนวน detections ของกล้องนี้ (stat box)
+                const statBox = document.getElementById(`stat-detections-${cameraId}`);
+                if (statBox) {
+                    let count = parseInt(statBox.textContent) || 0;
+                    count++;
+                    statBox.textContent = count;
+                }
                 
                 // อัพเดทจำนวน detections ทั้งหมด
                 this.detectionCount++;

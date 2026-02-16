@@ -55,8 +55,12 @@ async def broadcast_frame(camera_id: str, frame: np.ndarray, frame_count: int):
         return
     
     try:
-        # Encode frame เป็น JPEG
-        _, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+        # Encode frame เป็น JPEG - run in thread pool
+        loop = asyncio.get_event_loop()
+        _, buffer = await loop.run_in_executor(
+            None,
+            lambda: cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+        )
         frame_base64 = base64.b64encode(buffer).decode('utf-8')
         
         # ส่งไปยัง clients
@@ -81,14 +85,17 @@ async def broadcast_frame(camera_id: str, frame: np.ndarray, frame_count: int):
 
 async def process_detection(camera_id: str, plate_crop: np.ndarray, bbox, original_frame: np.ndarray):
     """
-    ประมวลผลเมื่อเจอป้ายทะเบียน → ส่ง plate_crop ที่ detect แล้วไป recognizer
-    (เหมือน websocket_video - ข้าม PlateDetector step เพื่อความเร็วและแม่นยำ)
+    ✅ ประมวลผลเมื่อเจอป้ายทะเบียน → ส่ง plate_crop ไป recognizer
+    (เหมือน test_rtsp_integration.py - ใช้ /from-plate-crop endpoint)
     """
     try:
         logger.info(f"[{camera_id}] Plate detected, processing...")
+        logger.info(f"[{camera_id}] Current viewers: {len(camera_viewers.get(camera_id, set()))}")
         
-        # ✅ ส่ง plate_crop แทน original_frame (ไม่ให้ AI detect plate ซ้ำ)
-        success, encoded = cv2.imencode('.jpg', plate_crop)
+        # ✅ ส่ง plate_crop (เหมือน test_rtsp_integration.py)
+        # Run blocking cv2 operations in thread pool
+        loop = asyncio.get_event_loop()
+        success, encoded = await loop.run_in_executor(None, cv2.imencode, '.jpg', plate_crop)
         if not success:
             logger.error("Failed to encode plate crop")
             return
@@ -102,15 +109,16 @@ async def process_detection(camera_id: str, plate_crop: np.ndarray, bbox, origin
             size=len(encoded.tobytes())
         )
         
-        # บันทึกรูป plate crop (local storage)
+        # บันทึกรูป plate crop (local storage) - run in thread pool
         timestamp_str = datetime.now().strftime('%Y%m%d_%H%M%S')
         save_path = os.path.join(configs.IMAGES_PATH, f"plate_{camera_id}_{timestamp_str}.jpg")
-        cv2.imwrite(save_path, plate_crop)
+        await loop.run_in_executor(None, cv2.imwrite, save_path, plate_crop)
         logger.info(f"[{camera_id}] Plate crop saved: {save_path}")
         
-        # ✅ ส่ง plate_crop ไป AI (เรียก process_plate_crop ที่ใช้ /from-plate-crop endpoint)
+        # ✅ ส่ง plate_crop ไป AI (เรียก /from-plate-crop endpoint - เหมือน test_rtsp_integration.py)
         try:
-            response = await plate_recognizer.process_plate_crop(image_file)  # ✅ เปลี่ยนจาก process_image
+            logger.info(f"[{camera_id}] Sending to plate_recognizer (/from-plate-crop)...")
+            response = await plate_recognizer.process_plate_crop(image_file)  # ✅ เหมือน test file
             result = response.json()
             
             plate_id = result.get('plate_id', 'N/A')
@@ -121,18 +129,26 @@ async def process_detection(camera_id: str, plate_crop: np.ndarray, bbox, origin
             logger.info(f"[{camera_id}] Recognition result: {full_plate}")
             logger.info(f"[{camera_id}]   - Plate: {plate_id}")
             logger.info(f"[{camera_id}]   - Province: {province}")
+            logger.info(f"[{camera_id}]   - Format: {format_flag}")
+            
+            # ใช้ plate_crop สำหรับแสดงผล (เราส่งรูปนี้ไปแล้ว)
+            plate_image_for_display = plate_crop
+            plate_bbox = result.get('plate_bbox')
             
             # บันทึกข้อมูลลง database/log
             await database_service.save_detection(
                 camera_id=camera_id,
                 image_filename=os.path.basename(save_path),
                 plate_data=result,
-                bbox=result.get('plate_bbox')
+                bbox=plate_bbox
             )
             
-            # ✅ เพิ่ม: เก็บ detection ไว้ใน recent_detections
-            # Encode รูปป้ายเพื่อเก็บไว้
-            _, buffer = cv2.imencode('.jpg', plate_crop, [cv2.IMWRITE_JPEG_QUALITY, 90])
+            # ✅ เก็บ detection ไว้ใน recent_detections
+            # Run blocking cv2 operations in thread pool
+            _, buffer = await loop.run_in_executor(
+                None, 
+                lambda: cv2.imencode('.jpg', plate_image_for_display, [cv2.IMWRITE_JPEG_QUALITY, 90])
+            )
             image_base64 = base64.b64encode(buffer).decode('utf-8')
             
             detection_record = {
@@ -150,14 +166,19 @@ async def process_detection(camera_id: str, plate_crop: np.ndarray, bbox, origin
             if camera_id not in recent_detections:
                 recent_detections[camera_id] = []
             
-            recent_detections[camera_id].insert(0, detection_record)  # เพิ่มด้านหน้า
-            recent_detections[camera_id] = recent_detections[camera_id][:MAX_RECENT_DETECTIONS]  # จำกัดจำนวน
+            recent_detections[camera_id].insert(0, detection_record)
+            recent_detections[camera_id] = recent_detections[camera_id][:MAX_RECENT_DETECTIONS]
             
-            # ส่งผลลัพธ์ไปยัง viewers ที่เชื่อมต่ออยู่
-            await broadcast_detection(camera_id, result, plate_crop)
+            # ✅ ส่งผลลัพธ์ไปยัง viewers
+            logger.info(f"[{camera_id}] Broadcasting detection to viewers...")
+            await broadcast_detection(camera_id, result, plate_image_for_display)
+            logger.info(f"[{camera_id}] Detection broadcasted successfully")
             
         except Exception as e:
             logger.warning(f"[{camera_id}] AI service error: {e}")
+            import traceback
+            logger.error(traceback.format_exc()) # ✅ เพิ่ม full traceback
+            
             fake_result = {
                 "plate_id": "AI Error",
                 "province": "N/A",
@@ -176,6 +197,8 @@ async def process_detection(camera_id: str, plate_crop: np.ndarray, bbox, origin
         
     except Exception as e:
         logger.error(f"[{camera_id}] Detection processing error: {e}")
+        import traceback
+        logger.error(traceback.format_exc()) # ✅ เพิ่ม full traceback
 
 
 async def broadcast_detection(camera_id: str, result: dict, plate_image: np.ndarray):
@@ -185,8 +208,12 @@ async def broadcast_detection(camera_id: str, result: dict, plate_image: np.ndar
         return
     
     try:
-        # Encode รูปป้าย
-        _, buffer = cv2.imencode('.jpg', plate_image, [cv2.IMWRITE_JPEG_QUALITY, 90])
+        # Encode รูปป้าย - run in thread pool
+        loop = asyncio.get_event_loop()
+        _, buffer = await loop.run_in_executor(
+            None,
+            lambda: cv2.imencode('.jpg', plate_image, [cv2.IMWRITE_JPEG_QUALITY, 90])
+        )
         image_base64 = base64.b64encode(buffer).decode('utf-8')
         
         result['plate_image'] = f"data:image/jpeg;base64,{image_base64}"

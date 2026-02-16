@@ -9,26 +9,33 @@ Test ว่า:
 4. บันทึกข้อมูลได้หรือไม่
 
 Note:
-- HEVC decoder warnings ([hevc @ ...] Could not find ref with POC) เป็นเรื่องปกติ
-  สาเหตุ: วิดีโอ RTSP มี corrupted frames จากการ record/stream
-  ผลกระทบ: บาง frame อาจเพี้ยน แต่ไม่ crash และยังอ่านป้ายได้
-  การแก้: ตั้ง OPENCV_FFMPEG_CAPTURE_OPTIONS='loglevel;quiet' และตรวจสอบ corrupted frames
+- HEVC decoder warnings ถูกปิดโดย redirect stderr ไปที่ os.devnull
+- วิดีโอ RTSP อาจมี corrupted frames แต่ไม่กระทบการทำงาน
 """
 import sys
 import os
 from pathlib import Path
 
-
-# ✅ ใหม่ (ถูก)
-# ตั้ง env ก่อน!
-os.environ['OPENCV_FFMPEG_CAPTURE_OPTIONS'] = 'loglevel;quiet'
-os.environ['OPENCV_LOG_LEVEL'] = 'SILENT'
+# Fix OpenMP duplicate library error (PyTorch + OpenCV conflict)
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 
 root_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(root_dir))
 os.chdir(str(root_dir))
 
-import cv2  # import หลัง set env
+# Set environment variables before importing cv2
+os.environ['OPENCV_FFMPEG_CAPTURE_OPTIONS'] = 'protocol_whitelist;file,rtp,udp|loglevel;fatal'
+os.environ['OPENCV_LOG_LEVEL'] = 'SILENT'
+os.environ['OPENCV_VIDEOIO_DEBUG'] = '0'
+os.environ['OPENCV_VIDEOIO_PRIORITY_FFMPEG'] = '0'
+
+import cv2  # import after setting env
+import warnings
+import contextlib
+
+# Suppress all warnings and OpenCV logging
+warnings.filterwarnings('ignore')
+cv2.setLogLevel(0)  # 0 = SILENT
 import asyncio
 import numpy as np
 from io import BytesIO
@@ -114,7 +121,11 @@ class RTSPIntegrationTest:
             print(f"❌ ไม่พบไฟล์: {self.video_path}")
             return False
         
-        cap = cv2.VideoCapture(self.video_path)
+        # Redirect stderr to suppress HEVC decoder warnings from ffmpeg
+        with open(os.devnull, 'w') as devnull:
+            with contextlib.redirect_stderr(devnull):
+                cap = cv2.VideoCapture(self.video_path)
+        
         if not cap.isOpened():
             print(f"❌ ไม่สามารถเปิดวิดีโอได้")
             return False
@@ -141,9 +152,15 @@ class RTSPIntegrationTest:
         
         print("🚀 เริ่มประมวลผล...\n")
         
+        # Open devnull for suppressing stderr
+        devnull = open(os.devnull, 'w')
+        
         try:
             while True:
-                ret, frame = cap.read()
+                # Redirect stderr to suppress HEVC warnings during frame read
+                with contextlib.redirect_stderr(devnull):
+                    ret, frame = cap.read()
+                
                 if not ret:
                     break
                 
@@ -176,7 +193,7 @@ class RTSPIntegrationTest:
                     # จำลอง rtsp_handler: process_detection
                     result = await self._process_detection(
                         camera_id="test_camera",
-                        plate_crop=plate_crop,
+                        plate_crop=plate_crop,  # ส่ง plate_crop (same as websocket_video)
                         frame_count=frame_count,
                         timestamp=timestamp
                     )
@@ -197,6 +214,7 @@ class RTSPIntegrationTest:
             print("\n⚠️  หยุดการทดสอบโดยผู้ใช้")
         
         finally:
+            devnull.close()
             cap.release()
             elapsed_time = asyncio.get_event_loop().time() - start_time
             
@@ -214,6 +232,7 @@ class RTSPIntegrationTest:
     ) -> dict:
         """
         จำลอง process_detection() จาก rtsp_handler.py
+        ใช้ /image/process/from-plate-crop endpoint (same logic as websocket_video)
         """
         try:
             # บันทึกรูป plate crop
@@ -241,8 +260,8 @@ class RTSPIntegrationTest:
                 size=len(encoded.tobytes())
             )
             
-            # ส่งไป plate_recognizer (เรียก /from-plate-crop endpoint)
-            print(f"   📤 Sending to plate_recognizer...")
+            # ส่งไป plate_recognizer (เรียก /from-plate-crop endpoint - same as websocket_video)
+            print(f"   📤 Sending to plate_recognizer (/from-plate-crop)...")
             try:
                 response = await self.plate_recognizer.process_plate_crop(image_file)
                 result = response.json()
