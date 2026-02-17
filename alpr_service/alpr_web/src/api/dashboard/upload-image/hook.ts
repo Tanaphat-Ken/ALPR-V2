@@ -11,13 +11,13 @@ const requestProcessImage = async (data: ProcessImageBody) => {
   const formData = new FormData()
   formData.append('file', data.file)
   return await plateRecognizerService.post<ProcessImageResponse>(
-    '/images/upload-image', 
-    formData, 
-    { 
+    '/images/upload-image',
+    formData,
+    {
       headers: {
         'Authorization': `Bearer ${data.token}`,
         'Content-Type': 'multipart/form-data'
-      }, 
+      },
       timeout: 60000
     }
   )
@@ -28,12 +28,13 @@ const useProcessImage = () => {
   const uploadedImage = useSelector((state: RootState) => state.uploadImagePage.image)
   return useMutation({
     mutationFn: requestProcessImage,
-    onError: (error) => message.error(error.message),
-    onSuccess: (data) => {
+    onError: (error: Error) => message.error(error.message),
+    onSuccess: (data: ProcessImageResponse) => {
       const result = data.model_response
       const timeStamp = new Date()
       const newImageItem = {
         image: uploadedImage,
+        plateCropImage: result.plate_crop_image ?? null,
         carBbox: result.car_bbox,
         plateBbox: result.plate_bbox,
         plateId: result.plate_id,

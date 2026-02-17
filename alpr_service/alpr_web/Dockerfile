@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 
-RUN npm install --frozen-lockfile
+RUN npm install --legacy-peer-deps
 
 COPY . .
 
@@ -18,7 +18,7 @@ COPY --from=builder /app/package.json /app/package.json
 COPY --from=builder /app/package-lock.json /app/package-lock.json
 COPY --from=builder /app/.next /app/.next
 
-RUN npm install --production --frozen-lockfile
+RUN npm install --production --legacy-peer-deps
 
 EXPOSE 3000
 

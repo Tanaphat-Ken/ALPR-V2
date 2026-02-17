@@ -30,10 +30,10 @@ const CreateNewTokenModal = () => {
     setConfirmLoading(true)
     createNewToken({
       user_id: userId,
-      service_type: activeTab === 'VIDEO' ? 'VIDEO_WEBSOCKET' : activeTab,
+      service_type: activeTab,
       token_name: newTokenData.tokenName,
       expire_time: newTokenData.expireDate
-    }) 
+    })
     resetTokenData()
     dispatch(setIsCreateModalOpen(false))
     setConfirmLoading(false)
@@ -66,10 +66,10 @@ const CreateNewTokenModal = () => {
     >
       <Flex gap={16} vertical style={{ marginTop: 16 }}>
         <Input placeholder='Token Name' onChange={handleInputChange} value={newTokenData.tokenName} />
-        <DatePicker 
-          style={{ width: '100%' }} 
-          placeholder='Expire Date' 
-          onChange={handleDateChange} 
+        <DatePicker
+          style={{ width: '100%' }}
+          placeholder='Expire Date'
+          onChange={handleDateChange}
           value={newTokenData.expireDate ? moment(newTokenData.expireDate) : null}
         />
       </Flex>

@@ -1,4 +1,4 @@
-supervision==0.25.0
+supervision>=0.26.0
 opencv-python
 fastapi[standard]==0.115.6
 numpy>=1.23.3
