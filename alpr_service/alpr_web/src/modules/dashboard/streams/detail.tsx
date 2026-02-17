@@ -94,60 +94,68 @@ const StreamDetailPage = () => {
         Back to Streams
       </Button>
 
-      {/* Stream Viewer */}
-      <StreamViewer 
-        cameraId={cameraId}
-        streamUrl={stream.rtsp_url}
-        cameraName={stream.name}
-      />
+      {/* Top Row: Stream Viewer + Camera Info (ซ้าย-ขวา) */}
+      <Row gutter={[24, 24]} style={{ marginBottom: '24px' }}>
+        {/* Left: Stream Viewer - ใหญ่กว่า */}
+        <Col xs={24} lg={16}>
+          <StreamViewer 
+            cameraId={cameraId}
+            streamUrl={stream.rtsp_url}
+            cameraName={stream.name}
+          />
+        </Col>
 
-      {/* Camera Info Card */}
-      <Card style={{ marginBottom: '24px' }}>
-        <Row gutter={[16, 16]} align="middle">
-          <Col flex="auto">
-            <Space direction="vertical" size="small">
-              <Title level={3} style={{ margin: 0 }}>
-                {stream.name}
-              </Title>
-              <Space size="middle">
-                <Text type="secondary">
-                  <strong>URL:</strong> {stream.rtsp_url}
-                </Text>
-                {stream.location && (
-                  <Text type="secondary">
-                    <strong>Location:</strong> {stream.location}
-                  </Text>
-                )}
-              </Space>
+        {/* Right: Camera Info - เล็กกว่า */}
+        <Col xs={24} lg={8}>
+          <Card style={{ height: '100%' }}>
+            <Space direction="vertical" size="middle" style={{ width: '100%' }}>
               <div>
-                <Text type="secondary" style={{ marginRight: '8px' }}>
-                  <strong>Status:</strong>
-                </Text>
-                {getStatusTag()}
+                <Title level={3} style={{ margin: 0, marginBottom: '16px' }}>
+                  {stream.name}
+                </Title>
+                <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                  <div>
+                    <Text type="secondary" strong>URL:</Text>
+                    <br />
+                    <Text>{stream.rtsp_url}</Text>
+                  </div>
+                  {stream.location && (
+                    <div>
+                      <Text type="secondary" strong>Location:</Text>
+                      <br />
+                      <Text>{stream.location}</Text>
+                    </div>
+                  )}
+                  <div>
+                    <Text type="secondary" strong>Status:</Text>
+                    <br />
+                    {getStatusTag()}
+                  </div>
+                </Space>
               </div>
+              <Space style={{ width: '100%' }}>
+                <Button 
+                  icon={<EditOutlined />}
+                  onClick={handleEdit}
+                  style={{ flex: 1 }}
+                >
+                  Edit
+                </Button>
+                <Button 
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={handleDelete}
+                  style={{ flex: 1 }}
+                >
+                  Delete
+                </Button>
+              </Space>
             </Space>
-          </Col>
-          <Col>
-            <Space>
-              <Button 
-                icon={<EditOutlined />}
-                onClick={handleEdit}
-              >
-                Edit
-              </Button>
-              <Button 
-                danger
-                icon={<DeleteOutlined />}
-                onClick={handleDelete}
-              >
-                Delete
-              </Button>
-            </Space>
-          </Col>
-        </Row>
-      </Card>
+          </Card>
+        </Col>
+      </Row>
 
-      {/* Detection Results */}
+      {/* Detection Results - Full Width */}
       <Card>
         <Title level={4}>Process Result</Title>
         <DetectionTable cameraId={cameraId} />

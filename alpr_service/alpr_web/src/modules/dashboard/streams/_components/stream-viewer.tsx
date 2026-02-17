@@ -19,12 +19,12 @@ const StreamViewer = ({ cameraId, streamUrl, cameraName }: StreamViewerProps) =>
     <Card
       style={{ 
         width: '100%',
-        marginBottom: '24px'
+        height: '100%'
       }}
     >
       <div style={{
         width: '100%',
-        height: '400px',
+        height: '360px',
         background: '#000',
         borderRadius: '8px',
         display: 'flex',
