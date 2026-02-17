@@ -145,11 +145,25 @@ async def process_detection(camera_id: str, plate_crop: np.ndarray, bbox, origin
             
             # ✅ เก็บ detection ไว้ใน recent_detections
             # Run blocking cv2 operations in thread pool
+            
+            # Encode plate crop image
             _, buffer = await loop.run_in_executor(
                 None, 
                 lambda: cv2.imencode('.jpg', plate_image_for_display, [cv2.IMWRITE_JPEG_QUALITY, 90])
             )
-            image_base64 = base64.b64encode(buffer).decode('utf-8')
+            plate_image_base64 = base64.b64encode(buffer).decode('utf-8')
+            
+            # Resize and encode full frame (เหมือนเพื่อนทำ - resize เป็น 480px width)
+            def resize_and_encode_frame(frame):
+                height, width = frame.shape[:2]
+                target_width = 480
+                aspect_ratio = height / width
+                target_height = int(target_width * aspect_ratio)
+                resized = cv2.resize(frame, (target_width, target_height))
+                _, buffer = cv2.imencode('.jpg', resized, [cv2.IMWRITE_JPEG_QUALITY, 85])
+                return base64.b64encode(buffer).decode('utf-8')
+            
+            full_image_base64 = await loop.run_in_executor(None, resize_and_encode_frame, original_frame)
             
             detection_record = {
                 'camera_id': camera_id,
@@ -159,7 +173,8 @@ async def process_detection(camera_id: str, plate_crop: np.ndarray, bbox, origin
                 'full_plate': full_plate,
                 'format_flag': format_flag,
                 'image_filename': os.path.basename(save_path),
-                'plate_image': f"data:image/jpeg;base64,{image_base64}"
+                'plate_image': f"data:image/jpeg;base64,{plate_image_base64}",
+                'full_image': f"data:image/jpeg;base64,{full_image_base64}"
             }
             
             # เก็บไว้ใน memory

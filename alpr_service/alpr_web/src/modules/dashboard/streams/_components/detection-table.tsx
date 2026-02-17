@@ -14,17 +14,20 @@ interface DetectionTableProps {
 type DetectionDataType = {
   key: string
   timestamp: string
-  full_image_url?: string
+  full_image?: string
   car_image_url?: string
   plate_image_url?: string
+  plate_image?: string
   plate_id?: string
+  full_plate?: string
   province?: string
+  format_flag?: string
 }
 
 const columns: TableColumnsType<DetectionDataType> = [
   {
     title: 'Full Image',
-    dataIndex: 'full_image_url',
+    dataIndex: 'full_image',
     key: 'full_image',
     width: 120,
     render: (url?: string, record?: DetectionDataType) => {
@@ -36,6 +39,7 @@ const columns: TableColumnsType<DetectionDataType> = [
           width={80} 
           height={60}
           style={{ objectFit: 'cover', borderRadius: '4px' }}
+          fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
         />
       ) : (
         <div style={{ 
@@ -54,28 +58,31 @@ const columns: TableColumnsType<DetectionDataType> = [
   },
   {
     title: 'Plate Image',
-    dataIndex: 'plate_image_url',
+    dataIndex: 'plate_image',
     key: 'plate_image',
     width: 120,
-    render: (url?: string) => url ? (
-      <Image 
-        src={url} 
-        alt="Plate" 
-        width={80} 
-        height={60}
-        style={{ objectFit: 'cover', borderRadius: '4px' }}
-      />
-    ) : (
-      <Text type="secondary">-</Text>
-    )
+    render: (plateImage?: string, record?: DetectionDataType) => {
+      const url = plateImage || record?.plate_image_url
+      return url ? (
+        <Image 
+          src={url} 
+          alt="Plate" 
+          width={80} 
+          height={60}
+          style={{ objectFit: 'cover', borderRadius: '4px' }}
+        />
+      ) : (
+        <Text type="secondary">-</Text>
+      )
+    }
   },
   {
-    title: 'Plate ID',
+    title: 'License Plate',
     dataIndex: 'plate_id',
     key: 'plate_id',
     width: 120,
-    render: (plate?: string) => plate ? (
-      <Text strong style={{ fontSize: '16px' }}>{plate}</Text>
+    render: (plateId?: string) => plateId ? (
+      <Text strong style={{ fontSize: '16px' }}>{plateId}</Text>
     ) : (
       <Text type="secondary">Not Found</Text>
     )
@@ -102,11 +109,14 @@ const DetectionTable = ({ cameraId }: DetectionTableProps) => {
   const dataSource: DetectionDataType[] = (detectionsData?.detections || []).map((detection, index) => ({
     key: detection.id || `${cameraId}-${index}`,
     timestamp: detection.timestamp,
-    full_image_url: detection.full_image_url,
+    full_image: detection.full_image,
     car_image_url: detection.car_image_url,
     plate_image_url: detection.plate_image_url,
+    plate_image: detection.plate_image,
     plate_id: detection.plate_id,
-    province: detection.province
+    full_plate: detection.full_plate,
+    province: detection.province,
+    format_flag: detection.format_flag
   }))
 
   return (

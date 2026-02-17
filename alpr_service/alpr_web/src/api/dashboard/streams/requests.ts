@@ -16,7 +16,9 @@ export const streamsAPI = {
   getAll: async (): Promise<Stream[]> => {
     const response = await fetch(`${RTSP_BASE_URL}/cameras`)
     if (!response.ok) throw new Error('Failed to fetch cameras')
-    return response.json()
+    const data = await response.json()
+    // Backend ส่ง { total, running, cameras: [...] } เราเอาแค่ cameras array
+    return data.cameras || []
   },
 
   // ดูข้อมูลกล้อง 1 ตัว
