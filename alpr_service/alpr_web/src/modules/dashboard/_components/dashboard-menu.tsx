@@ -9,6 +9,7 @@ import {
   HomeOutlined,
   KeyOutlined,
   CloudUploadOutlined,
+  VideoCameraOutlined,
   ReadOutlined,
   SettingOutlined
 } from '@ant-design/icons'
@@ -34,6 +35,11 @@ const items: MenuItem[] = [
       { key: '/dashboard/upload/image', label: 'Image' },
       { key: '/dashboard/upload/video', label: 'Video' },
     ],
+  },
+  {
+    key: '/dashboard/streams',
+    icon: <VideoCameraOutlined />,
+    label: 'Streams',
   },
   {
     key: '/dashboard/documentation',
