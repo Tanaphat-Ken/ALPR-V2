@@ -2,6 +2,7 @@
 -- PostgreSQL database dump
 --
 
+\restrict wIyKYTIgpco4AYMKHr5EpvsA6fXINIv0KCpIzipz15aQgh2rw5IgJjqBaxuVdY0
 
 -- Dumped from database version 15.14
 -- Dumped by pg_dump version 15.14
@@ -21,7 +22,7 @@ SET row_security = off;
 
 --
 -- TOC entry 855 (class 1247 OID 24579)
--- Name: billing_period; Type: TYPE; Schema: public; Owner: postgres
+-- Name: billing_period; Type: TYPE; Schema: public; Owner: alpr
 --
 
 CREATE TYPE public.billing_period AS ENUM (
@@ -30,22 +31,21 @@ CREATE TYPE public.billing_period AS ENUM (
 );
 
 
-ALTER TYPE public.billing_period OWNER TO postgres;
+ALTER TYPE public.billing_period OWNER TO alpr;
 
 --
 -- TOC entry 858 (class 1247 OID 24584)
--- Name: service_type; Type: TYPE; Schema: public; Owner: postgres
+-- Name: service_type; Type: TYPE; Schema: public; Owner: alpr
 --
 
 CREATE TYPE public.service_type AS ENUM (
     'API',
     'WEBSOCKET',
-    'VIDEO_WEBSOCKET',
     'RTSP'
 );
 
 
-ALTER TYPE public.service_type OWNER TO postgres;
+ALTER TYPE public.service_type OWNER TO alpr;
 
 SET default_tablespace = '';
 
@@ -53,7 +53,7 @@ SET default_table_access_method = heap;
 
 --
 -- TOC entry 214 (class 1259 OID 24591)
--- Name: car_bbox; Type: TABLE; Schema: public; Owner: postgres
+-- Name: car_bbox; Type: TABLE; Schema: public; Owner: alpr
 --
 
 CREATE TABLE public.car_bbox (
@@ -69,11 +69,11 @@ CREATE TABLE public.car_bbox (
 );
 
 
-ALTER TABLE public.car_bbox OWNER TO postgres;
+ALTER TABLE public.car_bbox OWNER TO alpr;
 
 --
 -- TOC entry 215 (class 1259 OID 24594)
--- Name: car_bbox_car_bbox_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: car_bbox_car_bbox_id_seq; Type: SEQUENCE; Schema: public; Owner: alpr
 --
 
 CREATE SEQUENCE public.car_bbox_car_bbox_id_seq
@@ -85,12 +85,12 @@ CREATE SEQUENCE public.car_bbox_car_bbox_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.car_bbox_car_bbox_id_seq OWNER TO postgres;
+ALTER TABLE public.car_bbox_car_bbox_id_seq OWNER TO alpr;
 
 --
 -- TOC entry 3443 (class 0 OID 0)
 -- Dependencies: 215
--- Name: car_bbox_car_bbox_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: car_bbox_car_bbox_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: alpr
 --
 
 ALTER SEQUENCE public.car_bbox_car_bbox_id_seq OWNED BY public.car_bbox.car_bbox_id;
@@ -98,7 +98,7 @@ ALTER SEQUENCE public.car_bbox_car_bbox_id_seq OWNED BY public.car_bbox.car_bbox
 
 --
 -- TOC entry 216 (class 1259 OID 24595)
--- Name: image_logs; Type: TABLE; Schema: public; Owner: postgres
+-- Name: image_logs; Type: TABLE; Schema: public; Owner: alpr
 --
 
 CREATE TABLE public.image_logs (
@@ -119,11 +119,11 @@ CREATE TABLE public.image_logs (
 );
 
 
-ALTER TABLE public.image_logs OWNER TO postgres;
+ALTER TABLE public.image_logs OWNER TO alpr;
 
 --
 -- TOC entry 217 (class 1259 OID 24600)
--- Name: payment_logs; Type: TABLE; Schema: public; Owner: postgres
+-- Name: payment_logs; Type: TABLE; Schema: public; Owner: alpr
 --
 
 CREATE TABLE public.payment_logs (
@@ -135,11 +135,11 @@ CREATE TABLE public.payment_logs (
 );
 
 
-ALTER TABLE public.payment_logs OWNER TO postgres;
+ALTER TABLE public.payment_logs OWNER TO alpr;
 
 --
 -- TOC entry 218 (class 1259 OID 24603)
--- Name: payment_logs_transection_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: payment_logs_transection_id_seq; Type: SEQUENCE; Schema: public; Owner: alpr
 --
 
 CREATE SEQUENCE public.payment_logs_transection_id_seq
@@ -151,12 +151,12 @@ CREATE SEQUENCE public.payment_logs_transection_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.payment_logs_transection_id_seq OWNER TO postgres;
+ALTER TABLE public.payment_logs_transection_id_seq OWNER TO alpr;
 
 --
 -- TOC entry 3444 (class 0 OID 0)
 -- Dependencies: 218
--- Name: payment_logs_transection_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: payment_logs_transection_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: alpr
 --
 
 ALTER SEQUENCE public.payment_logs_transection_id_seq OWNED BY public.payment_logs.transection_id;
@@ -164,7 +164,7 @@ ALTER SEQUENCE public.payment_logs_transection_id_seq OWNED BY public.payment_lo
 
 --
 -- TOC entry 219 (class 1259 OID 24604)
--- Name: plate_bbox; Type: TABLE; Schema: public; Owner: postgres
+-- Name: plate_bbox; Type: TABLE; Schema: public; Owner: alpr
 --
 
 CREATE TABLE public.plate_bbox (
@@ -180,11 +180,11 @@ CREATE TABLE public.plate_bbox (
 );
 
 
-ALTER TABLE public.plate_bbox OWNER TO postgres;
+ALTER TABLE public.plate_bbox OWNER TO alpr;
 
 --
 -- TOC entry 220 (class 1259 OID 24607)
--- Name: plate_bbox_plate_bbox_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: plate_bbox_plate_bbox_id_seq; Type: SEQUENCE; Schema: public; Owner: alpr
 --
 
 CREATE SEQUENCE public.plate_bbox_plate_bbox_id_seq
@@ -196,12 +196,12 @@ CREATE SEQUENCE public.plate_bbox_plate_bbox_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.plate_bbox_plate_bbox_id_seq OWNER TO postgres;
+ALTER TABLE public.plate_bbox_plate_bbox_id_seq OWNER TO alpr;
 
 --
 -- TOC entry 3445 (class 0 OID 0)
 -- Dependencies: 220
--- Name: plate_bbox_plate_bbox_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: plate_bbox_plate_bbox_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: alpr
 --
 
 ALTER SEQUENCE public.plate_bbox_plate_bbox_id_seq OWNED BY public.plate_bbox.plate_bbox_id;
@@ -209,7 +209,7 @@ ALTER SEQUENCE public.plate_bbox_plate_bbox_id_seq OWNED BY public.plate_bbox.pl
 
 --
 -- TOC entry 221 (class 1259 OID 24608)
--- Name: subscription; Type: TABLE; Schema: public; Owner: postgres
+-- Name: subscription; Type: TABLE; Schema: public; Owner: alpr
 --
 
 CREATE TABLE public.subscription (
@@ -231,11 +231,11 @@ CREATE TABLE public.subscription (
 );
 
 
-ALTER TABLE public.subscription OWNER TO postgres;
+ALTER TABLE public.subscription OWNER TO alpr;
 
 --
 -- TOC entry 222 (class 1259 OID 24615)
--- Name: subscription_logs; Type: TABLE; Schema: public; Owner: postgres
+-- Name: subscription_logs; Type: TABLE; Schema: public; Owner: alpr
 --
 
 CREATE TABLE public.subscription_logs (
@@ -249,11 +249,11 @@ CREATE TABLE public.subscription_logs (
 );
 
 
-ALTER TABLE public.subscription_logs OWNER TO postgres;
+ALTER TABLE public.subscription_logs OWNER TO alpr;
 
 --
 -- TOC entry 223 (class 1259 OID 24618)
--- Name: subscription_logs_log_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: subscription_logs_log_id_seq; Type: SEQUENCE; Schema: public; Owner: alpr
 --
 
 CREATE SEQUENCE public.subscription_logs_log_id_seq
@@ -265,12 +265,12 @@ CREATE SEQUENCE public.subscription_logs_log_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.subscription_logs_log_id_seq OWNER TO postgres;
+ALTER TABLE public.subscription_logs_log_id_seq OWNER TO alpr;
 
 --
 -- TOC entry 3446 (class 0 OID 0)
 -- Dependencies: 223
--- Name: subscription_logs_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: subscription_logs_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: alpr
 --
 
 ALTER SEQUENCE public.subscription_logs_log_id_seq OWNED BY public.subscription_logs.log_id;
@@ -278,7 +278,7 @@ ALTER SEQUENCE public.subscription_logs_log_id_seq OWNED BY public.subscription_
 
 --
 -- TOC entry 224 (class 1259 OID 24619)
--- Name: subscription_sub_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: subscription_sub_id_seq; Type: SEQUENCE; Schema: public; Owner: alpr
 --
 
 CREATE SEQUENCE public.subscription_sub_id_seq
@@ -290,12 +290,12 @@ CREATE SEQUENCE public.subscription_sub_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.subscription_sub_id_seq OWNER TO postgres;
+ALTER TABLE public.subscription_sub_id_seq OWNER TO alpr;
 
 --
 -- TOC entry 3447 (class 0 OID 0)
 -- Dependencies: 224
--- Name: subscription_sub_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: subscription_sub_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: alpr
 --
 
 ALTER SEQUENCE public.subscription_sub_id_seq OWNED BY public.subscription.sub_id;
@@ -303,7 +303,7 @@ ALTER SEQUENCE public.subscription_sub_id_seq OWNED BY public.subscription.sub_i
 
 --
 -- TOC entry 225 (class 1259 OID 24620)
--- Name: token; Type: TABLE; Schema: public; Owner: postgres
+-- Name: token; Type: TABLE; Schema: public; Owner: alpr
 --
 
 CREATE TABLE public.token (
@@ -317,11 +317,11 @@ CREATE TABLE public.token (
 );
 
 
-ALTER TABLE public.token OWNER TO postgres;
+ALTER TABLE public.token OWNER TO alpr;
 
 --
 -- TOC entry 226 (class 1259 OID 24625)
--- Name: user_subscription; Type: TABLE; Schema: public; Owner: postgres
+-- Name: user_subscription; Type: TABLE; Schema: public; Owner: alpr
 --
 
 CREATE TABLE public.user_subscription (
@@ -335,11 +335,11 @@ CREATE TABLE public.user_subscription (
 );
 
 
-ALTER TABLE public.user_subscription OWNER TO postgres;
+ALTER TABLE public.user_subscription OWNER TO alpr;
 
 --
 -- TOC entry 227 (class 1259 OID 24628)
--- Name: user_subscription_user_sub_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: user_subscription_user_sub_id_seq; Type: SEQUENCE; Schema: public; Owner: alpr
 --
 
 CREATE SEQUENCE public.user_subscription_user_sub_id_seq
@@ -351,12 +351,12 @@ CREATE SEQUENCE public.user_subscription_user_sub_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_subscription_user_sub_id_seq OWNER TO postgres;
+ALTER TABLE public.user_subscription_user_sub_id_seq OWNER TO alpr;
 
 --
 -- TOC entry 3448 (class 0 OID 0)
 -- Dependencies: 227
--- Name: user_subscription_user_sub_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: user_subscription_user_sub_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: alpr
 --
 
 ALTER SEQUENCE public.user_subscription_user_sub_id_seq OWNED BY public.user_subscription.user_sub_id;
@@ -364,7 +364,7 @@ ALTER SEQUENCE public.user_subscription_user_sub_id_seq OWNED BY public.user_sub
 
 --
 -- TOC entry 228 (class 1259 OID 24629)
--- Name: users; Type: TABLE; Schema: public; Owner: postgres
+-- Name: users; Type: TABLE; Schema: public; Owner: alpr
 --
 
 CREATE TABLE public.users (
@@ -377,11 +377,11 @@ CREATE TABLE public.users (
 );
 
 
-ALTER TABLE public.users OWNER TO postgres;
+ALTER TABLE public.users OWNER TO alpr;
 
 --
 -- TOC entry 229 (class 1259 OID 24634)
--- Name: user_user_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: user_user_id_seq; Type: SEQUENCE; Schema: public; Owner: alpr
 --
 
 CREATE SEQUENCE public.user_user_id_seq
@@ -393,12 +393,12 @@ CREATE SEQUENCE public.user_user_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_user_id_seq OWNER TO postgres;
+ALTER TABLE public.user_user_id_seq OWNER TO alpr;
 
 --
 -- TOC entry 3449 (class 0 OID 0)
 -- Dependencies: 229
--- Name: user_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: user_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: alpr
 --
 
 ALTER SEQUENCE public.user_user_id_seq OWNED BY public.users.user_id;
@@ -406,7 +406,7 @@ ALTER SEQUENCE public.user_user_id_seq OWNED BY public.users.user_id;
 
 --
 -- TOC entry 230 (class 1259 OID 24635)
--- Name: video_logs; Type: TABLE; Schema: public; Owner: postgres
+-- Name: video_logs; Type: TABLE; Schema: public; Owner: alpr
 --
 
 CREATE TABLE public.video_logs (
@@ -428,11 +428,11 @@ CREATE TABLE public.video_logs (
 );
 
 
-ALTER TABLE public.video_logs OWNER TO postgres;
+ALTER TABLE public.video_logs OWNER TO alpr;
 
 --
 -- TOC entry 231 (class 1259 OID 24640)
--- Name: websocket_image_logs_log_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: websocket_image_logs_log_id_seq; Type: SEQUENCE; Schema: public; Owner: alpr
 --
 
 CREATE SEQUENCE public.websocket_image_logs_log_id_seq
@@ -444,12 +444,12 @@ CREATE SEQUENCE public.websocket_image_logs_log_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.websocket_image_logs_log_id_seq OWNER TO postgres;
+ALTER TABLE public.websocket_image_logs_log_id_seq OWNER TO alpr;
 
 --
 -- TOC entry 3450 (class 0 OID 0)
 -- Dependencies: 231
--- Name: websocket_image_logs_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: websocket_image_logs_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: alpr
 --
 
 ALTER SEQUENCE public.websocket_image_logs_log_id_seq OWNED BY public.image_logs.log_id;
@@ -457,7 +457,7 @@ ALTER SEQUENCE public.websocket_image_logs_log_id_seq OWNED BY public.image_logs
 
 --
 -- TOC entry 232 (class 1259 OID 24641)
--- Name: websocket_video_logs_log_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: websocket_video_logs_log_id_seq; Type: SEQUENCE; Schema: public; Owner: alpr
 --
 
 CREATE SEQUENCE public.websocket_video_logs_log_id_seq
@@ -469,12 +469,12 @@ CREATE SEQUENCE public.websocket_video_logs_log_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.websocket_video_logs_log_id_seq OWNER TO postgres;
+ALTER TABLE public.websocket_video_logs_log_id_seq OWNER TO alpr;
 
 --
 -- TOC entry 3451 (class 0 OID 0)
 -- Dependencies: 232
--- Name: websocket_video_logs_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: websocket_video_logs_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: alpr
 --
 
 ALTER SEQUENCE public.websocket_video_logs_log_id_seq OWNED BY public.video_logs.log_id;
@@ -482,7 +482,7 @@ ALTER SEQUENCE public.websocket_video_logs_log_id_seq OWNED BY public.video_logs
 
 --
 -- TOC entry 3223 (class 2604 OID 24774)
--- Name: car_bbox car_bbox_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: car_bbox car_bbox_id; Type: DEFAULT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.car_bbox ALTER COLUMN car_bbox_id SET DEFAULT nextval('public.car_bbox_car_bbox_id_seq'::regclass);
@@ -490,7 +490,7 @@ ALTER TABLE ONLY public.car_bbox ALTER COLUMN car_bbox_id SET DEFAULT nextval('p
 
 --
 -- TOC entry 3224 (class 2604 OID 24775)
--- Name: image_logs log_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: image_logs log_id; Type: DEFAULT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.image_logs ALTER COLUMN log_id SET DEFAULT nextval('public.websocket_image_logs_log_id_seq'::regclass);
@@ -498,7 +498,7 @@ ALTER TABLE ONLY public.image_logs ALTER COLUMN log_id SET DEFAULT nextval('publ
 
 --
 -- TOC entry 3225 (class 2604 OID 24776)
--- Name: payment_logs transection_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: payment_logs transection_id; Type: DEFAULT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.payment_logs ALTER COLUMN transection_id SET DEFAULT nextval('public.payment_logs_transection_id_seq'::regclass);
@@ -506,7 +506,7 @@ ALTER TABLE ONLY public.payment_logs ALTER COLUMN transection_id SET DEFAULT nex
 
 --
 -- TOC entry 3226 (class 2604 OID 24777)
--- Name: plate_bbox plate_bbox_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: plate_bbox plate_bbox_id; Type: DEFAULT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.plate_bbox ALTER COLUMN plate_bbox_id SET DEFAULT nextval('public.plate_bbox_plate_bbox_id_seq'::regclass);
@@ -514,7 +514,7 @@ ALTER TABLE ONLY public.plate_bbox ALTER COLUMN plate_bbox_id SET DEFAULT nextva
 
 --
 -- TOC entry 3227 (class 2604 OID 24778)
--- Name: subscription sub_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: subscription sub_id; Type: DEFAULT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.subscription ALTER COLUMN sub_id SET DEFAULT nextval('public.subscription_sub_id_seq'::regclass);
@@ -522,7 +522,7 @@ ALTER TABLE ONLY public.subscription ALTER COLUMN sub_id SET DEFAULT nextval('pu
 
 --
 -- TOC entry 3234 (class 2604 OID 24779)
--- Name: subscription_logs log_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: subscription_logs log_id; Type: DEFAULT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.subscription_logs ALTER COLUMN log_id SET DEFAULT nextval('public.subscription_logs_log_id_seq'::regclass);
@@ -530,7 +530,7 @@ ALTER TABLE ONLY public.subscription_logs ALTER COLUMN log_id SET DEFAULT nextva
 
 --
 -- TOC entry 3236 (class 2604 OID 24780)
--- Name: user_subscription user_sub_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: user_subscription user_sub_id; Type: DEFAULT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.user_subscription ALTER COLUMN user_sub_id SET DEFAULT nextval('public.user_subscription_user_sub_id_seq'::regclass);
@@ -538,7 +538,7 @@ ALTER TABLE ONLY public.user_subscription ALTER COLUMN user_sub_id SET DEFAULT n
 
 --
 -- TOC entry 3237 (class 2604 OID 24781)
--- Name: users user_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: users user_id; Type: DEFAULT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN user_id SET DEFAULT nextval('public.user_user_id_seq'::regclass);
@@ -546,7 +546,7 @@ ALTER TABLE ONLY public.users ALTER COLUMN user_id SET DEFAULT nextval('public.u
 
 --
 -- TOC entry 3238 (class 2604 OID 24782)
--- Name: video_logs log_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: video_logs log_id; Type: DEFAULT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.video_logs ALTER COLUMN log_id SET DEFAULT nextval('public.websocket_video_logs_log_id_seq'::regclass);
@@ -555,7 +555,7 @@ ALTER TABLE ONLY public.video_logs ALTER COLUMN log_id SET DEFAULT nextval('publ
 --
 -- TOC entry 3418 (class 0 OID 24591)
 -- Dependencies: 214
--- Data for Name: car_bbox; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: car_bbox; Type: TABLE DATA; Schema: public; Owner: alpr
 --
 
 COPY public.car_bbox (car_bbox_id, top_left_x, top_left_y, top_right_x, top_right_y, bottom_left_x, bottom_left_y, bottom_right_x, bottom_right_y) FROM stdin;
@@ -893,7 +893,7 @@ COPY public.car_bbox (car_bbox_id, top_left_x, top_left_y, top_right_x, top_righ
 --
 -- TOC entry 3420 (class 0 OID 24595)
 -- Dependencies: 216
--- Data for Name: image_logs; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: image_logs; Type: TABLE DATA; Schema: public; Owner: alpr
 --
 
 COPY public.image_logs (log_id, file_name, processing_time, plate_id, car_bbox_id, plate_bbox_id, user_id, created_at, service_type, province, format_flag, full_plate, score, token_key) FROM stdin;
@@ -915,7 +915,7 @@ COPY public.image_logs (log_id, file_name, processing_time, plate_id, car_bbox_i
 --
 -- TOC entry 3421 (class 0 OID 24600)
 -- Dependencies: 217
--- Data for Name: payment_logs; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: payment_logs; Type: TABLE DATA; Schema: public; Owner: alpr
 --
 
 COPY public.payment_logs (transection_id, amount, method, user_id, created_at) FROM stdin;
@@ -925,7 +925,7 @@ COPY public.payment_logs (transection_id, amount, method, user_id, created_at) F
 --
 -- TOC entry 3423 (class 0 OID 24604)
 -- Dependencies: 219
--- Data for Name: plate_bbox; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: plate_bbox; Type: TABLE DATA; Schema: public; Owner: alpr
 --
 
 COPY public.plate_bbox (plate_bbox_id, top_left_x, top_left_y, top_right_x, top_right_y, bottom_left_x, bottom_left_y, bottom_right_x, bottom_right_y) FROM stdin;
@@ -1128,21 +1128,21 @@ COPY public.plate_bbox (plate_bbox_id, top_left_x, top_left_y, top_right_x, top_
 --
 -- TOC entry 3425 (class 0 OID 24608)
 -- Dependencies: 221
--- Data for Name: subscription; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: subscription; Type: TABLE DATA; Schema: public; Owner: alpr
 --
 
 COPY public.subscription (sub_id, billing_period, service_type, price, request_limit, description, created_at, updated_at, token_limit, api_request_limit, video_upload_limit, has_api_access, has_websocket_access, has_video_upload, has_rtsp_stream) FROM stdin;
 1	MONTHLY	API	30	200	Description	2025-09-19 16:09:38.142	2025-09-19 16:09:38.142	200	0	0	0	0	0	0
-30	MONTHLY	WEBSOCKET	299	\N	Tier 1: Starter Plan	2026-02-16 19:46:18.611407	2026-02-16 19:46:18.611407	5	1000	0	1	1	0	0
-31	MONTHLY	VIDEO_WEBSOCKET	499	\N	Tier 2: Advanced Plan	2026-02-16 19:46:18.611407	2026-02-16 19:46:18.611407	10	1000	1000	1	1	1	0
-32	MONTHLY	RTSP	899	\N	Tier 3: Pro Plan	2026-02-16 19:46:18.611407	2026-02-16 19:46:18.611407	20	5000	5000	1	1	1	1
+30	MONTHLY	TIER_1	299	\N	Tier 1: Starter Plan	2026-02-16 19:46:18.611407	2026-02-16 19:46:18.611407	5	1000	0	1	1	0	0
+31	MONTHLY	TIER_2	499	\N	Tier 2: Advanced Plan	2026-02-16 19:46:18.611407	2026-02-16 19:46:18.611407	10	1000	1000	1	1	1	0
+32	MONTHLY	TIER_3	899	\N	Tier 3: Pro Plan	2026-02-16 19:46:18.611407	2026-02-16 19:46:18.611407	20	5000	5000	1	1	1	1
 \.
 
 
 --
 -- TOC entry 3426 (class 0 OID 24615)
 -- Dependencies: 222
--- Data for Name: subscription_logs; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: subscription_logs; Type: TABLE DATA; Schema: public; Owner: alpr
 --
 
 COPY public.subscription_logs (log_id, transection_id, request_limit, price, service_type, user_id, created_at) FROM stdin;
@@ -1152,7 +1152,7 @@ COPY public.subscription_logs (log_id, transection_id, request_limit, price, ser
 --
 -- TOC entry 3429 (class 0 OID 24620)
 -- Dependencies: 225
--- Data for Name: token; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: token; Type: TABLE DATA; Schema: public; Owner: alpr
 --
 
 COPY public.token (key, name, expire_time, create_at, update_at, user_sub_id, service_type) FROM stdin;
@@ -1167,7 +1167,7 @@ e0b6621b-2752-46fe-b808-842af147db48	admin_websocket	2026-02-27 17:00:00	2026-02
 --
 -- TOC entry 3430 (class 0 OID 24625)
 -- Dependencies: 226
--- Data for Name: user_subscription; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: user_subscription; Type: TABLE DATA; Schema: public; Owner: alpr
 --
 
 COPY public.user_subscription (user_sub_id, is_activate, end_date, start_date, request_quota, user_id, sub_id) FROM stdin;
@@ -1184,7 +1184,7 @@ COPY public.user_subscription (user_sub_id, is_activate, end_date, start_date, r
 --
 -- TOC entry 3432 (class 0 OID 24629)
 -- Dependencies: 228
--- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: alpr
 --
 
 COPY public.users (user_id, email, password, is_activate, created_at, updated_at) FROM stdin;
@@ -1202,7 +1202,7 @@ COPY public.users (user_id, email, password, is_activate, created_at, updated_at
 --
 -- TOC entry 3434 (class 0 OID 24635)
 -- Dependencies: 230
--- Data for Name: video_logs; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: video_logs; Type: TABLE DATA; Schema: public; Owner: alpr
 --
 
 COPY public.video_logs (log_id, video_timestamp, score, plate_id, file_name, processing_time, car_bbox_id, plate_bbox_id, user_id, created_at, province, full_plate, format_flag, token_key, service_type) FROM stdin;
@@ -1212,7 +1212,7 @@ COPY public.video_logs (log_id, video_timestamp, score, plate_id, file_name, pro
 --
 -- TOC entry 3452 (class 0 OID 0)
 -- Dependencies: 215
--- Name: car_bbox_car_bbox_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: car_bbox_car_bbox_id_seq; Type: SEQUENCE SET; Schema: public; Owner: alpr
 --
 
 SELECT pg_catalog.setval('public.car_bbox_car_bbox_id_seq', 1, false);
@@ -1221,7 +1221,7 @@ SELECT pg_catalog.setval('public.car_bbox_car_bbox_id_seq', 1, false);
 --
 -- TOC entry 3453 (class 0 OID 0)
 -- Dependencies: 218
--- Name: payment_logs_transection_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: payment_logs_transection_id_seq; Type: SEQUENCE SET; Schema: public; Owner: alpr
 --
 
 SELECT pg_catalog.setval('public.payment_logs_transection_id_seq', 3, true);
@@ -1230,7 +1230,7 @@ SELECT pg_catalog.setval('public.payment_logs_transection_id_seq', 3, true);
 --
 -- TOC entry 3454 (class 0 OID 0)
 -- Dependencies: 220
--- Name: plate_bbox_plate_bbox_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: plate_bbox_plate_bbox_id_seq; Type: SEQUENCE SET; Schema: public; Owner: alpr
 --
 
 SELECT pg_catalog.setval('public.plate_bbox_plate_bbox_id_seq', 193, true);
@@ -1239,7 +1239,7 @@ SELECT pg_catalog.setval('public.plate_bbox_plate_bbox_id_seq', 193, true);
 --
 -- TOC entry 3455 (class 0 OID 0)
 -- Dependencies: 223
--- Name: subscription_logs_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: subscription_logs_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: alpr
 --
 
 SELECT pg_catalog.setval('public.subscription_logs_log_id_seq', 3, true);
@@ -1248,7 +1248,7 @@ SELECT pg_catalog.setval('public.subscription_logs_log_id_seq', 3, true);
 --
 -- TOC entry 3456 (class 0 OID 0)
 -- Dependencies: 224
--- Name: subscription_sub_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: subscription_sub_id_seq; Type: SEQUENCE SET; Schema: public; Owner: alpr
 --
 
 SELECT pg_catalog.setval('public.subscription_sub_id_seq', 32, true);
@@ -1257,7 +1257,7 @@ SELECT pg_catalog.setval('public.subscription_sub_id_seq', 32, true);
 --
 -- TOC entry 3457 (class 0 OID 0)
 -- Dependencies: 227
--- Name: user_subscription_user_sub_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: user_subscription_user_sub_id_seq; Type: SEQUENCE SET; Schema: public; Owner: alpr
 --
 
 SELECT pg_catalog.setval('public.user_subscription_user_sub_id_seq', 14, true);
@@ -1266,7 +1266,7 @@ SELECT pg_catalog.setval('public.user_subscription_user_sub_id_seq', 14, true);
 --
 -- TOC entry 3458 (class 0 OID 0)
 -- Dependencies: 229
--- Name: user_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: user_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: alpr
 --
 
 SELECT pg_catalog.setval('public.user_user_id_seq', 9, true);
@@ -1275,7 +1275,7 @@ SELECT pg_catalog.setval('public.user_user_id_seq', 9, true);
 --
 -- TOC entry 3459 (class 0 OID 0)
 -- Dependencies: 231
--- Name: websocket_image_logs_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: websocket_image_logs_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: alpr
 --
 
 SELECT pg_catalog.setval('public.websocket_image_logs_log_id_seq', 156, true);
@@ -1284,7 +1284,7 @@ SELECT pg_catalog.setval('public.websocket_image_logs_log_id_seq', 156, true);
 --
 -- TOC entry 3460 (class 0 OID 0)
 -- Dependencies: 232
--- Name: websocket_video_logs_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: websocket_video_logs_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: alpr
 --
 
 SELECT pg_catalog.setval('public.websocket_video_logs_log_id_seq', 238, true);
@@ -1292,7 +1292,7 @@ SELECT pg_catalog.setval('public.websocket_video_logs_log_id_seq', 238, true);
 
 --
 -- TOC entry 3240 (class 2606 OID 24652)
--- Name: car_bbox car_bbox_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: car_bbox car_bbox_pkey; Type: CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.car_bbox
@@ -1301,7 +1301,7 @@ ALTER TABLE ONLY public.car_bbox
 
 --
 -- TOC entry 3244 (class 2606 OID 24654)
--- Name: payment_logs payment_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: payment_logs payment_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.payment_logs
@@ -1310,7 +1310,7 @@ ALTER TABLE ONLY public.payment_logs
 
 --
 -- TOC entry 3246 (class 2606 OID 24656)
--- Name: plate_bbox plate_bbox_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: plate_bbox plate_bbox_pkey; Type: CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.plate_bbox
@@ -1319,7 +1319,7 @@ ALTER TABLE ONLY public.plate_bbox
 
 --
 -- TOC entry 3250 (class 2606 OID 24658)
--- Name: subscription_logs subscription_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: subscription_logs subscription_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.subscription_logs
@@ -1328,7 +1328,7 @@ ALTER TABLE ONLY public.subscription_logs
 
 --
 -- TOC entry 3248 (class 2606 OID 24660)
--- Name: subscription subscription_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: subscription subscription_pkey; Type: CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.subscription
@@ -1337,7 +1337,7 @@ ALTER TABLE ONLY public.subscription
 
 --
 -- TOC entry 3252 (class 2606 OID 24662)
--- Name: token token_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: token token_pkey; Type: CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.token
@@ -1346,7 +1346,7 @@ ALTER TABLE ONLY public.token
 
 --
 -- TOC entry 3256 (class 2606 OID 24664)
--- Name: users user_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: users user_pkey; Type: CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.users
@@ -1355,7 +1355,7 @@ ALTER TABLE ONLY public.users
 
 --
 -- TOC entry 3254 (class 2606 OID 24666)
--- Name: user_subscription user_subscription_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_subscription user_subscription_pkey; Type: CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.user_subscription
@@ -1364,7 +1364,7 @@ ALTER TABLE ONLY public.user_subscription
 
 --
 -- TOC entry 3242 (class 2606 OID 24668)
--- Name: image_logs websocket_image_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: image_logs websocket_image_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.image_logs
@@ -1373,7 +1373,7 @@ ALTER TABLE ONLY public.image_logs
 
 --
 -- TOC entry 3258 (class 2606 OID 24670)
--- Name: video_logs websocket_video_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: video_logs websocket_video_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.video_logs
@@ -1382,7 +1382,7 @@ ALTER TABLE ONLY public.video_logs
 
 --
 -- TOC entry 3259 (class 2606 OID 24671)
--- Name: image_logs fk_car_bbox; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: image_logs fk_car_bbox; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.image_logs
@@ -1391,7 +1391,7 @@ ALTER TABLE ONLY public.image_logs
 
 --
 -- TOC entry 3271 (class 2606 OID 24676)
--- Name: video_logs fk_car_bbox; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: video_logs fk_car_bbox; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.video_logs
@@ -1400,7 +1400,7 @@ ALTER TABLE ONLY public.video_logs
 
 --
 -- TOC entry 3260 (class 2606 OID 24681)
--- Name: image_logs fk_plate_bbox; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: image_logs fk_plate_bbox; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.image_logs
@@ -1409,7 +1409,7 @@ ALTER TABLE ONLY public.image_logs
 
 --
 -- TOC entry 3272 (class 2606 OID 24686)
--- Name: video_logs fk_plate_bbox; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: video_logs fk_plate_bbox; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.video_logs
@@ -1418,7 +1418,7 @@ ALTER TABLE ONLY public.video_logs
 
 --
 -- TOC entry 3273 (class 2606 OID 24691)
--- Name: video_logs fk_token; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: video_logs fk_token; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.video_logs
@@ -1427,7 +1427,7 @@ ALTER TABLE ONLY public.video_logs
 
 --
 -- TOC entry 3261 (class 2606 OID 24696)
--- Name: image_logs fk_token; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: image_logs fk_token; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.image_logs
@@ -1436,7 +1436,7 @@ ALTER TABLE ONLY public.image_logs
 
 --
 -- TOC entry 3267 (class 2606 OID 24701)
--- Name: token fk_user_sub_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: token fk_user_sub_id; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.token
@@ -1445,7 +1445,7 @@ ALTER TABLE ONLY public.token
 
 --
 -- TOC entry 3262 (class 2606 OID 24706)
--- Name: image_logs image_logs_token_key_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: image_logs image_logs_token_key_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.image_logs
@@ -1454,7 +1454,7 @@ ALTER TABLE ONLY public.image_logs
 
 --
 -- TOC entry 3264 (class 2606 OID 24711)
--- Name: payment_logs payment_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: payment_logs payment_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.payment_logs
@@ -1463,7 +1463,7 @@ ALTER TABLE ONLY public.payment_logs
 
 --
 -- TOC entry 3265 (class 2606 OID 24716)
--- Name: subscription_logs subscription_logs_transection_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: subscription_logs subscription_logs_transection_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.subscription_logs
@@ -1472,7 +1472,7 @@ ALTER TABLE ONLY public.subscription_logs
 
 --
 -- TOC entry 3266 (class 2606 OID 24721)
--- Name: subscription_logs subscription_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: subscription_logs subscription_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.subscription_logs
@@ -1481,7 +1481,7 @@ ALTER TABLE ONLY public.subscription_logs
 
 --
 -- TOC entry 3268 (class 2606 OID 24726)
--- Name: token token_user_sub_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: token token_user_sub_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.token
@@ -1490,7 +1490,7 @@ ALTER TABLE ONLY public.token
 
 --
 -- TOC entry 3269 (class 2606 OID 24731)
--- Name: user_subscription user_subscription_sub_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_subscription user_subscription_sub_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.user_subscription
@@ -1499,7 +1499,7 @@ ALTER TABLE ONLY public.user_subscription
 
 --
 -- TOC entry 3270 (class 2606 OID 24736)
--- Name: user_subscription user_subscription_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_subscription user_subscription_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.user_subscription
@@ -1508,7 +1508,7 @@ ALTER TABLE ONLY public.user_subscription
 
 --
 -- TOC entry 3274 (class 2606 OID 24741)
--- Name: video_logs video_logs_token_key_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: video_logs video_logs_token_key_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.video_logs
@@ -1517,7 +1517,7 @@ ALTER TABLE ONLY public.video_logs
 
 --
 -- TOC entry 3263 (class 2606 OID 24746)
--- Name: image_logs websocket_image_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: image_logs websocket_image_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.image_logs
@@ -1526,7 +1526,7 @@ ALTER TABLE ONLY public.image_logs
 
 --
 -- TOC entry 3275 (class 2606 OID 24751)
--- Name: video_logs websocket_video_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: video_logs websocket_video_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
 ALTER TABLE ONLY public.video_logs
@@ -1539,7 +1539,7 @@ ALTER TABLE ONLY public.video_logs
 -- Name: SCHEMA public; Type: ACL; Schema: -; Owner: pg_database_owner
 --
 
-GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO alpr;
 
 
 -- Completed on 2026-02-17 21:14:37
@@ -1549,3 +1549,4 @@ GRANT ALL ON SCHEMA public TO postgres;
 --
 
 \unrestrict wIyKYTIgpco4AYMKHr5EpvsA6fXINIv0KCpIzipz15aQgh2rw5IgJjqBaxuVdY0
+
