@@ -16,12 +16,26 @@ from src.constants import errors
 
 plate_recognizer = PlateRecognizerService()
 
+# Global duplicate detection (last seen plates with timestamps)
+recent_plates = {}  # {plate_text: timestamp}
+DUPLICATE_THRESHOLD = 3.0  # seconds - ignore same plate within this time
+
 async def consume(websocket: WebSocket, token: str, user_id: str, client_queue: asyncio.Queue, video_tracker: VideoPlateTracker):
   frame_counter = 0 # for debugging
   try:
     while True:
       frame_bytes = await client_queue.get()
       logger.info(f"Processing frame #{frame_counter}, size: {len(frame_bytes)} bytes")
+
+      # Send progress update to frontend
+      try:
+        await websocket.send_json({
+          "status": "progress",
+          "frame_number": frame_counter,
+          "queue_size": client_queue.qsize()
+        })
+      except:
+        pass  # Continue processing even if can't send progress
 
       # Decode frame_bytes to get full image
       full_image = cv2.imdecode(np.frombuffer(frame_bytes, dtype=np.uint8), cv2.IMREAD_COLOR)
@@ -37,10 +51,32 @@ async def consume(websocket: WebSocket, token: str, user_id: str, client_queue: 
           image_file = await numpy_to_upload_file_async(plate_crop)
           # Call /process/from-plate-crop endpoint (skip PlateDetector step)
           response = await plate_recognizer.process_plate_crop(image_file)
+          
+          # Text-based duplicate detection
+          response_data = response.json()
+          plate_text = response_data.get('plate_id', '')
+          current_time = datetime.now().timestamp()
+          
+          # Check if this plate was seen recently
+          if plate_text and plate_text in recent_plates:
+            time_diff = current_time - recent_plates[plate_text]
+            if time_diff < DUPLICATE_THRESHOLD:
+              logger.info(f"⏭️  Skipping duplicate plate: {plate_text} (seen {time_diff:.1f}s ago)")
+              frame_counter += 1
+              continue
+          
+          # Update recent plates tracking
+          if plate_text:
+            recent_plates[plate_text] = current_time
+            # Clean up old entries (older than 10 seconds)
+            old_keys = [k for k, v in recent_plates.items() if current_time - v >= 10.0]
+            for k in old_keys:
+              del recent_plates[k]
+          
           filename = f"{uuid.uuid4()}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.jpg"
 
           await save_image_async(plate_crop, filename)
-          await commit_websocket_log(response.json(), token, user_id, filename)
+          await commit_websocket_log(response_data, token, user_id, filename)
 
           result_data = response.json()
           result_data['filename'] = filename
@@ -57,20 +93,35 @@ async def consume(websocket: WebSocket, token: str, user_id: str, client_queue: 
           plate_crop_base64 = base64.b64encode(plate_crop_bytes).decode('utf-8')
           result_data['plateCropImage'] = f"data:image/jpeg;base64,{plate_crop_base64}"
 
-          await websocket.send_json(result_data)
-          logger.info(f"Frame #{frame_counter}: Response sent successfully")
+          try:
+            await websocket.send_json(result_data)
+            logger.info(f"Frame #{frame_counter}: Response sent successfully")
+          except Exception as ws_err:
+            logger.warning(f"Failed to send response (websocket closed): {ws_err}")
+            break
 
         except ValueError as e:
           logger.error(str(e))
-          await websocket.send_text(f"Error: {str(e)}")
+          try:
+            await websocket.send_text(f"Error: {str(e)}")
+          except:
+            break
 
         except Exception as e:
           logger.error(str(e))
-          await websocket.send_text(errors.SERVER_ERROR)
+          try:
+            await websocket.send_text(errors.SERVER_ERROR)
+          except:
+            break
       else:
         logger.info(f"Frame #{frame_counter}: No plate finalized yet, skipping")
 
       frame_counter += 1
 
   except asyncio.CancelledError:
-    logger.error("Processing task cancelled.")
+    logger.info("Consumer task cancelled - cleaning up")
+    raise  # Re-raise to properly cleanup
+  
+  except Exception as e:
+    logger.error(f"Unexpected error in consumer: {e}")
+    raise

@@ -3,7 +3,7 @@ import asyncio
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.constants import configs
@@ -38,7 +38,9 @@ def handle_sigterm(signum, frame):
 signal.signal(signal.SIGTERM, handle_sigterm)
 signal.signal(signal.SIGINT, handle_sigterm)
 
-app.add_api_websocket_route("/video/{token}", video.websocket_endpoint)
+@app.websocket("/{token}")
+async def websocket_route(websocket: WebSocket, token: str):
+  await video.websocket_endpoint(websocket, token)
 
 @app.get("/readyz")
 async def readyz():

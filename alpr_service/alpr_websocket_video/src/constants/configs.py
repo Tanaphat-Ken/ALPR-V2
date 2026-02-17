@@ -18,7 +18,7 @@ PLATE_RECOG_BASE_URL = os.getenv("PLATE_RECOG_BASE_URL", "http://localhost:5000/
 
 DB_NAME = os.getenv("DB_NAME", "alpr_service")
 DB_USER = os.getenv("DB_USER", "alpr")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "P@ssw0rd").replace('@', '%40')
+DB_PASSWORD = os.getenv("DB_PASS", "postgres")
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = os.getenv("DB_PORT", 5432)
 

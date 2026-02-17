@@ -11,7 +11,7 @@ const requestProcessImage = async (data: ProcessImageBody) => {
   const formData = new FormData()
   formData.append('file', data.file)
   return await plateRecognizerService.post<ProcessImageResponse>(
-    '/images/upload-image',
+    '/upload-image',
     formData,
     {
       headers: {

@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_UPLOAD_IMAGE || 'http://localhost:8089/api/v1'
+  baseURL: process.env.NEXT_PUBLIC_API_UPLOAD_IMAGE || 'http://35.187.233.205/api/image'
 })
 
 const handleResponse = <T>(response: AxiosResponse<T>) => response.data

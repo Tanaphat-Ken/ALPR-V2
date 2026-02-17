@@ -134,7 +134,8 @@ async def send_to_model(image_path: str):
 
 async def send_file_to_model(file_contents: bytes, filename: str, content_type: str):
     # External API endpoint
-    external_api_url = "http://localhost:5000/api/v1/image/process"
+    external_api_url = "http://plate-recognizer:5000/api/v1/image/process"  # For Docker deployment
+    # external_api_url = "http://localhost:5000/api/v1/image/process"  # For local testing
     # external_api_url = "http://plate-recognizer:5000/api/v1/image/process"
 
     # Prepare the multipart/form-data payload

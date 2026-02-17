@@ -104,7 +104,7 @@ async def test_db_connection():
 async def get_user_id_with_token(token_key: str):
   async with async_session_fatory() as session:
     query = text("""     
-      SELECT us.user_id, sub.service_type, t.expire_time, us.is_activate 
+      SELECT us.user_id, t.service_type, t.expire_time, us.is_activate 
       FROM token as t 
       LEFT JOIN user_subscription AS us ON us.user_sub_id = t.user_sub_id 
       LEFT JOIN subscription AS sub ON sub.sub_id = us.sub_id

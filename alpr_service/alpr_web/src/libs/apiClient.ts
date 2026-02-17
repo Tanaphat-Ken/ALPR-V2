@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BASE_API_GATE_WAY_URL || 'http://localhost:8092/api/v1'
+  baseURL: process.env.NEXT_PUBLIC_BASE_API_GATE_WAY_URL || 'http://35.187.233.205/api/general'
 })
 
 const handleResponse = <T>(response: AxiosResponse<T>) => response.data
