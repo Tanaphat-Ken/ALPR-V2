@@ -1,2 +1,8 @@
 **/__pycache__
-models/weights
+models/weights/old
+/.venv
+/data
+/.vscode
+/outputs
+/debug
+/testing/output_video

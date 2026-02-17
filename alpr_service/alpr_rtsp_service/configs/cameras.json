@@ -1,0 +1,29 @@
+[
+  {
+    "id": "camera_001",
+    "name": "Main Entrance",
+    "rtsp_url": "rtsp://admin:Alprceproj15@192.168.1.168:554/stream2",
+    "location": "Building A - Floor 1",
+    "enabled": true,
+    "fps": 5,
+    "frame_skip": 5
+  },
+  {
+    "id": "camera_002",
+    "name": "Parking Lot",
+    "rtsp_url": "rtsp://admin:password@192.168.1.101:554/stream1",
+    "location": "Basement B1",
+    "enabled": false,
+    "fps": 10,
+    "frame_skip": 3
+  },
+  {
+    "id": "camera_test",
+    "name": "Test Camera (Video File)",
+    "rtsp_url": "C:\\Users\\Txxrz\\Documents\\GitHub\\ALPR-V2\\alpr_service\\alpr_rtsp_service\\tests\\TC2ML_L 192.168.40.226_001_2025-08-12-07-00-00_2025-08-12-07-21-03.mp4",
+    "location": "Test Environment",
+    "enabled": true,
+    "fps": 10,
+    "frame_skip": 3
+  }
+]

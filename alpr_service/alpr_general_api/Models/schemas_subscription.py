@@ -8,8 +8,13 @@ class SubscriptionDetailsResponse(BaseModel):
     billing_period: str
     service_type: str
     price: Optional[float]
-    request_limit: Optional[int]
     description: Optional[str]
+    api_request_limit: Optional[int]
+    video_upload_limit: Optional[int]
+    has_api_access: Optional[bool]
+    has_websocket_access: Optional[bool]
+    has_video_upload: Optional[bool]
+    has_rtsp_stream: Optional[bool]
 
 
 class UserSubscriptionResponse(BaseModel):

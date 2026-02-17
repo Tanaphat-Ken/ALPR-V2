@@ -2,21 +2,16 @@
 
 import { useRouter, usePathname } from 'next/navigation'
 
-import { useDispatch } from 'react-redux'
 import type { MenuProps } from 'antd'
 import { Menu } from 'antd'
 import Sider from 'antd/es/layout/Sider'
-import { 
+import {
   HomeOutlined,
   KeyOutlined,
-  CloudUploadOutlined, 
-  ReadOutlined, 
-  SettingOutlined 
+  CloudUploadOutlined,
+  ReadOutlined,
+  SettingOutlined
 } from '@ant-design/icons'
-
-import { AppDispatch } from '@/shared/store'
-import { setActiveTab } from '@/shared/store/dashboard/tokens-page-slice'
-import type { ServiceType } from '@/shared/types/subscription'
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -30,11 +25,6 @@ const items: MenuItem[] = [
     key: '/dashboard/tokens',
     icon: <KeyOutlined />,
     label: 'Tokens',
-    children: [
-      { key: '/dashboard/tokens/api', label: 'API' },
-      { key: '/dashboard/tokens/websocket', label: 'WebSocket' },
-      { key: '/dashboard/tokens/video', label: 'Video' },
-    ],
   },
   {
     key: '/dashboard/upload',
@@ -54,29 +44,42 @@ const items: MenuItem[] = [
     key: '/dashboard/settings',
     icon: <SettingOutlined />,
     label: 'Settings',
+    children: [
+      { key: '/dashboard/settings/subscription', label: 'Subscription' },
+      { key: 'logout', label: 'Logout', danger: true },
+    ],
   },
 ]
 
 const DashboardMenu = () => {
   const router = useRouter()
   const pathname = usePathname()
-  const dispatch = useDispatch<AppDispatch>()
 
   const handleOnClick: MenuProps['onClick'] = ({ key }) => {
-    if (key.startsWith('/dashboard/tokens')) {
-      const activeTab = key.split('/')[3].toUpperCase() as ServiceType
-      dispatch(setActiveTab(activeTab))
+    if (key === 'logout') {
+      // Clear local storage
+      localStorage.removeItem('token')
+      localStorage.removeItem('userId')
+
+      // Clear cookies if any
+      document.cookie = 'token=; Max-Age=0; path=/;'
+      document.cookie = 'userId=; Max-Age=0; path=/;'
+
+      // Redirect to login
+      router.push('/login')
+      return
     }
-    router.replace(key)
+
+    router.push(key)
   }
 
   return (
     <Sider theme='light'>
-      <Menu 
+      <Menu
         onClick={handleOnClick}
         defaultSelectedKeys={['/dashboard']}
         selectedKeys={[pathname]}
-        mode='inline' 
+        mode='inline'
         items={items}
       />
     </Sider>

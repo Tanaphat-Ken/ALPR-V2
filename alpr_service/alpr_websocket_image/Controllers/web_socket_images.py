@@ -111,6 +111,9 @@ async def websocket_endpoint(websocket: WebSocket, db_session: AsyncSession = De
                     # await websocket.send_text(f"Model API response: {token_value}")
                     res = await save_image_log(result, user_id, filename, token_value, db_session)
 
+                    # Deduct quota after successful processing
+                    await UserSubscription.devalue_user_quota_web_socket(user_id, websocket, db_session)
+
                     # Notify the client of the processing result
                     await websocket.send_text(f"Model API response: {str(res)}")
 
@@ -131,7 +134,8 @@ async def send_to_model(image_path: str):
 
 async def send_file_to_model(file_contents: bytes, filename: str, content_type: str):
     # External API endpoint
-    external_api_url = "http://plate-recognizer:5000/api/v1/image/process"
+    external_api_url = "http://localhost:5000/api/v1/image/process"
+    # external_api_url = "http://plate-recognizer:5000/api/v1/image/process"
 
     # Prepare the multipart/form-data payload
     files = {
@@ -167,14 +171,21 @@ async def save_image_log(data, user_id, file_name, token, db: AsyncSession):
     service_type = "WEBSOCKET"
     format_flag = data.get("format_flag")
 
-    if not car_bbox:
-        raise ValueError("car_bbox is missing in the data.")
-    res_car = await Car_bbox.process_car_bbox(car_bbox, db)
-    print(f"Car : {res_car}")
+    # Process car_bbox if available (new pipeline may not have car detection)
+    car_bbox_id = None
+    if car_bbox:
+        res_car = await Car_bbox.process_car_bbox(car_bbox, db)
+        car_bbox_id = res_car["car_bbox_id"]
+        print(f"Car : {res_car}")
+    else:
+        print("No car_bbox in response (new ALPR pipeline - full image mode)")
+
+    # Process plate_bbox (required)
     if not plate_bbox:
         raise ValueError("plate_bbox is missing in the data.")
     res_plate = await Plate_bbox.process_plate_bbox(plate_bbox, db)
     print(f"plate : {res_plate}")
+
     # Prepare the log data
     log_data = {
         "score": 50,
@@ -185,7 +196,7 @@ async def save_image_log(data, user_id, file_name, token, db: AsyncSession):
         "full_plate": full_plate,
         "file_name": file_name,
         "processing_time": time(0, 1, 30),
-        "car_bbox_id": res_car["car_bbox_id"],
+        "car_bbox_id": car_bbox_id,  # Can be None for new pipeline
         "plate_bbox_id": res_plate["plate_bbox_id"],
         "user_id": user_id,
         "created_at": current_time,

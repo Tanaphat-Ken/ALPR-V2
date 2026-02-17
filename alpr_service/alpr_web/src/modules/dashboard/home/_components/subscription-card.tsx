@@ -3,7 +3,7 @@
 import styled from 'styled-components'
 import { Card, Tag, Flex } from 'antd'
 import Text from 'antd/es/typography/Text'
-import { CheckCircleOutlined, SwapOutlined, ApiOutlined, VideoCameraOutlined, CloseCircleOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, SwapOutlined, ApiOutlined, VideoCameraOutlined, CloseCircleOutlined, CloudServerOutlined } from '@ant-design/icons'
 
 import { useSelector } from 'react-redux'
 import { RootState } from '@/shared/store'
@@ -12,13 +12,15 @@ import type { ServiceType } from '@/shared/types/subscription'
 const serviceIcons = {
   API: SwapOutlined,
   WEBSOCKET: ApiOutlined,
-  VIDEO: VideoCameraOutlined
+  VIDEO_WEBSOCKET: VideoCameraOutlined,
+  RTSP: CloudServerOutlined
 }
 
 const colorMap = {
   API: '#67E8F9',
   WEBSOCKET: '#FCD34D',
-  VIDEO: '#D946EF'
+  VIDEO_WEBSOCKET: '#D946EF',
+  RTSP: '#F87171'
 }
 
 type SubscriptionCardProps = {
@@ -37,7 +39,7 @@ type StyledCardProps = {
 
 const StyledCard = styled(Card).withConfig({
   shouldForwardProp: (prop) => prop !== 'isCardActive' && prop !== 'borderColor'
-})<StyledCardProps>`
+}) <StyledCardProps>`
   .ant-card-body {
     padding-top: 12px;
   }
@@ -58,39 +60,39 @@ const CardTitle = ({ title }: { title: keyof typeof serviceIcons }) => {
   )
 }
 
-const SubscriptionCard = ({ 
-  serviceType, 
-  expireDate, 
-  isServiceActive, 
-  requestLimit, 
-  requestQuota, 
+const SubscriptionCard = ({
+  serviceType,
+  expireDate,
+  isServiceActive,
+  requestLimit,
+  requestQuota,
   onClick
 }: SubscriptionCardProps) => {
 
-  serviceType = serviceType == 'VIDEO_WEBSOCKET' ? 'VIDEO' : serviceType // temporary handle video type
+  serviceType = serviceType == 'VIDEO_WEBSOCKET' ? 'VIDEO_WEBSOCKET' : serviceType // temporary handle video type
 
   const activeSubscription = useSelector((state: RootState) => state.homePageSlice.activeService)
   const isCardActive = activeSubscription == serviceType
 
   return (
-    <StyledCard 
-      title={<CardTitle title={serviceType} />} 
-      borderColor={colorMap[serviceType]} 
+    <StyledCard
+      title={<CardTitle title={serviceType} />}
+      borderColor={colorMap[serviceType]}
       isCardActive={isCardActive}
       onClick={onClick}
-      hoverable 
+      hoverable
     >
       <div style={{ marginBottom: 12 }}>
-        <Text style={{ fontSize: '2rem', fontWeight: 'bold' }}>{serviceType == 'VIDEO' ? '️-': requestQuota}</Text>
-        <Text> / {serviceType == 'VIDEO' ? '♾️': requestLimit} </Text>
+        <Text style={{ fontSize: '2rem', fontWeight: 'bold' }}>{requestQuota !== null ? requestQuota : '-'}</Text>
+        <Text> / {requestLimit !== null ? requestLimit : '∞'} </Text>
         <Text type="secondary">Remaining</Text>
       </div>
 
-      {isServiceActive 
-        ? <Tag icon={<CheckCircleOutlined />} color="success">Active</Tag> 
+      {isServiceActive
+        ? <Tag icon={<CheckCircleOutlined />} color="success">Active</Tag>
         : <Tag icon={<CloseCircleOutlined />} color="error">Inactive</Tag>
       }
-      
+
       <Tag color="warning">Expire: {expireDate}</Tag>
     </StyledCard>
   )

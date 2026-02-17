@@ -1,21 +1,23 @@
-from Controllers import info, token, payment, subscription, user
+from Controllers import info, token, payment, subscription, user, auth
 from Configs.dbconfig import engine, Base
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+app = FastAPI(
+    title="ALPR V2 API",
+    description="Automatic License Plate Recognition Service API",
+    version="2.0.0"
+)
 
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000"
 ]
 
-app = FastAPI()
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -36,6 +38,7 @@ async def read_root():
 async def testing_post():
     return {"message": "work"}
 
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
 app.include_router(token.router, prefix="/api/v1", tags=["tokens"])
 app.include_router(info.router, prefix="/api/v1/info", tags=["users"])
 app.include_router(payment.router, prefix="/api/v1/payment", tags=["payment"])

@@ -5,7 +5,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 
 from src.constants import configs, errors
 from src.utils import logger, validator, consumer
-from src.models import VideoCarTracker
+from src.models import VideoPlateTracker
 from src.services.database import get_user_id_with_token
 
 async def websocket_endpoint(websocket: WebSocket, token: str):
@@ -17,10 +17,10 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
   except Exception as e:
     await websocket.close(code=1011, reason="Internal server error")
     return
-  
+
   await websocket.accept()
 
-  video_tracker = VideoCarTracker()
+  video_tracker = VideoPlateTracker()  # Use PlateDetector instead of car detection
   client_queue = asyncio.Queue()
   consumer_process = asyncio.create_task(consumer.consume(websocket, token, user_id, client_queue, video_tracker))
 
