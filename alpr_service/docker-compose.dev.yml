@@ -1,0 +1,34 @@
+# Development Mode Override
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+#
+# Benefits:
+# - Hot reload for Next.js (no rebuild needed)
+# - Faster development cycle
+# - Volume mounts for real-time code changes
+#
+# Note: Use docker-compose.yml alone for production deployment
+
+services:
+  nextjs-app:
+    build:
+      context: ./alpr_web
+      dockerfile: Dockerfile.dev
+      args:
+        NEXT_PUBLIC_BASE_API_GATE_WAY_URL: http://35.187.233.205/api/general
+        NEXT_PUBLIC_API_UPLOAD_IMAGE: http://35.187.233.205/api/image
+        NEXT_PUBLIC_WEBSOCKET_VIDEO_HANLER: ws://35.187.233.205/ws/video
+    command: npm run dev
+    volumes:
+      - ./alpr_web/src:/app/src
+      - ./alpr_web/public:/app/public
+      - ./alpr_web/next.config.mjs:/app/next.config.mjs
+      - ./alpr_web/tsconfig.json:/app/tsconfig.json
+      - ./alpr_web/package.json:/app/package.json
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_BASE_API_GATE_WAY_URL: http://35.187.233.205/api/general
+      NEXT_PUBLIC_API_UPLOAD_IMAGE: http://35.187.233.205/api/image
+      NEXT_PUBLIC_WEBSOCKET_VIDEO_HANLER: ws://35.187.233.205/ws/video
+      # Enable hot reload
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"

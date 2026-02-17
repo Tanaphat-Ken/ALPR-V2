@@ -50,11 +50,13 @@ services:
     build:
       context: ./alpr_web
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_BASE_API_GATE_WAY_URL=http://35.187.233.205/api/general
+        - NEXT_PUBLIC_API_UPLOAD_IMAGE=http://35.187.233.205/api/image
+        - NEXT_PUBLIC_WEBSOCKET_VIDEO_HANLER=ws://35.187.233.205/ws/video
     container_name: alpr_nextjs
     environment:
       NODE_ENV: "production"
-    volumes:
-      - ./alpr_web/.env:/app/.env:ro
     restart: always
     networks:
       - alpr-network
