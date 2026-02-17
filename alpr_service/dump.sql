@@ -2,8 +2,12 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 15.10 (Ubuntu 15.10-1.pgdg22.04+1)
--- Dumped by pg_dump version 15.10 (Ubuntu 15.10-1.pgdg22.04+1)
+\restrict wIyKYTIgpco4AYMKHr5EpvsA6fXINIv0KCpIzipz15aQgh2rw5IgJjqBaxuVdY0
+
+-- Dumped from database version 15.14
+-- Dumped by pg_dump version 15.14
+
+-- Started on 2026-02-17 21:14:37
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -17,6 +21,7 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- TOC entry 855 (class 1247 OID 24579)
 -- Name: billing_period; Type: TYPE; Schema: public; Owner: alpr
 --
 
@@ -29,6 +34,7 @@ CREATE TYPE public.billing_period AS ENUM (
 ALTER TYPE public.billing_period OWNER TO alpr;
 
 --
+-- TOC entry 858 (class 1247 OID 24584)
 -- Name: service_type; Type: TYPE; Schema: public; Owner: alpr
 --
 
@@ -46,6 +52,7 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- TOC entry 214 (class 1259 OID 24591)
 -- Name: car_bbox; Type: TABLE; Schema: public; Owner: alpr
 --
 
@@ -65,6 +72,7 @@ CREATE TABLE public.car_bbox (
 ALTER TABLE public.car_bbox OWNER TO alpr;
 
 --
+-- TOC entry 215 (class 1259 OID 24594)
 -- Name: car_bbox_car_bbox_id_seq; Type: SEQUENCE; Schema: public; Owner: alpr
 --
 
@@ -80,6 +88,8 @@ CREATE SEQUENCE public.car_bbox_car_bbox_id_seq
 ALTER TABLE public.car_bbox_car_bbox_id_seq OWNER TO alpr;
 
 --
+-- TOC entry 3443 (class 0 OID 0)
+-- Dependencies: 215
 -- Name: car_bbox_car_bbox_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: alpr
 --
 
@@ -87,6 +97,7 @@ ALTER SEQUENCE public.car_bbox_car_bbox_id_seq OWNED BY public.car_bbox.car_bbox
 
 
 --
+-- TOC entry 216 (class 1259 OID 24595)
 -- Name: image_logs; Type: TABLE; Schema: public; Owner: alpr
 --
 
@@ -111,6 +122,7 @@ CREATE TABLE public.image_logs (
 ALTER TABLE public.image_logs OWNER TO alpr;
 
 --
+-- TOC entry 217 (class 1259 OID 24600)
 -- Name: payment_logs; Type: TABLE; Schema: public; Owner: alpr
 --
 
@@ -126,6 +138,7 @@ CREATE TABLE public.payment_logs (
 ALTER TABLE public.payment_logs OWNER TO alpr;
 
 --
+-- TOC entry 218 (class 1259 OID 24603)
 -- Name: payment_logs_transection_id_seq; Type: SEQUENCE; Schema: public; Owner: alpr
 --
 
@@ -141,6 +154,8 @@ CREATE SEQUENCE public.payment_logs_transection_id_seq
 ALTER TABLE public.payment_logs_transection_id_seq OWNER TO alpr;
 
 --
+-- TOC entry 3444 (class 0 OID 0)
+-- Dependencies: 218
 -- Name: payment_logs_transection_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: alpr
 --
 
@@ -148,6 +163,7 @@ ALTER SEQUENCE public.payment_logs_transection_id_seq OWNED BY public.payment_lo
 
 
 --
+-- TOC entry 219 (class 1259 OID 24604)
 -- Name: plate_bbox; Type: TABLE; Schema: public; Owner: alpr
 --
 
@@ -167,6 +183,7 @@ CREATE TABLE public.plate_bbox (
 ALTER TABLE public.plate_bbox OWNER TO alpr;
 
 --
+-- TOC entry 220 (class 1259 OID 24607)
 -- Name: plate_bbox_plate_bbox_id_seq; Type: SEQUENCE; Schema: public; Owner: alpr
 --
 
@@ -182,6 +199,8 @@ CREATE SEQUENCE public.plate_bbox_plate_bbox_id_seq
 ALTER TABLE public.plate_bbox_plate_bbox_id_seq OWNER TO alpr;
 
 --
+-- TOC entry 3445 (class 0 OID 0)
+-- Dependencies: 220
 -- Name: plate_bbox_plate_bbox_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: alpr
 --
 
@@ -189,6 +208,7 @@ ALTER SEQUENCE public.plate_bbox_plate_bbox_id_seq OWNED BY public.plate_bbox.pl
 
 
 --
+-- TOC entry 221 (class 1259 OID 24608)
 -- Name: subscription; Type: TABLE; Schema: public; Owner: alpr
 --
 
@@ -202,14 +222,19 @@ CREATE TABLE public.subscription (
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
     token_limit integer,
-    CONSTRAINT subscription_billing_period_check CHECK (((billing_period)::text = ANY ((ARRAY['MONTHLY'::character varying, 'ANNUALLY'::character varying, 'QUARTERLY'::character varying, 'SEMI ANNUALLY'::character varying])::text[]))),
-    CONSTRAINT subscription_service_type_check CHECK (((service_type)::text = ANY (ARRAY[('API'::character varying)::text, ('WEBSOCKET'::character varying)::text, ('RTSP'::character varying)::text, ('VIDEO_WEBSOCKET'::character varying)::text])))
+    api_request_limit integer DEFAULT 0,
+    video_upload_limit integer DEFAULT 0,
+    has_api_access integer DEFAULT 0,
+    has_websocket_access integer DEFAULT 0,
+    has_video_upload integer DEFAULT 0,
+    has_rtsp_stream integer DEFAULT 0
 );
 
 
 ALTER TABLE public.subscription OWNER TO alpr;
 
 --
+-- TOC entry 222 (class 1259 OID 24615)
 -- Name: subscription_logs; Type: TABLE; Schema: public; Owner: alpr
 --
 
@@ -227,6 +252,7 @@ CREATE TABLE public.subscription_logs (
 ALTER TABLE public.subscription_logs OWNER TO alpr;
 
 --
+-- TOC entry 223 (class 1259 OID 24618)
 -- Name: subscription_logs_log_id_seq; Type: SEQUENCE; Schema: public; Owner: alpr
 --
 
@@ -242,6 +268,8 @@ CREATE SEQUENCE public.subscription_logs_log_id_seq
 ALTER TABLE public.subscription_logs_log_id_seq OWNER TO alpr;
 
 --
+-- TOC entry 3446 (class 0 OID 0)
+-- Dependencies: 223
 -- Name: subscription_logs_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: alpr
 --
 
@@ -249,6 +277,7 @@ ALTER SEQUENCE public.subscription_logs_log_id_seq OWNED BY public.subscription_
 
 
 --
+-- TOC entry 224 (class 1259 OID 24619)
 -- Name: subscription_sub_id_seq; Type: SEQUENCE; Schema: public; Owner: alpr
 --
 
@@ -264,6 +293,8 @@ CREATE SEQUENCE public.subscription_sub_id_seq
 ALTER TABLE public.subscription_sub_id_seq OWNER TO alpr;
 
 --
+-- TOC entry 3447 (class 0 OID 0)
+-- Dependencies: 224
 -- Name: subscription_sub_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: alpr
 --
 
@@ -271,6 +302,7 @@ ALTER SEQUENCE public.subscription_sub_id_seq OWNED BY public.subscription.sub_i
 
 
 --
+-- TOC entry 225 (class 1259 OID 24620)
 -- Name: token; Type: TABLE; Schema: public; Owner: alpr
 --
 
@@ -280,13 +312,15 @@ CREATE TABLE public.token (
     expire_time timestamp without time zone,
     create_at timestamp without time zone,
     update_at timestamp without time zone,
-    user_sub_id integer
+    user_sub_id integer,
+    service_type character varying(50) DEFAULT 'API'::character varying
 );
 
 
 ALTER TABLE public.token OWNER TO alpr;
 
 --
+-- TOC entry 226 (class 1259 OID 24625)
 -- Name: user_subscription; Type: TABLE; Schema: public; Owner: alpr
 --
 
@@ -304,6 +338,7 @@ CREATE TABLE public.user_subscription (
 ALTER TABLE public.user_subscription OWNER TO alpr;
 
 --
+-- TOC entry 227 (class 1259 OID 24628)
 -- Name: user_subscription_user_sub_id_seq; Type: SEQUENCE; Schema: public; Owner: alpr
 --
 
@@ -319,6 +354,8 @@ CREATE SEQUENCE public.user_subscription_user_sub_id_seq
 ALTER TABLE public.user_subscription_user_sub_id_seq OWNER TO alpr;
 
 --
+-- TOC entry 3448 (class 0 OID 0)
+-- Dependencies: 227
 -- Name: user_subscription_user_sub_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: alpr
 --
 
@@ -326,6 +363,7 @@ ALTER SEQUENCE public.user_subscription_user_sub_id_seq OWNED BY public.user_sub
 
 
 --
+-- TOC entry 228 (class 1259 OID 24629)
 -- Name: users; Type: TABLE; Schema: public; Owner: alpr
 --
 
@@ -342,6 +380,7 @@ CREATE TABLE public.users (
 ALTER TABLE public.users OWNER TO alpr;
 
 --
+-- TOC entry 229 (class 1259 OID 24634)
 -- Name: user_user_id_seq; Type: SEQUENCE; Schema: public; Owner: alpr
 --
 
@@ -357,6 +396,8 @@ CREATE SEQUENCE public.user_user_id_seq
 ALTER TABLE public.user_user_id_seq OWNER TO alpr;
 
 --
+-- TOC entry 3449 (class 0 OID 0)
+-- Dependencies: 229
 -- Name: user_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: alpr
 --
 
@@ -364,6 +405,7 @@ ALTER SEQUENCE public.user_user_id_seq OWNED BY public.users.user_id;
 
 
 --
+-- TOC entry 230 (class 1259 OID 24635)
 -- Name: video_logs; Type: TABLE; Schema: public; Owner: alpr
 --
 
@@ -389,6 +431,7 @@ CREATE TABLE public.video_logs (
 ALTER TABLE public.video_logs OWNER TO alpr;
 
 --
+-- TOC entry 231 (class 1259 OID 24640)
 -- Name: websocket_image_logs_log_id_seq; Type: SEQUENCE; Schema: public; Owner: alpr
 --
 
@@ -404,6 +447,8 @@ CREATE SEQUENCE public.websocket_image_logs_log_id_seq
 ALTER TABLE public.websocket_image_logs_log_id_seq OWNER TO alpr;
 
 --
+-- TOC entry 3450 (class 0 OID 0)
+-- Dependencies: 231
 -- Name: websocket_image_logs_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: alpr
 --
 
@@ -411,6 +456,7 @@ ALTER SEQUENCE public.websocket_image_logs_log_id_seq OWNED BY public.image_logs
 
 
 --
+-- TOC entry 232 (class 1259 OID 24641)
 -- Name: websocket_video_logs_log_id_seq; Type: SEQUENCE; Schema: public; Owner: alpr
 --
 
@@ -426,6 +472,8 @@ CREATE SEQUENCE public.websocket_video_logs_log_id_seq
 ALTER TABLE public.websocket_video_logs_log_id_seq OWNER TO alpr;
 
 --
+-- TOC entry 3451 (class 0 OID 0)
+-- Dependencies: 232
 -- Name: websocket_video_logs_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: alpr
 --
 
@@ -433,6 +481,7 @@ ALTER SEQUENCE public.websocket_video_logs_log_id_seq OWNED BY public.video_logs
 
 
 --
+-- TOC entry 3223 (class 2604 OID 24774)
 -- Name: car_bbox car_bbox_id; Type: DEFAULT; Schema: public; Owner: alpr
 --
 
@@ -440,6 +489,7 @@ ALTER TABLE ONLY public.car_bbox ALTER COLUMN car_bbox_id SET DEFAULT nextval('p
 
 
 --
+-- TOC entry 3224 (class 2604 OID 24775)
 -- Name: image_logs log_id; Type: DEFAULT; Schema: public; Owner: alpr
 --
 
@@ -447,6 +497,7 @@ ALTER TABLE ONLY public.image_logs ALTER COLUMN log_id SET DEFAULT nextval('publ
 
 
 --
+-- TOC entry 3225 (class 2604 OID 24776)
 -- Name: payment_logs transection_id; Type: DEFAULT; Schema: public; Owner: alpr
 --
 
@@ -454,6 +505,7 @@ ALTER TABLE ONLY public.payment_logs ALTER COLUMN transection_id SET DEFAULT nex
 
 
 --
+-- TOC entry 3226 (class 2604 OID 24777)
 -- Name: plate_bbox plate_bbox_id; Type: DEFAULT; Schema: public; Owner: alpr
 --
 
@@ -461,6 +513,7 @@ ALTER TABLE ONLY public.plate_bbox ALTER COLUMN plate_bbox_id SET DEFAULT nextva
 
 
 --
+-- TOC entry 3227 (class 2604 OID 24778)
 -- Name: subscription sub_id; Type: DEFAULT; Schema: public; Owner: alpr
 --
 
@@ -468,6 +521,7 @@ ALTER TABLE ONLY public.subscription ALTER COLUMN sub_id SET DEFAULT nextval('pu
 
 
 --
+-- TOC entry 3234 (class 2604 OID 24779)
 -- Name: subscription_logs log_id; Type: DEFAULT; Schema: public; Owner: alpr
 --
 
@@ -475,6 +529,7 @@ ALTER TABLE ONLY public.subscription_logs ALTER COLUMN log_id SET DEFAULT nextva
 
 
 --
+-- TOC entry 3236 (class 2604 OID 24780)
 -- Name: user_subscription user_sub_id; Type: DEFAULT; Schema: public; Owner: alpr
 --
 
@@ -482,6 +537,7 @@ ALTER TABLE ONLY public.user_subscription ALTER COLUMN user_sub_id SET DEFAULT n
 
 
 --
+-- TOC entry 3237 (class 2604 OID 24781)
 -- Name: users user_id; Type: DEFAULT; Schema: public; Owner: alpr
 --
 
@@ -489,6 +545,7 @@ ALTER TABLE ONLY public.users ALTER COLUMN user_id SET DEFAULT nextval('public.u
 
 
 --
+-- TOC entry 3238 (class 2604 OID 24782)
 -- Name: video_logs log_id; Type: DEFAULT; Schema: public; Owner: alpr
 --
 
@@ -496,21 +553,23 @@ ALTER TABLE ONLY public.video_logs ALTER COLUMN log_id SET DEFAULT nextval('publ
 
 
 --
+-- TOC entry 3418 (class 0 OID 24591)
+-- Dependencies: 214
 -- Data for Name: car_bbox; Type: TABLE DATA; Schema: public; Owner: alpr
 --
 
 COPY public.car_bbox (car_bbox_id, top_left_x, top_left_y, top_right_x, top_right_y, bottom_left_x, bottom_left_y, bottom_right_x, bottom_right_y) FROM stdin;
-1	2.91064453125	15.5498046875	888.63427734375	15.5498046875	2.91064453125	1238.765625	888.63427734375	1238.765625
-2	2.91064453125	15.5498046875	888.63427734375	15.5498046875	2.91064453125	1238.765625	888.63427734375	1238.765625
-3	2.91064453125	15.5498046875	888.63427734375	15.5498046875	2.91064453125	1238.765625	888.63427734375	1238.765625
-4	2.91064453125	15.5498046875	888.63427734375	15.5498046875	2.91064453125	1238.765625	888.63427734375	1238.765625
-5	2.91064453125	15.5498046875	888.63427734375	15.5498046875	2.91064453125	1238.765625	888.63427734375	1238.765625
-6	2.91064453125	15.5498046875	888.63427734375	15.5498046875	2.91064453125	1238.765625	888.63427734375	1238.765625
-7	2.91064453125	15.5498046875	888.63427734375	15.5498046875	2.91064453125	1238.765625	888.63427734375	1238.765625
-8	2.91064453125	15.5498046875	888.63427734375	15.5498046875	2.91064453125	1238.765625	888.63427734375	1238.765625
-9	2.91064453125	15.5498046875	888.63427734375	15.5498046875	2.91064453125	1238.765625	888.63427734375	1238.765625
-10	2.91064453125	15.5498046875	888.63427734375	15.5498046875	2.91064453125	1238.765625	888.63427734375	1238.765625
-11	2.91064453125	15.5498046875	888.63427734375	15.5498046875	2.91064453125	1238.765625	888.63427734375	1238.765625
+1	58.21435546875	0	931.056396484375	0	58.21435546875	608.1538696289062	931.056396484375	608.1538696289062
+2	58.21435546875	0	931.056396484375	0	58.21435546875	608.1538696289062	931.056396484375	608.1538696289062
+3	417.7525634765625	0	1217.1041259765625	0	417.7525634765625	983.0859375	1217.1041259765625	983.0859375
+4	91.57330322265625	110.55084228515625	621.9304809570312	110.55084228515625	91.57330322265625	560.5360717773438	621.9304809570312	560.5360717773438
+5	888.1635437011719	254.7301025390625	1162.5310363769531	254.7301025390625	888.1635437011719	577.98046875	1162.5310363769531	577.98046875
+6	69.801025390625	142.60256958007812	430.6144104003906	142.60256958007812	69.801025390625	481.8332824707031	430.6144104003906	481.8332824707031
+7	235.4979248046875	0.231689453125	1082.9859619140625	0.231689453125	235.4979248046875	797.4730224609375	1082.9859619140625	797.4730224609375
+8	48.586181640625	1.687744140625	1024.951171875	1.687744140625	48.586181640625	1141.8623046875	1024.951171875	1141.8623046875
+9	0	1.05810546875	910.423095703125	1.05810546875	0	1271.411865234375	910.423095703125	1271.411865234375
+10	0	1.05810546875	910.423095703125	1.05810546875	0	1271.411865234375	910.423095703125	1271.411865234375
+11	59.3536376953125	0.4522705078125	1018.3873291015625	0.4522705078125	59.3536376953125	1073.9779052734375	1018.3873291015625	1073.9779052734375
 12	2.91064453125	15.5498046875	888.63427734375	15.5498046875	2.91064453125	1238.765625	888.63427734375	1238.765625
 13	2.91064453125	15.5498046875	888.63427734375	15.5498046875	2.91064453125	1238.765625	888.63427734375	1238.765625
 14	2.91064453125	15.5498046875	888.63427734375	15.5498046875	2.91064453125	1238.765625	888.63427734375	1238.765625
@@ -832,138 +891,55 @@ COPY public.car_bbox (car_bbox_id, top_left_x, top_left_y, top_right_x, top_righ
 
 
 --
+-- TOC entry 3420 (class 0 OID 24595)
+-- Dependencies: 216
 -- Data for Name: image_logs; Type: TABLE DATA; Schema: public; Owner: alpr
 --
 
 COPY public.image_logs (log_id, file_name, processing_time, plate_id, car_bbox_id, plate_bbox_id, user_id, created_at, service_type, province, format_flag, full_plate, score, token_key) FROM stdin;
-33	resized_image_20250211_032740.png	00:01:30	บก 6306	79	62	1	2025-02-11 10:26:14.486401	WEBSOCKET	\N	warning	บก 6306	50	0d9165a7-d8a7-4d10-8778-10827045e8cd
-34	resized_image_20250211_032748.png	00:01:30	บก 6306	80	63	1	2025-02-11 10:26:14.486401	WEBSOCKET	\N	warning	บก 6306	50	0d9165a7-d8a7-4d10-8778-10827045e8cd
-41	resized_image_20250211_033758.png	00:01:30	บก 6306	87	70	1	2025-02-11 10:37:49.24199	WEBSOCKET	\N	warning	บก 6306	50	0d9165a7-d8a7-4d10-8778-10827045e8cd
-42	resized_image_20250211_033805.png	00:01:30	บก 6306	88	71	1	2025-02-11 10:37:49.24199	WEBSOCKET	\N	warning	บก 6306	50	0d9165a7-d8a7-4d10-8778-10827045e8cd
-46	./Images/2025-02-11_05-06-42.jpg	00:01:30	ณ 6306	92	75	1	2025-02-11 12:06:45.645656	API	\N	warning	ณ 6306	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-47	resized_image_20250211_050749.png	00:01:30	บก 6306	93	76	1	2025-02-11 12:07:19.278844	WEBSOCKET	\N	warning	บก 6306	50	0d9165a7-d8a7-4d10-8778-10827045e8cd
-48	resized_image_20250215_110345.png	00:01:30	บก 6306	96	77	1	2025-02-15 18:02:44.766725	WEBSOCKET	\N	warning	บก 6306	50	0d9165a7-d8a7-4d10-8778-10827045e8cd
-49	./Images/2025-02-15_11-13-41.jpg	00:01:30	ณ 6306	97	78	1	2025-02-15 18:13:45.045811	API	\N	warning	ณ 6306	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-50	./Images/2025-02-16_11-10-11.jpg	00:01:30	ดงดง	\N	79	1	2025-02-16 18:10:18.380832	API	- +	complete	ดงดง - +	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-51	./Images/2025-02-16_11-25-39.jpg	00:01:30	\N	\N	80	1	2025-02-16 18:25:41.227921	API	\N	warning	\N	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-52	./Images/2025-02-16_11-29-59.jpg	00:01:30	cick	\N	81	1	2025-02-16 18:30:04.780674	API	asean	complete	cick asean	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-53	./Images/2025-02-16_11-33-47.jpg	00:01:30	cick	\N	82	1	2025-02-16 18:33:55.986384	API	asean	complete	cick asean	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-54	./Images/2025-02-16_11-34-26.jpg	00:01:30	cick	\N	83	1	2025-02-16 18:34:30.014136	API	asean	complete	cick asean	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-55	./Images/2025-02-16_11-35-13.jpg	00:01:30	cick	\N	84	1	2025-02-16 18:35:17.74308	API	asean	complete	cick asean	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-56	./Images/2025-02-18_05-50-09.jpg	00:01:30	cick	\N	85	1	2025-02-18 12:50:22.281698	API	asean	complete	cick asean	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-57	./Images/2025-02-18_07-15-16.jpg	00:01:30	บก 6306	98	86	1	2025-02-18 14:15:23.939081	API	\N	warning	บก 6306	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-58	./Images/2025-02-18_07-15-37.jpg	00:01:30	บก 6306	99	87	1	2025-02-18 14:15:45.018056	API	\N	warning	บก 6306	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-59	./Images/2025-02-18_07-16-08.jpg	00:01:30	บก 6306	100	88	1	2025-02-18 14:16:15.766193	API	\N	warning	บก 6306	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-60	./Images/2025-02-18_07-18-16.jpg	00:01:30	cick	\N	89	1	2025-02-18 14:18:28.77134	API	asean	complete	cick asean	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-61	./Images/2025-02-18_07-42-15.jpg	00:01:30	cick	\N	90	1	2025-02-18 14:42:26.133638	API	asean	complete	cick asean	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-62	./Images/2025-02-18_08-42-39.jpg	00:01:30	cick	\N	91	1	2025-02-18 15:42:50.656615	API	asean	complete	cick asean	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-63	./Images/2025-02-18_08-45-15.jpg	00:01:30	cick	\N	92	1	2025-02-18 15:45:20.110901	API	asean	complete	cick asean	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-64	./Images/2025-02-18_08-49-56.jpg	00:01:30	cick	\N	93	1	2025-02-18 15:50:01.414046	API	asean	complete	cick asean	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-65	./Images/2025-02-18_08-53-35.jpg	00:01:30	cick	\N	94	1	2025-02-18 15:53:41.632922	API	asean	complete	cick asean	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-66	./Images/2025-02-18_08-54-32.jpg	00:01:30	cick	\N	95	1	2025-02-18 15:54:37.149936	API	asean	complete	cick asean	50	1266c8ee-a56e-4ef3-841c-abe3db9f32fc
-67	./Images/2025-02-18_09-30-48.jpg	00:01:30	cick	\N	96	1	2025-02-18 16:30:56.836706	API	asean	complete	cick asean	50	136e4070-d003-4e65-b643-d08311eea8ce
-68	./Images/2025-02-18_09-31-38.jpg	00:01:30	cick	\N	97	1	2025-02-18 16:31:43.718486	API	asean	complete	cick asean	50	136e4070-d003-4e65-b643-d08311eea8ce
-69	./Images/2025-02-18_10-50-41.jpg	00:01:30	cick	\N	98	1	2025-02-18 17:50:50.835127	API	asean	complete	cick asean	50	1266c8ee-a56e-4ef3-841c-abe3db9f32fc
-70	./Images/2025-02-18_10-51-36.jpg	00:01:30	cick	\N	99	1	2025-02-18 17:51:41.695527	API	asean	complete	cick asean	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-71	./Images/2025-02-18_10-55-30.jpg	00:01:30	cick	\N	100	1	2025-02-18 17:55:35.327276	API	asean	complete	cick asean	50	1266c8ee-a56e-4ef3-841c-abe3db9f32fc
-72	./Images/2025-02-18_10-57-39.jpg	00:01:30	cick	\N	101	1	2025-02-18 17:57:43.965061	API	asean	complete	cick asean	50	136e4070-d003-4e65-b643-d08311eea8ce
-73	./Images/2025-02-18_10-58-27.jpg	00:01:30	cick	\N	102	1	2025-02-18 17:58:33.204022	API	asean	complete	cick asean	50	136e4070-d003-4e65-b643-d08311eea8ce
-76	./Images/2025-02-18_11-12-56.jpg	00:01:30	ดงดง	\N	105	1	2025-02-18 18:13:01.842218	API	- +	complete	ดงดง - +	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-77	./Images/2025-02-18_11-14-24.jpg	00:01:30	ดงดง	\N	106	1	2025-02-18 18:14:28.682262	API	- +	complete	ดงดง - +	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-78	./Images/2025-02-18_11-16-29.jpg	00:01:30	เขต 999	\N	107	1	2025-02-18 18:16:44.488453	API	86๘	warning	เขต 999 86๘ 668 เคาะย. รองนายกฯ	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-79	./Images/2025-02-18_11-17-48.jpg	00:01:30	ดงดง	\N	108	1	2025-02-18 18:17:53.747825	API	- +	complete	ดงดง - +	50	1266c8ee-a56e-4ef3-841c-abe3db9f32fc
-80	./Images/2025-02-18_11-18-04.jpg	00:01:30	cick	\N	109	1	2025-02-18 18:18:08.9322	API	asean	complete	cick asean	50	1266c8ee-a56e-4ef3-841c-abe3db9f32fc
-81	./Images/2025-02-18_14-04-27.jpg	00:01:30	cick	\N	110	1	2025-02-18 21:04:37.009382	API	asean	complete	cick asean	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-82	./Images/2025-02-18_14-10-40.jpg	00:01:30	cick	\N	111	1	2025-02-18 21:10:45.722861	API	asean	complete	cick asean	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-83	./Images/2025-02-18_14-26-08.jpg	00:01:30	cick	\N	112	1	2025-02-18 21:26:12.731446	API	asean	complete	cick asean	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-84	./Images/2025-02-18_14-31-07.jpg	00:01:30	cick	\N	113	1	2025-02-18 21:31:15.152001	API	asean	complete	cick asean	50	1266c8ee-a56e-4ef3-841c-abe3db9f32fc
-85	./Images/2025-02-18_14-31-30.jpg	00:01:30	cick	\N	114	1	2025-02-18 21:31:34.370296	API	asean	complete	cick asean	50	1266c8ee-a56e-4ef3-841c-abe3db9f32fc
-86	./Images/2025-02-20_19-39-42.jpg	00:01:30	บก 6306	101	115	1	2025-02-21 02:39:50.415935	API	\N	warning	บก 6306	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-87	./Images/2025-02-21_03-22-58.jpg	00:01:30	cick	\N	116	1	2025-02-21 10:23:09.643177	API	asean	complete	cick asean	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-88	./Images/2025-02-21_03-27-48.jpg	00:01:30	cick	\N	117	1	2025-02-21 10:27:53.976677	API	asean	complete	cick asean	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-89	./Images/2025-02-21_03-28-19.jpg	00:01:30	cick	\N	118	1	2025-02-21 10:28:24.198203	API	asean	complete	cick asean	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-90	./Images/2025-02-21_04-09-38.jpg	00:01:30	cick	\N	119	1	2025-02-21 11:09:47.031916	API	asean	complete	cick asean	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-91	./Images/2025-02-21_05-18-50.jpg	00:01:30	cick	\N	120	1	2025-02-21 12:19:01.687122	API	asean	complete	cick asean	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-92	./Images/2025-02-21_05-21-01.jpg	00:01:30	cick	\N	121	1	2025-02-21 12:21:07.729051	API	asean	complete	cick asean	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-93	./Images/2025-02-21_05-26-29.jpg	00:01:30	cick	\N	122	1	2025-02-21 12:26:34.315256	API	asean	complete	cick asean	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-94	./Images/2025-02-21_05-42-26.jpg	00:01:30	\N	102	\N	1	2025-02-21 12:42:41.613614	API	\N	warning	\N	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-95	./Images/2025-02-21_06-00-30.jpg	00:01:30	cick	\N	123	1	2025-02-21 13:00:45.649748	API	asean	complete	cick asean	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-96	./Images/2025-02-21_06-02-26.jpg	00:01:30	\N	103	\N	1	2025-02-21 13:02:49.644265	API	\N	warning	\N	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-97	./Images/2025-02-21_08-06-34.jpg	00:01:30	\N	104	\N	1	2025-02-21 15:06:57.999704	API	\N	warning	\N	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-98	./Images/2025-02-21_08-07-18.jpg	00:01:30	\N	105	124	1	2025-02-21 15:07:18.758789	API	\N	warning	\N	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-99	./Images/2025-02-21_08-18-05.jpg	00:01:30	\N	106	\N	1	2025-02-21 15:18:29.718079	API	\N	warning	\N	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-100	./Images/2025-02-21_08-28-46.jpg	00:01:30	\N	107	\N	1	2025-02-21 15:29:10.671446	API	\N	warning	\N	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-101	./Images/2025-02-21_08-56-37.jpg	00:01:30	\N	108	\N	1	2025-02-21 15:57:01.340021	API	\N	warning	\N	50	1266c8ee-a56e-4ef3-841c-abe3db9f32fc
-102	./Images/2025-02-21_08-58-51.jpg	00:01:30	cick	\N	125	1	2025-02-21 15:59:04.737834	API	asean	complete	cick asean	50	1266c8ee-a56e-4ef3-841c-abe3db9f32fc
-103	./Images/2025-02-21_08-59-13.jpg	00:01:30	\N	109	126	1	2025-02-21 15:59:14.141585	API	\N	warning	\N	50	1266c8ee-a56e-4ef3-841c-abe3db9f32fc
-104	./Images/2025-02-21_09-10-25.jpg	00:01:30	\N	110	\N	1	2025-02-21 16:10:49.569466	API	\N	warning	\N	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-105	./Images/2025-02-21_12-02-53.jpg	00:01:30	-	111	127	1	2025-02-21 19:02:59.17894	API	\N	warning	-	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-106	./Images/2025-02-21_12-04-00.jpg	00:01:30	บก 6306	112	128	1	2025-02-21 19:04:07.169789	API	\N	warning	บก 6306	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-107	./Images/2025-02-22_08-34-41.jpg	00:01:30	\N	114	\N	1	2025-02-22 15:35:12.002151	API	\N	warning	\N	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-108	./Images/2025-02-22_08-35-57.jpg	00:01:30	-	115	129	1	2025-02-22 15:36:04.077199	API	\N	warning	-	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-109	./Images/2025-02-22_08-36-13.jpg	00:01:30	eu	\N	130	1	2025-02-22 15:36:41.477636	API	14	complete	eu 14	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-110	./Images/2025-02-24_15-35-21.jpg	00:01:30	-	220	132	1	2025-02-24 22:35:27.98075	API	\N	warning	-	50	1266c8ee-a56e-4ef3-841c-abe3db9f32fc
-111	./Images/2025-02-25_06-39-15.jpg	00:01:30	\N	245	133	1	2025-02-25 13:39:15.750687	API	\N	warning	\N	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-112	./Images/2025-02-25_06-39-30.jpg	00:01:30	\N	246	\N	1	2025-02-25 13:39:57.519841	API	\N	warning	\N	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-113	./Images/2025-02-25_06-40-19.jpg	00:01:30	-	247	134	1	2025-02-25 13:40:25.655012	API	\N	warning	-	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-114	./Images/2025-02-25_06-40-54.jpg	00:01:30	cick	\N	135	1	2025-02-25 13:41:07.525411	API	asean	complete	cick asean	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-115	./Images/2025-02-25_06-46-24.jpg	00:01:30	\N	248	136	1	2025-02-25 13:46:25.007116	API	\N	warning	\N	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-116	./Images/2025-02-25_06-46-30.jpg	00:01:30	\N	249	\N	1	2025-02-25 13:46:59.25871	API	\N	warning	\N	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-117	./Images/2025-02-25_06-48-26.jpg	00:01:30	ลดลง 2562	250	137	1	2025-02-25 13:48:36.966979	API	\N	warning	ลดลง 2562	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-118	./Images/2025-02-25_07-08-31.jpg	00:01:30	32	264	139	1	2025-02-25 14:08:37.525706	API	\N	warning	32	50	a20d822c-d5c3-46eb-b102-2274d4d7aff7
-119	./Images/2025-02-25_07-09-32.jpg	00:01:30	มมม 1451	265	140	1	2025-02-25 14:09:40.740836	API	\N	warning	มมม 1451	50	1266c8ee-a56e-4ef3-841c-abe3db9f32fc
-120	./Images/2025-02-28_08-15-24.jpg	00:01:30	\N	266	\N	1	2025-02-28 15:15:51.244591	API	\N	warning	\N	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-121	./Images/2025-02-28_08-16-36.jpg	00:01:30	pm,20	267	141	1	2025-02-28 15:16:50.298532	API	กรุงเทพมหานคร	complete	pm,20 กรุงเทพมหานคร	50	136e4070-d003-4e65-b643-d08311eea8ce
-122	./Images/2025-02-28_08-27-11.jpg	00:01:30	pm,20	268	142	1	2025-02-28 15:27:25.231849	API	กรุงเทพมหานคร	complete	pm,20 กรุงเทพมหานคร	50	136e4070-d003-4e65-b643-d08311eea8ce
-123	./Images/2025-02-28_08-28-27.jpg	00:01:30	pm,20	269	143	1	2025-02-28 15:28:40.939702	API	กรุงเทพมหานคร	complete	pm,20 กรุงเทพมหานคร	50	136e4070-d003-4e65-b643-d08311eea8ce
-124	./Images/2025-02-28_08-44-31.jpg	00:01:30	\N	270	\N	1	2025-02-28 15:44:57.676395	API	\N	warning	\N	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-125	./Images/2025-02-28_10-07-25.jpg	00:01:30	pm,20	277	147	1	2025-02-28 17:07:38.808512	API	กรุงเทพมหานคร	complete	pm,20 กรุงเทพมหานคร	50	1266c8ee-a56e-4ef3-841c-abe3db9f32fc
-126	./Images/2025-02-28_10-08-41.jpg	00:01:30	pm,20	278	148	1	2025-02-28 17:08:55.35676	API	กรุงเทพมหานคร	complete	pm,20 กรุงเทพมหานคร	50	1266c8ee-a56e-4ef3-841c-abe3db9f32fc
-127	./Images/2025-02-28_10-09-03.jpg	00:01:30	pm,20	279	149	1	2025-02-28 17:09:17.254995	API	กรุงเทพมหานคร	complete	pm,20 กรุงเทพมหานคร	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-128	./Images/2025-02-28_10-23-35.jpg	00:01:30	pm,20	280	150	1	2025-02-28 17:23:48.98118	API	กรุงเทพมหานคร	complete	pm,20 กรุงเทพมหานคร	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-129	./Images/2025-02-28_10-28-08.jpg	00:01:30	บก 6306	281	151	1	2025-02-28 17:28:16.537011	API	\N	warning	บก 6306	50	4c0f74be-eb83-4c18-ad5e-2224ce4c75d6
-130	resized_image_20250228_102939.png	00:01:30	บก 6306	282	152	1	2025-02-28 17:29:27.253222	WEBSOCKET	\N	warning	บก 6306	50	4c0f74be-eb83-4c18-ad5e-2224ce4c75d6
-131	./Images/2025-03-04_08-20-06.jpg	00:01:30	\N	297	\N	1	2025-03-04 15:20:35.466016	API	\N	warning	\N	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-132	./Images/2025-03-04_08-33-59.jpg	00:01:30	\N	298	\N	1	2025-03-04 15:34:27.775293	API	\N	warning	\N	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-133	./Images/2025-03-04_09-59-39.jpg	00:01:30	บก 6306	309	164	1	2025-03-04 16:59:46.707226	API	\N	warning	บก 6306	50	4c0f74be-eb83-4c18-ad5e-2224ce4c75d6
-134	./Images/2025-03-04_10-00-38.jpg	00:01:30	บก 6306	310	165	1	2025-03-04 17:00:45.748932	API	\N	warning	บก 6306	50	4c0f74be-eb83-4c18-ad5e-2224ce4c75d6
-135	./Images/2025-03-04_10-01-08.jpg	00:01:30	บก 6306	311	166	1	2025-03-04 17:01:15.039835	API	\N	warning	บก 6306	50	4c0f74be-eb83-4c18-ad5e-2224ce4c75d6
-136	./Images/2025-03-04_10-04-38.jpg	00:01:30	บก 6306	312	167	1	2025-03-04 17:04:45.968502	API	\N	warning	บก 6306	50	4c0f74be-eb83-4c18-ad5e-2224ce4c75d6
-137	./Images/2025-03-04_10-07-07.jpg	00:01:30	บก 6306	313	168	1	2025-03-04 17:07:15.02583	API	\N	warning	บก 6306	50	4c0f74be-eb83-4c18-ad5e-2224ce4c75d6
-138	./Images/2025-03-05_09-30-22.jpg	00:01:30	pm,20	314	169	1	2025-03-05 16:30:37.130368	API	กรุงเทพมหานคร	complete	pm,20 กรุงเทพมหานคร	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-139	./Images/2025-03-05_09-40-25.jpg	00:01:30	\N	315	\N	1	2025-03-05 16:40:54.09624	API	\N	warning	\N	50	472c3bc7-3529-4e58-8365-ac0110a58cb6
-140	./Images/2025-03-05_10-23-57.jpg	00:01:30	กม.300	316	170	4	2025-03-05 17:24:32.620888	API	ประจวบทร	warning	กม.300 ประจวบทร www://meme 188”	50	5bf9fb89-812e-4a8a-bde2-117acd16ab81
-141	./Images/2025-03-05_10-24-44.jpg	00:01:30	32	317	171	4	2025-03-05 17:24:51.322773	API	\N	warning	32	50	5bf9fb89-812e-4a8a-bde2-117acd16ab81
-142	./Images/2025-03-05_10-25-00.jpg	00:01:30	ธันวาคม55	318	172	4	2025-03-05 17:25:16.754906	API	กรุงเทพมหานคร	complete	ธันวาคม55 กรุงเทพมหานคร	50	5bf9fb89-812e-4a8a-bde2-117acd16ab81
-143	./Images/2025-03-05_10-25-46.jpg	00:01:30	มมม 1451	319	173	4	2025-03-05 17:25:54.228595	API	\N	warning	มมม 1451	50	5bf9fb89-812e-4a8a-bde2-117acd16ab81
-144	./Images/2025-03-05_10-26-39.jpg	00:01:30	pm,20	320	174	4	2025-03-05 17:26:53.469203	API	กรุงเทพมหานคร	complete	pm,20 กรุงเทพมหานคร	50	5bf9fb89-812e-4a8a-bde2-117acd16ab81
-145	./Images/2025-03-07_05-51-54.jpg	00:01:30	pm,20	321	175	4	2025-03-07 12:52:10.247962	API	กรุงเทพมหานคร	complete	pm,20 กรุงเทพมหานคร	50	5bf9fb89-812e-4a8a-bde2-117acd16ab81
-146	./Images/2025-03-07_05-53-21.jpg	00:01:30	pm,20	322	176	4	2025-03-07 12:53:35.183316	API	กรุงเทพมหานคร	complete	pm,20 กรุงเทพมหานคร	50	5bf9fb89-812e-4a8a-bde2-117acd16ab81
-147	./Images/2025-03-07_05-57-32.jpg	00:01:30	pm,20	323	177	4	2025-03-07 12:57:46.304616	API	กรุงเทพมหานคร	complete	pm,20 กรุงเทพมหานคร	50	5bf9fb89-812e-4a8a-bde2-117acd16ab81
-148	./Images/2025-03-07_05-57-51.jpg	00:01:30	กม.300	324	178	4	2025-03-07 12:58:24.270149	API	ประจวบทร	warning	กม.300 ประจวบทร www://meme 188”	50	5bf9fb89-812e-4a8a-bde2-117acd16ab81
-149	./Images/2025-03-07_05-59-28.jpg	00:01:30	ธันวาคม55	325	179	4	2025-03-07 12:59:44.896773	API	กรุงเทพมหานคร	complete	ธันวาคม55 กรุงเทพมหานคร	50	5bf9fb89-812e-4a8a-bde2-117acd16ab81
-150	./Images/2025-03-07_06-06-25.jpg	00:01:30	มมม 1451	326	180	4	2025-03-07 13:06:33.417858	API	\N	warning	มมม 1451	50	5bf9fb89-812e-4a8a-bde2-117acd16ab81
-151	./Images/2025-03-07_12-49-05.jpg	00:01:30	pm,20	327	181	4	2025-03-07 19:49:19.62939	API	กรุงเทพมหานคร	complete	pm,20 กรุงเทพมหานคร	50	5bf9fb89-812e-4a8a-bde2-117acd16ab81
-152	./Images/2025-03-07_13-02-31.jpg	00:01:30	pm,20	328	182	4	2025-03-07 20:02:46.093479	API	กรุงเทพมหานคร	complete	pm,20 กรุงเทพมหานคร	50	5bf9fb89-812e-4a8a-bde2-117acd16ab81
+153	./Images/2025-09-19_09-56-53.jpg	00:01:30	(เคาะ 834)	1	183	4	2025-09-19 16:56:56.727101	API	\N	warning	(เคาะ 834)	50	123
+154	./Images/2025-09-19_09-57-18.jpg	00:01:30	(เคาะ 834)	2	184	4	2025-09-19 16:57:19.358206	API	\N	warning	(เคาะ 834)	50	123
+155	./Images/2025-09-19_09-59-26.jpg	00:01:30	- 8 59)	3	185	4	2025-09-19 16:59:28.097108	API	\N	warning	- 8 59)	50	123
+156	./Images/2025-09-19_09-59-55.jpg	00:01:30	–ย	4	186	4	2025-09-19 16:59:56.282695	API	\N	warning	–ย	50	123
+157	./Images/2025-09-19_10-10-33.jpg	00:01:30	(0 ซอยย)	5	187	4	2025-09-19 17:10:35.209986	API	\N	warning	(0 ซอยย)	50	123
+158	./Images/2025-09-19_10-13-17.jpg	00:01:30	7 833	6	188	4	2025-09-19 17:13:18.61911	API	\N	warning	7 833	50	123
+159	./Images/2025-10-01_13-35-59.jpg	00:01:30	ยะลา	7	189	4	2025-10-01 20:36:01.089054	API	\N	warning	ยะลา	50	123
+160	./Images/2025-10-01_13-36-12.jpg	00:01:30	รร 4	8	190	4	2025-10-01 20:36:12.945233	API	\N	warning	รร 4	50	123
+161	./Images/2025-10-01_13-36-29.jpg	00:01:30	พะเยา	9	191	4	2025-10-01 20:36:30.095354	API	\N	warning	พะเยา	50	123
+162	./Images/2025-10-01_13-36-42.jpg	00:01:30	พะเยา	10	192	4	2025-10-01 20:36:42.852731	API	\N	warning	พะเยา	50	123
+163	./Images/2025-10-01_13-37-53.jpg	00:01:30	สิงห์บุรี	\N	\N	4	2025-10-01 20:37:54.176828	API	\N	warning	สิงห์บุรี	50	123
+164	./Images/2025-10-01_13-38-06.jpg	00:01:30	ตาๆ 201	11	193	4	2025-10-01 20:38:07.46681	API	\N	warning	ตาๆ 201	50	123
 \.
 
 
 --
+-- TOC entry 3421 (class 0 OID 24600)
+-- Dependencies: 217
 -- Data for Name: payment_logs; Type: TABLE DATA; Schema: public; Owner: alpr
 --
 
 COPY public.payment_logs (transection_id, amount, method, user_id, created_at) FROM stdin;
-1	100	credit_card	1	\N
-2	100	credit_card	1	\N
-3	100	credit_card	1	\N
 \.
 
 
 --
+-- TOC entry 3423 (class 0 OID 24604)
+-- Dependencies: 219
 -- Data for Name: plate_bbox; Type: TABLE DATA; Schema: public; Owner: alpr
 --
 
 COPY public.plate_bbox (plate_bbox_id, top_left_x, top_left_y, top_right_x, top_right_y, bottom_left_x, bottom_left_y, bottom_right_x, bottom_right_y) FROM stdin;
+183	322.0029754638672	467.3066101074219	535.5802764892578	467.3066101074219	322.0029754638672	567.1064758300781	535.5802764892578	567.1064758300781
+184	322.0029754638672	467.3066101074219	535.5802764892578	467.3066101074219	322.0029754638672	567.1064758300781	535.5802764892578	567.1064758300781
+185	313.46376037597656	311.1099395751953	525.8819427490234	311.1099395751953	313.46376037597656	379.1335906982422	525.8819427490234	379.1335906982422
+186	155.6137924194336	259.22369384765625	244.31839752197266	259.22369384765625	155.6137924194336	317.85528564453125	244.31839752197266	317.85528564453125
+187	122.06313705444336	279.2168273925781	186.04718399047852	279.2168273925781	122.06313705444336	313.5852355957031	186.04718399047852	313.5852355957031
+188	164.40284729003906	245.37645721435547	253.72850036621094	245.37645721435547	164.40284729003906	295.8834915161133	253.72850036621094	295.8834915161133
+189	289.2193298339844	650.38916015625	463.1888122558594	650.38916015625	289.2193298339844	744.48681640625	463.1888122558594	744.48681640625
+190	347.82701110839844	988.5995483398438	537.8408355712891	988.5995483398438	347.82701110839844	1089.8076782226562	537.8408355712891	1089.8076782226562
+191	277.6103515625	1125.7944946289062	488.08489990234375	1125.7944946289062	277.6103515625	1229.2118530273438	488.08489990234375	1229.2118530273438
+192	277.6103515625	1125.7944946289062	488.08489990234375	1125.7944946289062	277.6103515625	1229.2118530273438	488.08489990234375	1229.2118530273438
+193	343.81024169921875	969.485595703125	539.57421875	969.485595703125	343.81024169921875	1067.771728515625	539.57421875	1067.771728515625
 1	284.3857879638672	1089.662353515625	482.3266143798828	1089.662353515625	284.3857879638672	1193.128662109375	482.3266143798828	1193.128662109375
 2	284.3857879638672	1089.662353515625	482.3266143798828	1089.662353515625	284.3857879638672	1193.128662109375	482.3266143798828	1193.128662109375
 3	284.3857879638672	1089.662353515625	482.3266143798828	1089.662353515625	284.3857879638672	1193.128662109375	482.3266143798828	1193.128662109375
@@ -1150,269 +1126,101 @@ COPY public.plate_bbox (plate_bbox_id, top_left_x, top_left_y, top_right_x, top_
 
 
 --
+-- TOC entry 3425 (class 0 OID 24608)
+-- Dependencies: 221
 -- Data for Name: subscription; Type: TABLE DATA; Schema: public; Owner: alpr
 --
 
-COPY public.subscription (sub_id, billing_period, service_type, price, request_limit, description, created_at, updated_at, token_limit) FROM stdin;
-1	MONTHLY	API	399	1000	Monthly API Access	2024-08-08 16:33:13.821214	2024-08-08 16:33:13.821214	5
-2	MONTHLY	WEBSOCKET	299	1000	Monthly  WebSocket Access	2024-08-08 16:33:13.821214	2024-08-08 16:33:13.821214	5
-9	QUARTERLY	API	1099	3300	QUARTERLY API ACCESS	2025-03-04 16:33:13.821	2025-03-04 16:33:13.821	8
-5	MONTHLY	VIDEO_WEBSOCKET	299	1000	Process Video via Websocket Service	2025-01-06 17:58:18.140256	2025-01-06 17:58:18.140256	5
-10	QUARTERLY	WEBSOCKET	899	3300	QUARTERLY WEBSOCKET ACCESS	2025-03-04 16:33:13.821	2025-03-04 16:33:13.821	8
-11	QUARTERLY	VIDEO_WEBSOCKET	899	3300	QUARTERLY VIDEO_WEBSOCKET ACCESS	2025-03-04 16:33:13.821	2025-03-04 16:33:13.821	8
-12	SEMI ANNUALLY	VIDEO_WEBSOCKET	1699	7000	SEMI ANNUALLY VIDEO_WEBSOCKET ACCESS	2025-03-04 16:33:13.821	2025-03-04 16:33:13.821	8
-13	SEMI ANNUALLY	WEBSOCKET	1699	7000	SEMI ANNUALLY WEBSOCKET ACCESS	2025-03-04 16:33:13.821	2025-03-04 16:33:13.821	8
-14	SEMI ANNUALLY	API	1999	7000	SEMI ANNUALLY API ACCESS	2025-03-04 16:33:13.821	2025-03-04 16:33:13.821	8
-15	ANNUALLY	API	3899	15000	ANNUALLY API ACCESS	2025-03-04 16:33:13.821	2025-03-04 16:33:13.821	8
-16	ANNUALLY	WEBSOCKET	3199	15000	ANNUALLY WEBSOCKET ACCESS	2025-03-04 16:33:13.821	2025-03-04 16:33:13.821	8
-17	ANNUALLY	VIDEO_WEBSOCKET	3199	15000	ANNUALLY VIDEO_WEBSOCKET ACCESS	2025-03-04 16:33:13.821	2025-03-04 16:33:13.821	8
+COPY public.subscription (sub_id, billing_period, service_type, price, request_limit, description, created_at, updated_at, token_limit, api_request_limit, video_upload_limit, has_api_access, has_websocket_access, has_video_upload, has_rtsp_stream) FROM stdin;
+1	MONTHLY	API	30	200	Description	2025-09-19 16:09:38.142	2025-09-19 16:09:38.142	200	0	0	0	0	0	0
+30	MONTHLY	TIER_1	299	\N	Tier 1: Starter Plan	2026-02-16 19:46:18.611407	2026-02-16 19:46:18.611407	5	1000	0	1	1	0	0
+31	MONTHLY	TIER_2	499	\N	Tier 2: Advanced Plan	2026-02-16 19:46:18.611407	2026-02-16 19:46:18.611407	10	1000	1000	1	1	1	0
+32	MONTHLY	TIER_3	899	\N	Tier 3: Pro Plan	2026-02-16 19:46:18.611407	2026-02-16 19:46:18.611407	20	5000	5000	1	1	1	1
 \.
 
 
 --
+-- TOC entry 3426 (class 0 OID 24615)
+-- Dependencies: 222
 -- Data for Name: subscription_logs; Type: TABLE DATA; Schema: public; Owner: alpr
 --
 
 COPY public.subscription_logs (log_id, transection_id, request_limit, price, service_type, user_id, created_at) FROM stdin;
-1	1	10	19.99	API	1	\N
-2	2	10	19.99	API	1	2025-02-08 20:18:00.087876
-3	3	1000	9.99	API	1	2025-02-10 02:35:45.969463
 \.
 
 
 --
+-- TOC entry 3429 (class 0 OID 24620)
+-- Dependencies: 225
 -- Data for Name: token; Type: TABLE DATA; Schema: public; Owner: alpr
 --
 
-COPY public.token (key, name, expire_time, create_at, update_at, user_sub_id) FROM stdin;
-136e4070-d003-4e65-b643-d08311eea8ce	token api 3	2026-12-31 23:59:59	2025-02-15 12:01:55.876274	2025-02-25 06:45:26.938218	1
-4c0f74be-eb83-4c18-ad5e-2224ce4c75d6	Token API game 9	2026-12-31 23:59:59	2025-02-28 10:18:52.213376	2025-02-28 10:18:52.213376	2
-5bf9fb89-812e-4a8a-bde2-117acd16ab81	demo	2025-03-28 17:00:00	2025-03-05 10:23:24.387977	2025-03-05 10:23:24.387977	5
-0d9165a7-d8a7-4d10-8778-10827045e8cd	Token API game 2	2026-12-31 23:59:59	2025-02-11 02:24:31.245301	2025-02-11 02:24:31.245302	2
-9b5e28b1-a235-4b70-8d99-205fc68a9d2a	Token API game 3	2026-12-31 23:59:59	2025-02-11 02:35:48.491731	2025-02-11 02:35:48.491732	2
-token_for_video_service_test_jonhdoe_3	token for video service test	2025-12-31 23:59:59	2025-01-06 18:15:54.663614	2025-01-06 18:15:54.663614	4
-a20d822c-d5c3-46eb-b102-2274d4d7aff7	testing	2025-02-27 17:00:00	2025-02-12 09:10:42.340198	2025-02-12 09:10:42.340199	1
-1266c8ee-a56e-4ef3-841c-abe3db9f32fc	token api 1	2026-12-31 23:59:59	2025-02-13 18:03:06.291493	2025-02-25 06:45:06.730946	1
-472c3bc7-3529-4e58-8365-ac0110a58cb6	token api 2	2026-12-31 23:59:59	2025-02-11 02:35:59.253682	2025-02-25 06:45:14.544423	1
+COPY public.token (key, name, expire_time, create_at, update_at, user_sub_id, service_type) FROM stdin;
+123	token1	2025-10-19 09:29:51.217	2025-09-19 09:29:51.217	2025-09-19 09:29:51.217	9	API
+50c9cbd8-6145-4411-8e22-4f06fc8df058	admin_api	2026-02-27 17:00:00	2026-02-16 21:34:13.155998	2026-02-16 21:34:13.155998	14	API
+e0b6621b-2752-46fe-b808-842af147db48	admin_websocket	2026-02-27 17:00:00	2026-02-16 21:34:22.492481	2026-02-16 21:34:22.492481	14	WEBSOCKET
+23c05ad6-632f-42d0-886f-949c37f25d04	admin_video	2026-02-27 17:00:00	2026-02-16 21:34:31.466697	2026-02-16 21:34:31.466698	14	VIDEO_WEBSOCKET
+31076acf-d4f1-4247-90aa-288a4398e7b7	admin_rtsp	2026-02-27 17:00:00	2026-02-16 21:34:49.14957	2026-02-16 21:34:49.149572	14	RTSP
 \.
 
 
 --
+-- TOC entry 3430 (class 0 OID 24625)
+-- Dependencies: 226
 -- Data for Name: user_subscription; Type: TABLE DATA; Schema: public; Owner: alpr
 --
 
 COPY public.user_subscription (user_sub_id, is_activate, end_date, start_date, request_quota, user_id, sub_id) FROM stdin;
-4	t	2025-12-31 00:00:00	2025-01-01 00:00:00	1778	3	5
-2	t	2025-12-31 00:00:00	2024-01-01 00:00:00	11823	1	2
-1	t	2025-12-31 00:00:00	2024-01-01 00:00:00	847	1	1
-6	t	2025-06-04 00:00:00	2025-03-04 00:00:00	3296	4	10
-7	t	2025-06-04 00:00:00	2025-03-04 00:00:00	3296	4	11
-5	t	2025-06-04 00:00:00	2025-03-04 00:00:00	3295	4	9
+8	t	2025-10-19 00:00:00	2025-09-19 00:00:00	200	7	1
+9	f	2025-10-19 00:00:00	2025-09-19 00:00:00	188	4	1
+10	f	2026-03-16 00:00:00	2026-02-16 00:00:00	5000	4	32
+11	t	2026-03-16 00:00:00	2026-02-16 00:00:00	5000	4	32
+12	f	2026-03-16 00:00:00	2026-02-16 00:00:00	1000	9	30
+13	f	2026-03-16 00:00:00	2026-02-16 00:00:00	5000	9	32
+14	t	2026-03-16 00:00:00	2026-02-16 00:00:00	5000	9	32
 \.
 
 
 --
+-- TOC entry 3432 (class 0 OID 24629)
+-- Dependencies: 228
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: alpr
 --
 
 COPY public.users (user_id, email, password, is_activate, created_at, updated_at) FROM stdin;
+6	test@gmail.com	$2b$12$OXh9fu4Yb.r3SbzjFokba.0KfEZIndL385J8/RZHe9IgjRk7avSoG	t	2025-09-19 16:09:21.241541	2025-09-19 16:09:21.241541
+7	tester01@gmail.com	$2b$12$JZuhhHzCBpadyK9Rzspr0u6GYINDyVZfyyUhitkZHKixn.R8JfpY2	t	2025-09-19 16:09:38.142294	2025-09-19 16:09:38.142294
 1	user1@example.com	password1	t	2024-08-08 16:33:06.722251	2024-08-08 16:33:06.722251
 2	user2@example.com	password2	t	2024-08-08 16:33:06.722251	2024-08-08 16:33:06.722251
 3	jonhdoe@example.com	pass	t	2025-01-06 18:03:16.236717	2025-01-06 18:03:16.236717
-5	test1@alpr.com	$2b$12$IQhdv39BhCxgldiJ1FK9XOSmEK/ZCnXhjuID2Cbv2hkArgmuKlB/y	t	2025-03-04 15:34:30.071054	2025-03-04 15:34:30.071054
-4	test@alpr.com	$2b$12$7yYgnlJHmLyi7T/X/oDuQOLMTkNtNsBplhZnbBrALzaaXMrfHsrDC	t	2025-03-04 15:34:30.071	2025-03-04 15:34:30.071
+5	test1@alpr.com	password	t	2025-03-04 15:34:30.071054	2025-03-04 15:34:30.071054
+4	tester@gmail.com	P@ssw0rd	t	2025-09-19 16:09:38.142294	2025-09-19 16:09:38.142294
+9	admin@gmail.com	$2b$12$IN6n6LlE48xh5I.XXfpdcuTCtY6eEzfr2JJ8z7OAbyaaH8Sdeqq4m	t	2026-02-16 20:40:24.141746	2026-02-16 20:40:24.141746
 \.
 
 
 --
+-- TOC entry 3434 (class 0 OID 24635)
+-- Dependencies: 230
 -- Data for Name: video_logs; Type: TABLE DATA; Schema: public; Owner: alpr
 --
 
 COPY public.video_logs (log_id, video_timestamp, score, plate_id, file_name, processing_time, car_bbox_id, plate_bbox_id, user_id, created_at, province, full_plate, format_flag, token_key, service_type) FROM stdin;
-16	\N	\N	\N	456128c6-455f-43fd-aff2-7ab427d23d65_2025-02-11_07-16-16.jpg	\N	94	\N	3	2025-02-11 14:16:16.924621	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-17	\N	\N	\N	91a15b62-1c9b-43c3-9086-f7cd79c99cb1_2025-02-11_07-16-29.jpg	\N	95	\N	3	2025-02-11 14:16:29.883474	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-18	\N	\N	\N	b79d1a20-64ff-4fff-ae7c-bf28b65fd74b_2025-02-23_06-59-48.jpg	\N	116	\N	3	2025-02-23 13:59:48.59266	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-19	\N	\N	\N	e0baf8e7-bef8-4849-a670-1c2e812a5080_2025-02-23_07-05-29.jpg	\N	117	\N	3	2025-02-23 14:05:29.858537	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-20	\N	\N	\N	edb24db7-5fbb-4a21-890c-cbf8bc467fa0_2025-02-23_07-05-42.jpg	\N	118	\N	3	2025-02-23 14:05:42.597447	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-21	\N	\N	\N	688a199b-f4ca-4ce5-b9b9-99e28cec73db_2025-02-23_08-05-29.jpg	\N	119	\N	3	2025-02-23 15:05:29.341041	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-22	\N	\N	\N	234805f8-740d-4e21-ad0e-60d74c5cba0f_2025-02-23_08-05-40.jpg	\N	120	\N	3	2025-02-23 15:05:40.975859	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-23	\N	\N	\N	3731036d-fec7-4c47-9ebc-d44984d257f3_2025-02-23_08-20-48.jpg	\N	121	\N	3	2025-02-23 15:20:48.978031	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-24	\N	\N	\N	cbdb82e7-30d0-49cb-bf39-19987fbf8dcf_2025-02-23_08-20-57.jpg	\N	122	\N	3	2025-02-23 15:20:57.290017	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-25	\N	\N	\N	9a9c527d-3ba9-434b-ac9e-638f0b2c0b79_2025-02-23_08-21-04.jpg	\N	123	\N	3	2025-02-23 15:21:04.682283	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-26	\N	\N	\N	a9cbf368-3438-45c2-88e1-778b66c80fe3_2025-02-23_08-27-21.jpg	\N	124	\N	3	2025-02-23 15:27:21.823488	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-27	\N	\N	\N	22b05462-d8d5-488a-845b-4b33151af3b2_2025-02-23_08-37-12.jpg	\N	125	\N	3	2025-02-23 15:37:12.077383	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-28	\N	\N	\N	773deb2e-d070-4ddc-88bd-8ed1926d9a19_2025-02-23_08-37-24.jpg	\N	126	\N	3	2025-02-23 15:37:24.436842	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-29	\N	\N	\N	35f3be05-ce3d-4558-b241-cd588bc25658_2025-02-23_08-37-30.jpg	\N	127	\N	3	2025-02-23 15:37:30.265144	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-30	\N	\N	\N	f631bd78-fac0-4e98-a623-092e00126b4d_2025-02-23_08-52-18.jpg	\N	128	\N	3	2025-02-23 15:52:18.685528	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-31	\N	\N	\N	1d7ca961-4cff-4f54-ab5a-f6d1b6492d2b_2025-02-23_08-52-26.jpg	\N	129	\N	3	2025-02-23 15:52:26.32897	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-32	\N	\N	\N	1335b7ca-420a-4311-8c1f-f12ef13eaabb_2025-02-23_08-52-33.jpg	\N	130	\N	3	2025-02-23 15:52:33.918196	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-33	\N	\N	\N	9fffcebf-aad1-4fd3-b70b-89d64e6a5d9a_2025-02-23_08-52-37.jpg	\N	131	\N	3	2025-02-23 15:52:37.606085	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-34	\N	\N	\N	def53e57-c4b2-467d-9a4a-c131b7266cf5_2025-02-23_08-57-04.jpg	\N	132	\N	3	2025-02-23 15:57:04.35417	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-35	\N	\N	\N	1498a942-4bdf-45b0-bf8c-08898c66a45d_2025-02-23_08-57-23.jpg	\N	133	\N	3	2025-02-23 15:57:23.121686	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-36	\N	\N	\N	034460bd-6ac0-4a7c-bc8e-cced6de26258_2025-02-23_08-57-29.jpg	\N	134	\N	3	2025-02-23 15:57:29.509137	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-37	\N	\N	\N	636c209c-97dc-49c2-8821-e744bff27165_2025-02-23_09-00-39.jpg	\N	135	\N	3	2025-02-23 16:00:39.069095	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-38	\N	\N	\N	3817e3a0-1f97-4db2-9ec7-17a5022b118a_2025-02-23_09-06-07.jpg	\N	136	\N	3	2025-02-23 16:06:07.630862	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-39	\N	\N	\N	a06d3d5f-01da-4fc5-bf4c-33afc11ac92c_2025-02-23_09-13-48.jpg	\N	137	\N	3	2025-02-23 16:13:48.61001	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-40	\N	\N	\N	f48cbe5c-f039-45a3-aafd-28e9fd6a1d93_2025-02-23_14-30-08.jpg	\N	138	\N	3	2025-02-23 21:30:08.402764	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-41	\N	\N	\N	ae4ee0e1-2171-4636-b1ec-6ed2fa6503fe_2025-02-23_14-49-19.jpg	\N	139	\N	3	2025-02-23 21:49:19.034801	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-42	\N	\N	\N	692aa98a-44e2-4b67-9472-35443a98e531_2025-02-23_14-49-29.jpg	\N	140	\N	3	2025-02-23 21:49:29.562914	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-43	\N	\N	\N	5ce75af7-687e-4802-9912-1f55805e5adb_2025-02-23_14-49-39.jpg	\N	141	\N	3	2025-02-23 21:49:39.708814	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-44	\N	\N	\N	47821798-5caf-4fdc-a598-0c736ff60e7c_2025-02-23_14-55-22.jpg	\N	142	\N	3	2025-02-23 21:55:22.735373	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-45	\N	\N	\N	e4779805-063c-4a3b-b5f9-974ce52f4347_2025-02-23_14-58-06.jpg	\N	143	\N	3	2025-02-23 21:58:06.522861	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-46	\N	\N	\N	1e490534-9dd4-4e72-8764-e3b8681ed068_2025-02-23_14-58-15.jpg	\N	144	\N	3	2025-02-23 21:58:15.131724	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-47	\N	\N	\N	a09df74c-0d6e-423e-a626-6fef6c32db59_2025-02-23_14-58-27.jpg	\N	145	\N	3	2025-02-23 21:58:27.853535	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-48	\N	\N	\N	48c6f582-bd27-4f6d-bf38-9d56124bfc40_2025-02-23_14-58-33.jpg	\N	146	\N	3	2025-02-23 21:58:33.956749	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-49	\N	\N	\N	8f7593ab-2ea0-4cc0-bac2-221f86fbddcd_2025-02-23_14-58-51.jpg	\N	147	\N	3	2025-02-23 21:58:51.593289	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-50	\N	\N	\N	cc6e4a5b-f443-417c-8ed3-53b7227e703c_2025-02-23_14-59-02.jpg	\N	148	\N	3	2025-02-23 21:59:02.815467	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-51	\N	\N	\N	b7932a7a-e65f-4bf9-b4fd-d723639ae754_2025-02-23_14-59-08.jpg	\N	149	\N	3	2025-02-23 21:59:08.26136	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-52	\N	\N	\N	5025b75e-f96c-479b-8539-6f97ea4cd45d_2025-02-23_14-59-31.jpg	\N	150	\N	3	2025-02-23 21:59:31.252981	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-53	\N	\N	\N	5387b52f-5d26-4a1d-9f52-32c01ca361c6_2025-02-23_14-59-36.jpg	\N	151	\N	3	2025-02-23 21:59:36.804867	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-54	\N	\N	\N	7e1c5677-2948-465d-883c-b540bf8903ae_2025-02-23_14-59-45.jpg	\N	152	\N	3	2025-02-23 21:59:45.338013	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-55	\N	\N	\N	6a6b849b-2a87-4c25-bece-d331e8f3ee66_2025-02-23_14-59-50.jpg	\N	153	\N	3	2025-02-23 21:59:50.5984	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-56	\N	\N	\N	f8c420be-a2c8-441d-b045-9d56fbfa5fb8_2025-02-23_15-00-00.jpg	\N	154	\N	3	2025-02-23 22:00:00.12167	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-57	\N	\N	\N	e60d197d-b1d1-4bfb-bd3a-ca74ac45c9ff_2025-02-23_15-00-17.jpg	\N	155	\N	3	2025-02-23 22:00:17.243203	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-58	\N	\N	\N	66ea6081-8c4e-45b7-b127-c300f771f73a_2025-02-23_15-00-30.jpg	\N	156	\N	3	2025-02-23 22:00:30.456582	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-59	\N	\N	\N	9b15bae7-6f59-420e-a895-cde8625eb997_2025-02-23_15-00-35.jpg	\N	157	\N	3	2025-02-23 22:00:35.238071	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-60	\N	\N	\N	72f2ae8a-e720-49b9-825a-f8ecde5c9fe8_2025-02-23_15-00-47.jpg	\N	158	\N	3	2025-02-23 22:00:47.382567	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-61	\N	\N	\N	1d817d4e-9cb1-434d-98ff-b9f15450bebf_2025-02-23_15-04-22.jpg	\N	159	\N	3	2025-02-23 22:04:22.918754	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-62	\N	\N	\N	a4b4d74e-18d0-4706-8b65-dfd72ed3d8fd_2025-02-23_15-04-33.jpg	\N	160	\N	3	2025-02-23 22:04:33.596926	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-63	\N	\N	\N	f17d31dd-6b88-45bb-8774-9cc05fd07edb_2025-02-23_15-04-55.jpg	\N	161	\N	3	2025-02-23 22:04:55.31552	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-64	\N	\N	\N	6f913eff-294c-4d67-9d96-6190bff56f9f_2025-02-23_15-05-04.jpg	\N	162	\N	3	2025-02-23 22:05:04.091218	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-65	\N	\N	\N	1415323e-3eed-4c4c-9a14-3fc8213be4b4_2025-02-23_15-05-19.jpg	\N	163	\N	3	2025-02-23 22:05:19.797082	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-66	\N	\N	\N	44bb2cd4-32b4-4cfd-af21-26c396090b32_2025-02-23_15-05-26.jpg	\N	164	\N	3	2025-02-23 22:05:26.401248	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-67	\N	\N	\N	8c63a20e-ad9c-4a51-8259-3fae2bdfb8ff_2025-02-23_15-05-30.jpg	\N	165	\N	3	2025-02-23 22:05:30.447301	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-68	\N	\N	\N	98cf0038-5e62-4b98-b852-5369c3dc0cbc_2025-02-23_15-05-46.jpg	\N	166	\N	3	2025-02-23 22:05:46.231518	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-69	\N	\N	\N	a2ab7146-2015-47b8-afcb-4b997eec886e_2025-02-23_15-05-55.jpg	\N	167	\N	3	2025-02-23 22:05:55.48628	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-70	\N	\N	\N	c58b1797-d827-4fd7-9944-7396b4690f31_2025-02-23_15-06-02.jpg	\N	168	\N	3	2025-02-23 22:06:02.722753	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-71	\N	\N	\N	d44e7346-5828-4eda-9938-bf487771316d_2025-02-23_15-06-07.jpg	\N	169	\N	3	2025-02-23 22:06:07.24363	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-72	\N	\N	\N	3a9de1aa-f7e5-4d19-826b-1213ed304105_2025-02-23_15-06-10.jpg	\N	170	\N	3	2025-02-23 22:06:10.827849	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-73	\N	\N	\N	94225ff8-2175-4cce-98a4-e1f2db4a6d48_2025-02-23_15-06-16.jpg	\N	171	\N	3	2025-02-23 22:06:16.936575	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-74	\N	\N	\N	19a2b7bd-4540-4b71-82d2-dbe917c651b6_2025-02-23_15-06-20.jpg	\N	172	\N	3	2025-02-23 22:06:20.993996	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-75	\N	\N	\N	d7940c17-4368-4731-8598-99d3293773d2_2025-02-23_15-12-02.jpg	\N	173	\N	3	2025-02-23 22:12:02.426551	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-76	\N	\N	\N	3f4948d3-f8a5-455a-a0ee-49fc89b51fc8_2025-02-23_15-12-24.jpg	\N	174	\N	3	2025-02-23 22:12:24.954394	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-77	\N	\N	\N	05c2888e-3c32-4366-a4b9-94528fdf51b2_2025-02-23_15-12-34.jpg	\N	175	\N	3	2025-02-23 22:12:34.292751	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-78	\N	\N	\N	f3b0c8c5-cea4-4686-98b0-c504c84be30a_2025-02-23_15-12-40.jpg	\N	176	\N	3	2025-02-23 22:12:40.874024	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-79	\N	\N	\N	f537fb95-2eca-4f13-885f-440f6ba56c38_2025-02-23_15-13-09.jpg	\N	177	\N	3	2025-02-23 22:13:09.599426	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-80	\N	\N	\N	24751beb-a05c-45ea-b2ed-1ad7af2d01a9_2025-02-23_15-13-16.jpg	\N	178	\N	3	2025-02-23 22:13:16.073079	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-81	\N	\N	\N	a4ad6284-4fe7-41c3-8bbc-5c32c95213c9_2025-02-23_15-13-25.jpg	\N	179	\N	3	2025-02-23 22:13:25.618053	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-82	\N	\N	\N	515bf5a7-faa8-493b-89e0-3940ebd135bb_2025-02-23_15-18-17.jpg	\N	180	\N	3	2025-02-23 22:18:17.594353	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-83	\N	\N	\N	1046bd1c-6114-43bf-8877-5a5781c87d5f_2025-02-23_15-18-27.jpg	\N	181	\N	3	2025-02-23 22:18:27.152786	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-84	\N	\N	\N	445ccca3-b2c2-4ccb-b23e-991e489e3efd_2025-02-23_15-18-41.jpg	\N	182	\N	3	2025-02-23 22:18:41.097605	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-85	\N	\N	\N	ab7c2bbc-b730-43a1-b5a9-ed3f66aa40a9_2025-02-23_15-18-50.jpg	\N	183	\N	3	2025-02-23 22:18:50.776456	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-86	\N	\N	\N	faa18d8d-e343-4d9b-9da3-82e6d502a550_2025-02-23_15-19-01.jpg	\N	184	\N	3	2025-02-23 22:19:01.30378	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-87	\N	\N	\N	e441080c-aded-4413-b79a-69345ef76ca5_2025-02-23_15-19-13.jpg	\N	185	\N	3	2025-02-23 22:19:13.899995	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-88	\N	\N	\N	792d224d-78f7-43a1-b080-75ee3455f1ec_2025-02-23_15-19-29.jpg	\N	186	\N	3	2025-02-23 22:19:29.148393	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-89	\N	\N	\N	fdc9ccd6-de07-4337-9deb-f383e0329412_2025-02-23_15-22-52.jpg	\N	187	\N	3	2025-02-23 22:22:52.847799	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-90	\N	\N	\N	127fc8bc-319f-492f-a312-8ae1d0c7dc8b_2025-02-23_15-26-28.jpg	\N	188	\N	3	2025-02-23 22:26:28.723199	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-91	\N	\N	\N	16bf4c05-be7d-4cc0-a5d1-e70b3d5fc6b6_2025-02-23_15-30-54.jpg	\N	189	\N	3	2025-02-23 22:30:54.29893	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-92	\N	\N	\N	3d08b432-3b9f-4eef-b9b6-697e522f2bdd_2025-02-23_15-31-00.jpg	\N	190	\N	3	2025-02-23 22:31:00.897862	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-93	\N	\N	\N	917c70cf-fb64-41ac-b3bb-a51aa65d48e9_2025-02-23_15-32-51.jpg	\N	191	\N	3	2025-02-23 22:32:51.85006	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-94	\N	\N	\N	7ae4c3ac-1689-4291-8142-96c8f8f908d2_2025-02-23_15-35-05.jpg	\N	192	\N	3	2025-02-23 22:35:05.052313	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-95	\N	\N	\N	c0fb330a-bd61-46d9-92ad-0f90f45486fe_2025-02-23_15-35-11.jpg	\N	193	\N	3	2025-02-23 22:35:11.235831	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-96	\N	\N	\N	a48cb77e-489e-4a76-9525-99c751fa45e5_2025-02-23_15-35-15.jpg	\N	194	\N	3	2025-02-23 22:35:15.427871	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-97	\N	\N	\N	048ab654-9aef-4dca-95b8-79f2ff636751_2025-02-23_15-35-21.jpg	\N	195	\N	3	2025-02-23 22:35:21.357144	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-98	\N	\N	\N	4fb62cf5-c606-4398-bcb2-194648f2fc7f_2025-02-23_16-26-59.jpg	\N	196	\N	3	2025-02-23 23:26:59.607286	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-99	\N	\N	\N	b1ad3487-2ba2-4e55-aa03-1bd21446af84_2025-02-23_16-27-06.jpg	\N	197	\N	3	2025-02-23 23:27:06.396901	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-100	\N	\N	\N	63f15efd-0be4-4e81-8e43-b876e79d2078_2025-02-23_16-27-16.jpg	\N	198	\N	3	2025-02-23 23:27:16.513035	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-101	\N	\N	\N	5c507b97-804f-4b97-8b88-2c02a893b898_2025-02-23_16-35-44.jpg	\N	199	\N	3	2025-02-23 23:35:44.159807	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-102	\N	\N	\N	24d561e5-85d7-4082-8405-55b32cf54773_2025-02-23_16-36-03.jpg	\N	200	\N	3	2025-02-23 23:36:03.393242	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-103	\N	\N	\N	bb50af86-bd40-47db-a54d-ff77a1b6eebc_2025-02-23_16-36-18.jpg	\N	201	\N	3	2025-02-23 23:36:18.37748	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-104	\N	\N	\N	9ec0ee1b-f60b-42a7-b446-d1cb3c58e2d9_2025-02-23_16-36-40.jpg	\N	202	\N	3	2025-02-23 23:36:40.183938	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-105	\N	\N	\N	52fb3e66-53e9-4721-9ae5-6e1c25598864_2025-02-23_16-38-41.jpg	\N	203	\N	3	2025-02-23 23:38:41.139991	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-106	\N	\N	\N	99219ee5-95dd-4821-b5c1-24ba580a92fe_2025-02-23_16-41-27.jpg	\N	204	\N	3	2025-02-23 23:41:27.755874	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-107	\N	\N	\N	88c1052a-b9d4-45d0-a8f0-b4c7e2ea90d2_2025-02-24_12-49-18.jpg	\N	205	\N	3	2025-02-24 19:49:19.027993	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-108	\N	\N	\N	51207ed9-1ac1-4cf2-a291-40744f1a2661_2025-02-24_12-49-26.jpg	\N	206	\N	3	2025-02-24 19:49:26.421059	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-109	\N	\N	\N	02368807-fcff-48fb-9767-9f1f819583f5_2025-02-24_14-39-05.jpg	\N	207	\N	3	2025-02-24 21:39:05.731208	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-110	\N	\N	\N	93664dd3-2803-403c-b806-146568f01175_2025-02-24_15-25-47.jpg	\N	208	\N	3	2025-02-24 22:25:47.365641	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-111	\N	\N	\N	dee95a35-caf1-4dfb-b0c1-504d4a28a2c8_2025-02-24_15-26-14.jpg	\N	209	\N	3	2025-02-24 22:26:14.88729	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-112	\N	\N	\N	b9e9cfbb-08b9-4abc-b83e-d3ad1aad6c84_2025-02-24_15-26-55.jpg	\N	210	\N	3	2025-02-24 22:26:55.172739	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-113	\N	\N	\N	7d5f9eac-5424-43a7-9ab1-0d4a6ae152f3_2025-02-24_15-28-10.jpg	\N	211	\N	3	2025-02-24 22:28:10.626906	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-114	\N	\N	\N	7b43cde5-6f85-471f-b777-769bf8b76424_2025-02-24_15-28-14.jpg	\N	212	\N	3	2025-02-24 22:28:14.022646	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-115	\N	\N	\N	000e2a53-0594-496a-a60e-445d8410dbb9_2025-02-24_15-28-30.jpg	\N	213	\N	3	2025-02-24 22:28:30.952513	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-116	\N	\N	\N	43a7f302-85c9-4049-be23-d72624106a2a_2025-02-24_15-28-36.jpg	\N	214	\N	3	2025-02-24 22:28:36.080018	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-117	\N	\N	\N	a0c4a0ee-4c23-4f78-b69a-86bbe7aa5274_2025-02-24_15-29-48.jpg	\N	215	\N	3	2025-02-24 22:29:48.457467	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-118	\N	\N	\N	93ba3668-c371-41bb-91e5-5b57780b98e6_2025-02-24_15-29-57.jpg	\N	216	131	3	2025-02-24 22:29:57.768389	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-119	\N	\N	\N	ed8b2858-b744-4340-bba0-357fbee27e88_2025-02-24_15-30-32.jpg	\N	217	\N	3	2025-02-24 22:30:32.688758	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-120	\N	\N	\N	762374fe-af17-480d-bdf5-9bea785cf729_2025-02-24_15-31-40.jpg	\N	218	\N	3	2025-02-24 22:31:40.88534	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-121	\N	\N	\N	6dae20d7-a1dc-4e64-8c7e-b753ce301cbc_2025-02-24_15-31-49.jpg	\N	219	\N	3	2025-02-24 22:31:49.165339	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-122	\N	\N	\N	a1b47ef3-1f6a-4b8e-9765-e53aca52d6b9_2025-02-24_15-43-08.jpg	\N	221	\N	3	2025-02-24 22:43:08.159967	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-123	\N	\N	\N	0a0239da-789a-48cf-96ba-5d094c685d36_2025-02-24_15-43-16.jpg	\N	222	\N	3	2025-02-24 22:43:16.885268	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-124	\N	\N	\N	a0784dab-16ed-4302-86e7-6f7fb9c30794_2025-02-24_15-43-31.jpg	\N	223	\N	3	2025-02-24 22:43:31.274153	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-125	\N	\N	\N	80bb18e6-76ad-476d-bd25-2dfd30372702_2025-02-24_15-44-20.jpg	\N	224	\N	3	2025-02-24 22:44:20.991802	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-126	\N	\N	\N	8cf4f195-1078-41cf-b726-72f2ade8c3f5_2025-02-24_15-51-38.jpg	\N	225	\N	3	2025-02-24 22:51:38.14765	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-127	\N	\N	\N	f2ac4bbc-1b96-498c-b0f1-6c5c6fedcfc0_2025-02-24_15-51-47.jpg	\N	226	\N	3	2025-02-24 22:51:47.320626	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-128	\N	\N	\N	9421a480-8ea7-4eb0-b677-f49bf7889e1e_2025-02-24_15-55-14.jpg	\N	227	\N	3	2025-02-24 22:55:14.186022	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-129	\N	\N	\N	c2a4d281-de08-4016-827a-b149cb06c3bf_2025-02-24_15-55-21.jpg	\N	228	\N	3	2025-02-24 22:55:21.274714	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-130	\N	\N	\N	bfb72299-0c76-4fbc-b1dc-c86079d7d08f_2025-02-24_15-55-46.jpg	\N	229	\N	3	2025-02-24 22:55:46.110945	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-131	\N	\N	\N	29ef689c-338a-48fe-a614-0380338f6293_2025-02-24_15-59-25.jpg	\N	230	\N	3	2025-02-24 22:59:25.833455	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-132	\N	\N	\N	98937d44-0466-4145-8b93-2582d2df6520_2025-02-24_15-59-34.jpg	\N	231	\N	3	2025-02-24 22:59:34.999916	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-133	\N	\N	\N	47071afd-d477-47c7-95bc-c7a8928ab93f_2025-02-24_15-59-55.jpg	\N	232	\N	3	2025-02-24 22:59:55.508587	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-134	\N	\N	\N	73f78033-ebb5-423a-aa92-2f8cb955ec5b_2025-02-24_16-00-43.jpg	\N	233	\N	3	2025-02-24 23:00:43.439816	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-135	\N	\N	\N	5fbd085b-9326-4e24-8bf5-95f3a603e648_2025-02-24_16-01-44.jpg	\N	234	\N	3	2025-02-24 23:01:44.489953	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-136	\N	\N	\N	87364596-032d-42f7-8336-51cf2fd0c27a_2025-02-24_16-01-46.jpg	\N	235	\N	3	2025-02-24 23:01:46.953793	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-137	\N	\N	\N	44b38b69-704e-42d7-b9f0-962dcbcee257_2025-02-24_16-01-59.jpg	\N	236	\N	3	2025-02-24 23:01:59.732556	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-138	\N	\N	\N	b301cce3-e289-4a70-a5b3-ae852595e1bd_2025-02-24_16-02-06.jpg	\N	237	\N	3	2025-02-24 23:02:06.89848	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-139	\N	\N	\N	b01fdedc-2ac0-45a3-9b2f-b0f8e4f0dbfa_2025-02-24_16-03-14.jpg	\N	238	\N	3	2025-02-24 23:03:14.344704	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-140	\N	\N	\N	8b5596a5-8897-4e0c-838e-005c670d65d4_2025-02-24_16-03-42.jpg	\N	239	\N	3	2025-02-24 23:03:42.846532	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-141	\N	\N	\N	7e1716d2-7590-4bb5-b620-3c34b7644b13_2025-02-24_16-05-18.jpg	\N	240	\N	3	2025-02-24 23:05:18.106848	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-142	\N	\N	\N	a0592072-035f-4db9-932d-a3cc4e576976_2025-02-25_06-08-05.jpg	\N	241	\N	3	2025-02-25 13:08:05.184948	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-143	\N	\N	\N	6368cc9c-5bfd-48ef-ac33-e7ccc51d197f_2025-02-25_06-08-11.jpg	\N	242	\N	3	2025-02-25 13:08:11.97659	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-144	\N	\N	\N	920afa09-4373-4e2d-90eb-226f7f63f331_2025-02-25_06-08-29.jpg	\N	243	\N	3	2025-02-25 13:08:29.368568	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-145	\N	\N	\N	86996045-0ac9-4a01-ae04-2acfedae47ab_2025-02-25_06-16-50.jpg	\N	244	\N	3	2025-02-25 13:16:50.654982	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-146	\N	\N	\N	ee8848d5-d526-4150-b003-efac1e78ed3e_2025-02-25_06-50-43.jpg	\N	251	\N	3	2025-02-25 13:50:43.434256	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-147	\N	\N	\N	4915e9e0-1179-411b-8699-85136fa71051_2025-02-25_06-50-52.jpg	\N	252	\N	3	2025-02-25 13:50:52.098143	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-148	\N	\N	\N	e997718d-2759-4939-931f-449ccd7b37ee_2025-02-25_06-51-07.jpg	\N	253	\N	3	2025-02-25 13:51:07.9708	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-149	\N	\N	\N	f0cd1712-edbc-4823-990d-9c3cfc223728_2025-02-25_06-51-50.jpg	\N	254	\N	3	2025-02-25 13:51:50.524998	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-150	\N	\N	\N	6e175030-459e-4204-8630-bcc5b46cc665_2025-02-25_06-52-46.jpg	\N	255	\N	3	2025-02-25 13:52:46.979351	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-151	\N	\N	\N	46dd8f1d-fb9f-418f-9831-788abac6686c_2025-02-25_06-52-49.jpg	\N	256	\N	3	2025-02-25 13:52:49.31723	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-152	\N	\N	\N	e8deeb09-0142-42a6-8283-a638fe6de645_2025-02-25_06-53-00.jpg	\N	257	\N	3	2025-02-25 13:53:00.768844	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-153	\N	\N	\N	dc832577-7030-4fcf-b35d-1afa70ea4fdf_2025-02-25_06-53-03.jpg	\N	258	\N	3	2025-02-25 13:53:03.733554	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-154	\N	\N	\N	1aa267db-9ab5-4884-a289-f30d54a9c70e_2025-02-25_06-54-05.jpg	\N	259	\N	3	2025-02-25 13:54:05.207337	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-155	\N	\N	\N	ef16dc85-8c49-4de8-8407-f26358a71d69_2025-02-25_06-54-38.jpg	\N	260	\N	3	2025-02-25 13:54:38.148989	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-156	\N	\N	\N	0a33e3eb-9682-4ae4-98bf-0f9c875e0d0d_2025-02-25_06-55-28.jpg	\N	261	\N	3	2025-02-25 13:55:28.79679	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-157	\N	\N	\N	bdc6c1a2-584a-412f-a580-adf4190cc181_2025-02-25_07-00-06.jpg	\N	262	138	3	2025-02-25 14:00:06.96268	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-158	\N	\N	\N	b05225ef-05b5-46db-883d-fa9aa7cf0b13_2025-02-25_07-01-30.jpg	\N	263	\N	3	2025-02-25 14:01:30.93374	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-159	\N	\N	\N	1ea5d6ef-f0ca-4ecc-9b36-05ad36545656_2025-02-28_08-49-43.jpg	\N	271	144	3	2025-02-28 15:49:43.052585	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-160	\N	\N	\N	39a3f7e1-c792-4925-8a9f-214b04baf347_2025-02-28_08-49-55.jpg	\N	272	\N	3	2025-02-28 15:49:55.23055	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-161	\N	\N	\N	1241f12e-e612-4efc-b3ac-cb27da286df3_2025-02-28_08-50-03.jpg	\N	273	145	3	2025-02-28 15:50:03.304922	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-162	\N	\N	\N	e75f5c5c-737c-4c57-b7a2-887ef7a6c246_2025-02-28_08-50-09.jpg	\N	274	\N	3	2025-02-28 15:50:09.381516	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-163	\N	\N	\N	05dbf8fa-ea53-4cdb-9643-98ef694980e7_2025-02-28_08-50-17.jpg	\N	275	146	3	2025-02-28 15:50:17.882014	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-164	\N	\N	\N	57a7ff41-9420-40b4-a46d-5d7895d79d5e_2025-02-28_08-50-37.jpg	\N	276	\N	3	2025-02-28 15:50:37.12925	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-165	\N	\N	\N	2542b41c-2a0f-4cde-ad41-16697c3fcd2d_2025-02-28_11-08-41.jpg	\N	283	\N	3	2025-02-28 18:08:41.139141	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-166	\N	\N	\N	bbbb3d10-8fe1-480b-a6d3-06b4f65af04b_2025-02-28_11-08-50.jpg	\N	284	\N	3	2025-02-28 18:08:50.579101	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-167	\N	\N	\N	11a00e10-85d8-497a-bd30-7ea2ee6415a9_2025-02-28_11-09-14.jpg	\N	285	153	3	2025-02-28 18:09:14.316917	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-168	\N	\N	\N	6891a518-8a17-4558-8e94-158aee90ac4a_2025-02-28_11-38-14.jpg	\N	286	\N	3	2025-02-28 18:38:14.711338	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-169	\N	\N	กรกฎาคม44	c7ca2efb-b5d7-44d5-969a-936d37dd9a89_2025-02-28_11-38-24.jpg	\N	287	154	3	2025-02-28 18:38:24.451991	\N	กรกฎาคม44	warning	token_for_video_service_test_jonhdoe_3	\N
-170	\N	\N	\N	1f030a17-7223-4a79-aad2-df05d88ce351_2025-02-28_11-38-30.jpg	\N	288	\N	3	2025-02-28 18:38:30.808702	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-171	\N	\N	กลางปี244	3422f815-986a-4d76-9e20-60922a9503ea_2025-02-28_11-38-43.jpg	\N	289	155	3	2025-02-28 18:38:43.119834	\N	กลางปี244	warning	token_for_video_service_test_jonhdoe_3	\N
-172	\N	\N	\N	b043f828-aaf3-4664-983e-b639a7698326_2025-02-28_11-38-50.jpg	\N	290	\N	3	2025-02-28 18:38:50.817611	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-173	\N	\N	\N	a93dea5b-cc47-40d5-a569-c1ee97154b4d_2025-02-28_11-38-57.jpg	\N	291	\N	3	2025-02-28 18:38:57.2742	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-174	\N	\N	กลางปี2	90761ab6-2350-4d14-94bc-2249efa43274_2025-02-28_11-39-31.jpg	\N	292	156	3	2025-02-28 18:39:31.950374	\N	กลางปี2	warning	token_for_video_service_test_jonhdoe_3	\N
-175	\N	\N	945	15313f48-6282-4d06-80bc-1791691cea37_2025-02-28_11-42-55.jpg	\N	293	157	3	2025-02-28 18:42:55.352616	\N	945	warning	token_for_video_service_test_jonhdoe_3	\N
-176	\N	\N	\N	b48b7221-23dd-42f1-ae00-31de5f7b3e85_2025-02-28_11-43-00.jpg	\N	294	\N	3	2025-02-28 18:43:00.593194	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-177	\N	\N	\N	f4c45119-17c2-4166-b01f-a0a4f121064b_2025-02-28_11-43-13.jpg	\N	295	158	3	2025-02-28 18:43:13.821599	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-178	\N	\N	\N	2c54ef26-48a9-4376-b81b-4e61c817a58e_2025-02-28_11-43-44.jpg	\N	296	\N	3	2025-02-28 18:43:44.150597	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-179	\N	\N	\N	baf19637-3e6d-43a4-a3f1-a83069093e9a_2025-03-04_08-44-22.jpg	\N	299	\N	3	2025-03-04 15:44:22.633486	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-180	\N	\N	ธนาคาร244	f1d79da4-a028-4b26-9cd4-a241d6cf41d1_2025-03-04_08-44-31.jpg	\N	300	159	3	2025-03-04 15:44:31.555717	\N	ธนาคาร244	warning	token_for_video_service_test_jonhdoe_3	\N
-181	\N	\N	\N	15c09311-a2e6-4043-9373-203b58a6e5f0_2025-03-04_08-44-45.jpg	\N	301	\N	3	2025-03-04 15:44:45.930319	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-182	\N	\N	กรกฎาคม44	45a42cdb-9734-4f0f-b208-ca25451c01dd_2025-03-04_08-44-54.jpg	\N	302	160	3	2025-03-04 15:44:55.015603	\N	กรกฎาคม44	warning	token_for_video_service_test_jonhdoe_3	\N
-183	\N	\N	\N	e52495a0-7424-4348-b3dc-df7068a47cdc_2025-03-04_08-45-03.jpg	\N	303	\N	3	2025-03-04 15:45:03.828926	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-184	\N	\N	สลาก224	82272b32-1f6d-4ebb-baec-b06ad41c36b8_2025-03-04_08-45-17.jpg	\N	304	161	3	2025-03-04 15:45:17.816368	\N	สลาก224	warning	token_for_video_service_test_jonhdoe_3	\N
-185	\N	\N	\N	49594a24-50fe-40d5-b8d5-cfbd3d9b9cef_2025-03-04_08-45-26.jpg	\N	305	\N	3	2025-03-04 15:45:26.100595	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-186	\N	\N	กลางปี244	3ef6023b-ee19-468e-91dd-1afe96fbca41_2025-03-04_08-45-36.jpg	\N	306	162	3	2025-03-04 15:45:36.552499	\N	กลางปี244	warning	token_for_video_service_test_jonhdoe_3	\N
-187	\N	\N	\N	8027360e-0332-4a95-98da-285e465ecf4f_2025-03-04_08-45-41.jpg	\N	307	\N	3	2025-03-04 15:45:41.135619	\N	\N	warning	token_for_video_service_test_jonhdoe_3	\N
-188	\N	\N	กรกฎาคม44	54e0154d-fc7b-4a4c-bb2e-5b3a01a3a30c_2025-03-04_08-45-57.jpg	\N	308	163	3	2025-03-04 15:45:57.141654	\N	กรกฎาคม44	warning	token_for_video_service_test_jonhdoe_3	\N
 \.
 
 
 --
+-- TOC entry 3452 (class 0 OID 0)
+-- Dependencies: 215
 -- Name: car_bbox_car_bbox_id_seq; Type: SEQUENCE SET; Schema: public; Owner: alpr
 --
 
-SELECT pg_catalog.setval('public.car_bbox_car_bbox_id_seq', 328, true);
+SELECT pg_catalog.setval('public.car_bbox_car_bbox_id_seq', 1, false);
 
 
 --
+-- TOC entry 3453 (class 0 OID 0)
+-- Dependencies: 218
 -- Name: payment_logs_transection_id_seq; Type: SEQUENCE SET; Schema: public; Owner: alpr
 --
 
@@ -1420,13 +1228,17 @@ SELECT pg_catalog.setval('public.payment_logs_transection_id_seq', 3, true);
 
 
 --
+-- TOC entry 3454 (class 0 OID 0)
+-- Dependencies: 220
 -- Name: plate_bbox_plate_bbox_id_seq; Type: SEQUENCE SET; Schema: public; Owner: alpr
 --
 
-SELECT pg_catalog.setval('public.plate_bbox_plate_bbox_id_seq', 182, true);
+SELECT pg_catalog.setval('public.plate_bbox_plate_bbox_id_seq', 193, true);
 
 
 --
+-- TOC entry 3455 (class 0 OID 0)
+-- Dependencies: 223
 -- Name: subscription_logs_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: alpr
 --
 
@@ -1434,41 +1246,52 @@ SELECT pg_catalog.setval('public.subscription_logs_log_id_seq', 3, true);
 
 
 --
+-- TOC entry 3456 (class 0 OID 0)
+-- Dependencies: 224
 -- Name: subscription_sub_id_seq; Type: SEQUENCE SET; Schema: public; Owner: alpr
 --
 
-SELECT pg_catalog.setval('public.subscription_sub_id_seq', 17, true);
+SELECT pg_catalog.setval('public.subscription_sub_id_seq', 32, true);
 
 
 --
+-- TOC entry 3457 (class 0 OID 0)
+-- Dependencies: 227
 -- Name: user_subscription_user_sub_id_seq; Type: SEQUENCE SET; Schema: public; Owner: alpr
 --
 
-SELECT pg_catalog.setval('public.user_subscription_user_sub_id_seq', 7, true);
+SELECT pg_catalog.setval('public.user_subscription_user_sub_id_seq', 14, true);
 
 
 --
+-- TOC entry 3458 (class 0 OID 0)
+-- Dependencies: 229
 -- Name: user_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: alpr
 --
 
-SELECT pg_catalog.setval('public.user_user_id_seq', 5, true);
+SELECT pg_catalog.setval('public.user_user_id_seq', 9, true);
 
 
 --
+-- TOC entry 3459 (class 0 OID 0)
+-- Dependencies: 231
 -- Name: websocket_image_logs_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: alpr
 --
 
-SELECT pg_catalog.setval('public.websocket_image_logs_log_id_seq', 152, true);
+SELECT pg_catalog.setval('public.websocket_image_logs_log_id_seq', 156, true);
 
 
 --
+-- TOC entry 3460 (class 0 OID 0)
+-- Dependencies: 232
 -- Name: websocket_video_logs_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: alpr
 --
 
-SELECT pg_catalog.setval('public.websocket_video_logs_log_id_seq', 188, true);
+SELECT pg_catalog.setval('public.websocket_video_logs_log_id_seq', 238, true);
 
 
 --
+-- TOC entry 3240 (class 2606 OID 24652)
 -- Name: car_bbox car_bbox_pkey; Type: CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1477,6 +1300,7 @@ ALTER TABLE ONLY public.car_bbox
 
 
 --
+-- TOC entry 3244 (class 2606 OID 24654)
 -- Name: payment_logs payment_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1485,6 +1309,7 @@ ALTER TABLE ONLY public.payment_logs
 
 
 --
+-- TOC entry 3246 (class 2606 OID 24656)
 -- Name: plate_bbox plate_bbox_pkey; Type: CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1493,6 +1318,7 @@ ALTER TABLE ONLY public.plate_bbox
 
 
 --
+-- TOC entry 3250 (class 2606 OID 24658)
 -- Name: subscription_logs subscription_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1501,6 +1327,7 @@ ALTER TABLE ONLY public.subscription_logs
 
 
 --
+-- TOC entry 3248 (class 2606 OID 24660)
 -- Name: subscription subscription_pkey; Type: CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1509,6 +1336,7 @@ ALTER TABLE ONLY public.subscription
 
 
 --
+-- TOC entry 3252 (class 2606 OID 24662)
 -- Name: token token_pkey; Type: CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1517,6 +1345,7 @@ ALTER TABLE ONLY public.token
 
 
 --
+-- TOC entry 3256 (class 2606 OID 24664)
 -- Name: users user_pkey; Type: CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1525,6 +1354,7 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- TOC entry 3254 (class 2606 OID 24666)
 -- Name: user_subscription user_subscription_pkey; Type: CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1533,6 +1363,7 @@ ALTER TABLE ONLY public.user_subscription
 
 
 --
+-- TOC entry 3242 (class 2606 OID 24668)
 -- Name: image_logs websocket_image_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1541,6 +1372,7 @@ ALTER TABLE ONLY public.image_logs
 
 
 --
+-- TOC entry 3258 (class 2606 OID 24670)
 -- Name: video_logs websocket_video_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1549,6 +1381,7 @@ ALTER TABLE ONLY public.video_logs
 
 
 --
+-- TOC entry 3259 (class 2606 OID 24671)
 -- Name: image_logs fk_car_bbox; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1557,6 +1390,7 @@ ALTER TABLE ONLY public.image_logs
 
 
 --
+-- TOC entry 3271 (class 2606 OID 24676)
 -- Name: video_logs fk_car_bbox; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1565,6 +1399,7 @@ ALTER TABLE ONLY public.video_logs
 
 
 --
+-- TOC entry 3260 (class 2606 OID 24681)
 -- Name: image_logs fk_plate_bbox; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1573,6 +1408,7 @@ ALTER TABLE ONLY public.image_logs
 
 
 --
+-- TOC entry 3272 (class 2606 OID 24686)
 -- Name: video_logs fk_plate_bbox; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1581,6 +1417,7 @@ ALTER TABLE ONLY public.video_logs
 
 
 --
+-- TOC entry 3273 (class 2606 OID 24691)
 -- Name: video_logs fk_token; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1589,6 +1426,7 @@ ALTER TABLE ONLY public.video_logs
 
 
 --
+-- TOC entry 3261 (class 2606 OID 24696)
 -- Name: image_logs fk_token; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1597,6 +1435,7 @@ ALTER TABLE ONLY public.image_logs
 
 
 --
+-- TOC entry 3267 (class 2606 OID 24701)
 -- Name: token fk_user_sub_id; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1605,6 +1444,7 @@ ALTER TABLE ONLY public.token
 
 
 --
+-- TOC entry 3262 (class 2606 OID 24706)
 -- Name: image_logs image_logs_token_key_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1613,6 +1453,7 @@ ALTER TABLE ONLY public.image_logs
 
 
 --
+-- TOC entry 3264 (class 2606 OID 24711)
 -- Name: payment_logs payment_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1621,6 +1462,7 @@ ALTER TABLE ONLY public.payment_logs
 
 
 --
+-- TOC entry 3265 (class 2606 OID 24716)
 -- Name: subscription_logs subscription_logs_transection_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1629,6 +1471,7 @@ ALTER TABLE ONLY public.subscription_logs
 
 
 --
+-- TOC entry 3266 (class 2606 OID 24721)
 -- Name: subscription_logs subscription_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1637,6 +1480,7 @@ ALTER TABLE ONLY public.subscription_logs
 
 
 --
+-- TOC entry 3268 (class 2606 OID 24726)
 -- Name: token token_user_sub_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1645,6 +1489,7 @@ ALTER TABLE ONLY public.token
 
 
 --
+-- TOC entry 3269 (class 2606 OID 24731)
 -- Name: user_subscription user_subscription_sub_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1653,6 +1498,7 @@ ALTER TABLE ONLY public.user_subscription
 
 
 --
+-- TOC entry 3270 (class 2606 OID 24736)
 -- Name: user_subscription user_subscription_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1661,6 +1507,7 @@ ALTER TABLE ONLY public.user_subscription
 
 
 --
+-- TOC entry 3274 (class 2606 OID 24741)
 -- Name: video_logs video_logs_token_key_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1669,6 +1516,7 @@ ALTER TABLE ONLY public.video_logs
 
 
 --
+-- TOC entry 3263 (class 2606 OID 24746)
 -- Name: image_logs websocket_image_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1677,6 +1525,7 @@ ALTER TABLE ONLY public.image_logs
 
 
 --
+-- TOC entry 3275 (class 2606 OID 24751)
 -- Name: video_logs websocket_video_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alpr
 --
 
@@ -1685,6 +1534,19 @@ ALTER TABLE ONLY public.video_logs
 
 
 --
+-- TOC entry 3442 (class 0 OID 0)
+-- Dependencies: 5
+-- Name: SCHEMA public; Type: ACL; Schema: -; Owner: pg_database_owner
+--
+
+GRANT ALL ON SCHEMA public TO alpr;
+
+
+-- Completed on 2026-02-17 21:14:37
+
+--
 -- PostgreSQL database dump complete
 --
+
+\unrestrict wIyKYTIgpco4AYMKHr5EpvsA6fXINIv0KCpIzipz15aQgh2rw5IgJjqBaxuVdY0
 

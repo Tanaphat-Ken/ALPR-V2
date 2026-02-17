@@ -1,0 +1,175 @@
+version: '3.8'
+
+services:
+  # ============================================
+  # Nginx Reverse Proxy
+  # ============================================
+  nginx:
+    image: nginx:alpine
+    container_name: alpr_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - plate-recognizer
+      - nextjs-app
+      - fastapi_image_container
+      - alpr-api-web-gateway
+      - image-websocket-container
+      - video-handler
+      - alpr_rtsp_service
+    restart: always
+    networks:
+      - alpr-network
+
+  # ============================================
+  # Plate Recognition Service (Load Balanced with 2 Replicas)
+  # ============================================
+  plate-recognizer:
+    build:
+      context: ./plate_recognizer
+      dockerfile: Dockerfile
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+    volumes:
+      - ./plate_recognizer:/usr/src/app
+    restart: always
+    networks:
+      - alpr-network
+  
+  # ============================================
+  # Frontend - Next.js Web Application
+  # ============================================
+  nextjs-app:
+    build:
+      context: ./alpr_web
+      dockerfile: Dockerfile
+    container_name: alpr_nextjs
+    environment:
+      NODE_ENV: "production"
+    volumes:
+      - ./alpr_web/.env:/app/.env:ro
+    restart: always
+    networks:
+      - alpr-network
+
+  # ============================================
+  # API Image Upload Service
+  # ============================================
+  fastapi_image_container:
+    build:
+      context: ./alpr_api_image
+      dockerfile: Dockerfile
+    container_name: alpr_api_image
+    volumes:
+      - ./alpr_api_image:/app
+    restart: unless-stopped
+    networks:
+      - alpr-network
+
+  # ============================================
+  # General API Gateway (Auth, Payment, Subscription)
+  # ============================================
+  alpr-api-web-gateway:
+    build:
+      context: ./alpr_general_api
+      dockerfile: Dockerfile
+    container_name: alpr_general_api
+    volumes:
+      - ./alpr_general_api:/app
+    restart: always
+    networks:
+      - alpr-network
+
+  # ============================================
+  # WebSocket Service - Image Processing
+  # ============================================
+  image-websocket-container:
+    build:
+      context: ./alpr_websocket_image
+      dockerfile: Dockerfile
+    container_name: alpr_websocket_image
+    volumes:
+      - ./alpr_websocket_image:/app
+    restart: unless-stopped
+    networks:
+      - alpr-network
+
+  # ============================================
+  # WebSocket Service - Video Processing
+  # ============================================
+  video-handler:
+    build:
+      context: ./alpr_websocket_video
+      dockerfile: Dockerfile
+    container_name: alpr_websocket_video
+    volumes:
+      - ./alpr_websocket_video/src:/usr/src/app/src
+      - ./alpr_websocket_video/main.py:/usr/src/app/main.py
+      - ./alpr_websocket_video/images_logs:/usr/src/app/images_logs
+      - ./alpr_websocket_video/testing:/usr/src/app/testing
+      - ./alpr_websocket_video/.env:/usr/src/app/.env:ro
+    restart: always
+    networks:
+      - alpr-network
+
+  # ============================================
+  # RTSP Streaming Service
+  # ============================================
+  alpr_rtsp_service:
+    build:
+      context: ./alpr_rtsp_service
+      dockerfile: Dockerfile
+    container_name: alpr_rtsp_service
+    volumes:
+      - ./alpr_rtsp_service/configs:/app/configs
+      - ./alpr_rtsp_service/images_logs:/app/images_logs
+      - ./alpr_rtsp_service/tests:/app/tests
+    environment:
+      - HOST=0.0.0.0
+      - PORT=5003
+      - ENVIRONMENT=production
+      - PLATE_RECOGNIZER_URL=http://plate-recognizer:5000/api/v1/image/process
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=alpr_db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+    depends_on:
+      - postgres
+      - plate-recognizer
+    restart: unless-stopped
+    networks:
+      - alpr-network
+
+  # ============================================
+  # PostgreSQL Database
+  # ============================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: alpr_postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=alpr_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./dump.sql:/docker-entrypoint-initdb.d/dump.sql:ro
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - alpr-network
+
+volumes:
+  postgres_data:
+
+networks:
+  alpr-network:
+    driver: bridge
