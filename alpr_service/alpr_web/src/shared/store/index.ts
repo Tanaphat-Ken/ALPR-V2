@@ -6,6 +6,7 @@ import tokensPageSlice from './dashboard/tokens-page-slice'
 import sharedStateSlice from './dashboard/shared'
 import uploadImageSlice from './dashboard/upload-image-slice'
 import uploadVideoSlice from './dashboard/upload-video-slice'
+import streamsPageSlice from './dashboard/streams-page-slice'
 
 export const store = () => {
   return configureStore({
@@ -15,7 +16,8 @@ export const store = () => {
       homePageSlice: homePageSlice.reducer,
       tokensPage: tokensPageSlice.reducer,
       uploadImagePage: uploadImageSlice.reducer,
-      uploadVideoPage: uploadVideoSlice.reducer
+      uploadVideoPage: uploadVideoSlice.reducer,
+      streamsPage: streamsPageSlice.reducer
     }
   })
 }
