@@ -11,6 +11,8 @@ export interface Stream {
   running?: boolean
   fps?: number
   frame_skip?: number
+  token_key?: string
+  stream_id?: number
 }
 
 export interface StreamDetection {
@@ -45,6 +47,7 @@ export interface DetectionsResponse {
 export interface CreateStreamRequest {
   name: string
   rtsp_url: string
+  token_key: string
   location?: string
   enabled?: boolean
   fps?: number
@@ -54,6 +57,7 @@ export interface CreateStreamRequest {
 export interface UpdateStreamRequest {
   name?: string
   rtsp_url?: string
+  token_key?: string
   location?: string
   enabled?: boolean
   fps?: number

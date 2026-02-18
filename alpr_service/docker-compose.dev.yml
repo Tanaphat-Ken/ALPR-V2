@@ -17,6 +17,8 @@ services:
         NEXT_PUBLIC_BASE_API_GATE_WAY_URL: http://35.187.233.205/api/general
         NEXT_PUBLIC_API_UPLOAD_IMAGE: http://35.187.233.205/api/image
         NEXT_PUBLIC_WEBSOCKET_VIDEO_HANLER: ws://35.187.233.205/ws/video
+        NEXT_PUBLIC_RTSP_SERVICE_URL: http://35.187.233.205/api/rtsp
+        NEXT_PUBLIC_RTSP_WEBSOCKET_URL: ws://35.187.233.205/api/rtsp/stream
     command: npm run dev
     volumes:
       - ./alpr_web/src:/app/src
@@ -29,6 +31,8 @@ services:
       NEXT_PUBLIC_BASE_API_GATE_WAY_URL: http://35.187.233.205/api/general
       NEXT_PUBLIC_API_UPLOAD_IMAGE: http://35.187.233.205/api/image
       NEXT_PUBLIC_WEBSOCKET_VIDEO_HANLER: ws://35.187.233.205/ws/video
+      NEXT_PUBLIC_RTSP_SERVICE_URL: http://35.187.233.205/api/rtsp
+      NEXT_PUBLIC_RTSP_WEBSOCKET_URL: ws://35.187.233.205/api/rtsp/stream
       # Enable hot reload
       WATCHPACK_POLLING: "true"
       CHOKIDAR_USEPOLLING: "true"

@@ -4,12 +4,19 @@ import base64
 import asyncio
 import numpy as np
 from io import BytesIO
-from typing import Dict, Set, List, Any
+from typing import Dict, Set, List, Any, Optional
 from datetime import datetime
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 
-from src.services import CameraManager, PlateRecognizerService, DatabaseService
+from src.services import (
+    CameraManager, PlateRecognizerService, DatabaseService,
+    db_get_all_streams, db_get_stream, db_create_stream,
+    db_update_stream, db_delete_stream, db_save_detection,
+    db_validate_rtsp_token, db_get_user_id_from_token, DB_AVAILABLE,
+)
+from src.models import Camera
 from src.utils.logging import logger
 from src.constants import configs
 
@@ -20,6 +27,37 @@ camera_manager = CameraManager()
 plate_recognizer = PlateRecognizerService()
 database_service = DatabaseService(enabled=configs.DATABASE_ENABLED)
 
+# map stream_id (int) → camera string id
+# ใช้สำหรับส่ง stream_id ตอน save detection log
+_stream_id_map: Dict[str, Optional[int]] = {}  # camera_id → stream_id
+
+# Deduplication: ป้องกัน save ป้ายเดิมซ้ำเมื่อ video loop
+# key = (camera_id, plate_text)  value = timestamp ของการ detect ครั้งล่าสุด
+_last_detected: Dict[tuple, datetime] = {}
+PLATE_COOLDOWN_SECONDS = 3  # เหมือน websocket service: ป้ายเดิมใน 3 วินาที → skip
+
+
+# ---------------------------------------------------------------------------
+# Pydantic schemas
+# ---------------------------------------------------------------------------
+class StreamCreate(BaseModel):
+    name: str
+    rtsp_url: str
+    token_key: str  # จำเป็น — token ประเภท RTSP ของ user
+    location: Optional[str] = None
+    enabled: bool = False
+    fps: int = 10
+    frame_skip: int = 3
+
+class StreamUpdate(BaseModel):
+    name: Optional[str] = None
+    rtsp_url: Optional[str] = None
+    token_key: Optional[str] = None
+    location: Optional[str] = None
+    enabled: Optional[bool] = None
+    fps: Optional[int] = None
+    frame_skip: Optional[int] = None
+
 # WebSocket clients สำหรับแต่ละกล้อง
 camera_viewers: Dict[str, Set[WebSocket]] = {}
 
@@ -29,10 +67,36 @@ MAX_RECENT_DETECTIONS = 50
 
 
 async def startup_rtsp():
-    """โหลด config และเริ่มกล้องที่เปิดใช้งาน"""
+    """โหลด config จาก DB ก่อน แล้ว fallback ไป cameras.json"""
     logger.info("Starting RTSP service...")
-    camera_manager.load_cameras_config()
-    
+
+    loaded_from_db = False
+    if DB_AVAILABLE:
+        try:
+            rows = await db_get_all_streams()
+            if rows:
+                for row in rows:
+                    cam_id = str(row["stream_id"])
+                    camera = Camera(
+                        id=cam_id,
+                        name=row["name"],
+                        rtsp_url=row["rtsp_url"],
+                        location=row.get("location") or "",
+                        enabled=row["enabled"],
+                        fps=row.get("fps", 10),
+                        frame_skip=row.get("frame_skip", 3),
+                    )
+                    camera_manager.cameras[cam_id] = camera
+                    _stream_id_map[cam_id] = row["stream_id"]
+                logger.info(f"Loaded {len(rows)} cameras from database")
+                loaded_from_db = True
+        except Exception as e:
+            logger.warning(f"Could not load cameras from DB: {e}")
+
+    if not loaded_from_db:
+        logger.info("Falling back to cameras.json config")
+        camera_manager.load_cameras_config()
+
     # เริ่มกล้องที่ enabled=true
     await camera_manager.start_all_enabled(
         on_frame=broadcast_frame,
@@ -130,18 +194,38 @@ async def process_detection(camera_id: str, plate_crop: np.ndarray, bbox, origin
             logger.info(f"[{camera_id}]   - Plate: {plate_id}")
             logger.info(f"[{camera_id}]   - Province: {province}")
             logger.info(f"[{camera_id}]   - Format: {format_flag}")
+
+            # ✅ Deduplication: skip ถ้าป้ายเดิมถูก detect ภายใน cooldown window
+            dedup_key = (camera_id, full_plate)
+            now = datetime.now()
+            last_time = _last_detected.get(dedup_key)
+            if last_time is not None:
+                elapsed = (now - last_time).total_seconds()
+                if elapsed < PLATE_COOLDOWN_SECONDS:
+                    logger.info(f"[{camera_id}] Duplicate plate '{full_plate}' (last seen {elapsed:.0f}s ago, cooldown={PLATE_COOLDOWN_SECONDS}s) — skipping save")
+                    return
+            _last_detected[dedup_key] = now
             
             # ใช้ plate_crop สำหรับแสดงผล (เราส่งรูปนี้ไปแล้ว)
             plate_image_for_display = plate_crop
             plate_bbox = result.get('plate_bbox')
             
             # บันทึกข้อมูลลง database/log
-            await database_service.save_detection(
-                camera_id=camera_id,
-                image_filename=os.path.basename(save_path),
-                plate_data=result,
-                bbox=plate_bbox
-            )
+            stream_id = _stream_id_map.get(camera_id)
+            if DB_AVAILABLE:
+                await db_save_detection(
+                    camera_id=camera_id,
+                    file_name=os.path.basename(save_path),
+                    plate_data=result,
+                    stream_id=stream_id,
+                )
+            else:
+                await database_service.save_detection(
+                    camera_id=camera_id,
+                    image_filename=os.path.basename(save_path),
+                    plate_data=result,
+                    bbox=plate_bbox,
+                )
             
             # ✅ เก็บ detection ไว้ใน recent_detections
             # Run blocking cv2 operations in thread pool
@@ -201,12 +285,21 @@ async def process_detection(camera_id: str, plate_crop: np.ndarray, bbox, origin
                 "format_flag": "error"
             }
             
-            await database_service.save_detection(
-                camera_id=camera_id,
-                image_filename=os.path.basename(save_path),
-                plate_data=fake_result,
-                bbox=None
-            )
+            stream_id = _stream_id_map.get(camera_id)
+            if DB_AVAILABLE:
+                await db_save_detection(
+                    camera_id=camera_id,
+                    file_name=os.path.basename(save_path),
+                    plate_data=fake_result,
+                    stream_id=stream_id,
+                )
+            else:
+                await database_service.save_detection(
+                    camera_id=camera_id,
+                    image_filename=os.path.basename(save_path),
+                    plate_data=fake_result,
+                    bbox=None,
+                )
             
             await broadcast_detection(camera_id, fake_result, plate_crop)
         
@@ -316,8 +409,122 @@ async def stream_websocket(websocket: WebSocket, camera_id: str):
 
 @router.get("/cameras")
 async def get_cameras():
-    """ดูรายการกล้องทั้งหมด"""
-    return JSONResponse(camera_manager.get_status())
+    """ดูรายการกล้องทั้งหมด (รวม stream_id สำหรับ CRUD)"""
+    status = camera_manager.get_status()
+    # แนบ stream_id กลับไปด้วย
+    for cam in status["cameras"]:
+        cam["stream_id"] = _stream_id_map.get(cam["id"])
+    return JSONResponse(status)
+
+
+# ---------------------------------------------------------------------------
+# CRUD Endpoints
+# ---------------------------------------------------------------------------
+
+@router.post("/cameras")
+async def create_camera(body: StreamCreate):
+    """สร้างกล้องใหม่ (บันทึกลง DB) — ต้องใช้ RTSP token ที่ถูกต้อง"""
+    if not DB_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Database not available")
+
+    # ตรวจสอบ token
+    token_info = await db_validate_rtsp_token(body.token_key)
+    if not token_info:
+        raise HTTPException(
+            status_code=403,
+            detail="Invalid RTSP token: token not found, expired, or subscription does not include RTSP access"
+        )
+
+    user_id = token_info["user_id"]
+    data = body.model_dump(exclude={"token_key"})
+    row = await db_create_stream(data, user_id=user_id, token_key=body.token_key)
+    if not row:
+        raise HTTPException(status_code=500, detail="Failed to create stream")
+
+    cam_id = str(row["stream_id"])
+    camera = Camera(
+        id=cam_id,
+        name=row["name"],
+        rtsp_url=row["rtsp_url"],
+        location=row.get("location") or "",
+        enabled=row["enabled"],
+        fps=row.get("fps", 10),
+        frame_skip=row.get("frame_skip", 3),
+    )
+    camera_manager.cameras[cam_id] = camera
+    _stream_id_map[cam_id] = row["stream_id"]
+
+    # เริ่ม stream ทันทีถ้า enabled
+    if camera.enabled:
+        await camera_manager.start_camera(cam_id, on_frame=broadcast_frame, on_detection=process_detection)
+
+    return JSONResponse({**row, "id": cam_id, "running": cam_id in camera_manager.tasks}, status_code=201)
+
+
+@router.put("/cameras/{camera_id}")
+async def update_camera(camera_id: str, body: StreamUpdate):
+    """แก้ไขข้อมูลกล้อง"""
+    if not DB_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Database not available")
+
+    stream_id = _stream_id_map.get(camera_id)
+    if stream_id is None:
+        raise HTTPException(status_code=404, detail="Camera not found")
+
+    updates = {k: v for k, v in body.model_dump().items() if v is not None}
+
+    # ถ้ามีการเปลี่ยน token_key ตรวจสอบ validity
+    if "token_key" in updates:
+        token_info = await db_validate_rtsp_token(updates["token_key"])
+        if not token_info:
+            raise HTTPException(
+                status_code=403,
+                detail="Invalid RTSP token: token not found, expired, or subscription does not include RTSP access"
+            )
+
+    row = await db_update_stream(stream_id, updates)
+    if not row:
+        raise HTTPException(status_code=500, detail="Failed to update stream")
+
+    # อัปเดต in-memory camera
+    cam = camera_manager.cameras.get(camera_id)
+    if cam:
+        for k, v in updates.items():
+            if hasattr(cam, k):
+                setattr(cam, k, v)
+
+    # ถ้า enabled เปลี่ยน → start/stop
+    if "enabled" in updates:
+        if updates["enabled"] and camera_id not in camera_manager.tasks:
+            await camera_manager.start_camera(camera_id, on_frame=broadcast_frame, on_detection=process_detection)
+        elif not updates["enabled"] and camera_id in camera_manager.tasks:
+            await camera_manager.stop_camera(camera_id)
+
+    def serialize(v):
+        if isinstance(v, datetime):
+            return v.isoformat()
+        return v
+    return JSONResponse({**{k: serialize(v) for k, v in row.items()}, "id": camera_id, "running": camera_id in camera_manager.tasks})
+
+
+@router.delete("/cameras/{camera_id}")
+async def delete_camera(camera_id: str):
+    """ลบกล้อง"""
+    stream_id = _stream_id_map.get(camera_id)
+
+    # หยุด stream ก่อน
+    if camera_id in camera_manager.tasks:
+        await camera_manager.stop_camera(camera_id)
+
+    # ลบจาก in-memory
+    camera_manager.cameras.pop(camera_id, None)
+    _stream_id_map.pop(camera_id, None)
+
+    # ลบจาก DB (ถ้ามี)
+    if DB_AVAILABLE and stream_id is not None:
+        await db_delete_stream(stream_id)
+
+    return JSONResponse({"message": "Camera deleted", "camera_id": camera_id})
 
 
 @router.get("/cameras/{camera_id}")

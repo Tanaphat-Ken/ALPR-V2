@@ -1,69 +1,63 @@
 // API Requests สำหรับ RTSP Streams
-import apiClient from '@/shared/libs/apiClient'
-import type { 
-  Stream, 
-  StreamResponse, 
+import type {
+  Stream,
+  StreamResponse,
   DetectionsResponse,
   CreateStreamRequest,
-  UpdateStreamRequest 
+  UpdateStreamRequest
 } from './types'
 
-const RTSP_BASE_URL = process.env.NEXT_PUBLIC_RTSP_SERVICE_URL || 'http://localhost:5003/api/v1'
+const RTSP_BASE_URL = process.env.NEXT_PUBLIC_RTSP_SERVICE_URL || 'http://localhost:5003/api/rtsp'
 
-// ✅ API ที่มีอยู่แล้ว (Read-Only)
+async function request<T>(url: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(url, options)
+  if (!res.ok) {
+    const err = await res.text().catch(() => res.statusText)
+    throw new Error(err || `Request failed: ${res.status}`)
+  }
+  return res.json()
+}
+
 export const streamsAPI = {
   // ดูรายการกล้องทั้งหมด
   getAll: async (): Promise<Stream[]> => {
-    const response = await fetch(`${RTSP_BASE_URL}/cameras`)
-    if (!response.ok) throw new Error('Failed to fetch cameras')
-    const data = await response.json()
-    // Backend ส่ง { total, running, cameras: [...] } เราเอาแค่ cameras array
+    const data = await request<{ cameras: Stream[] }>(`${RTSP_BASE_URL}/cameras`)
     return data.cameras || []
   },
 
   // ดูข้อมูลกล้อง 1 ตัว
-  getById: async (cameraId: string): Promise<StreamResponse> => {
-    const response = await fetch(`${RTSP_BASE_URL}/cameras/${cameraId}`)
-    if (!response.ok) throw new Error('Failed to fetch camera')
-    return response.json()
-  },
+  getById: async (cameraId: string): Promise<StreamResponse> =>
+    request<StreamResponse>(`${RTSP_BASE_URL}/cameras/${cameraId}`),
 
   // ดูผลการจับภาพของกล้อง
-  getDetections: async (cameraId: string, limit: number = 20): Promise<DetectionsResponse> => {
-    const response = await fetch(`${RTSP_BASE_URL}/cameras/${cameraId}/detections?limit=${limit}`)
-    if (!response.ok) throw new Error('Failed to fetch detections')
-    return response.json()
-  },
+  getDetections: async (cameraId: string, limit = 20): Promise<DetectionsResponse> =>
+    request<DetectionsResponse>(`${RTSP_BASE_URL}/cameras/${cameraId}/detections?limit=${limit}`),
 
   // เปิดกล้อง
-  start: async (cameraId: string): Promise<void> => {
-    const response = await fetch(`${RTSP_BASE_URL}/cameras/${cameraId}/start`, {
-      method: 'POST'
-    })
-    if (!response.ok) throw new Error('Failed to start camera')
-  },
+  start: async (cameraId: string): Promise<void> =>
+    request<void>(`${RTSP_BASE_URL}/cameras/${cameraId}/start`, { method: 'POST' }),
 
   // ปิดกล้อง
-  stop: async (cameraId: string): Promise<void> => {
-    const response = await fetch(`${RTSP_BASE_URL}/cameras/${cameraId}/stop`, {
-      method: 'POST'
-    })
-    if (!response.ok) throw new Error('Failed to stop camera')
-  },
+  stop: async (cameraId: string): Promise<void> =>
+    request<void>(`${RTSP_BASE_URL}/cameras/${cameraId}/stop`, { method: 'POST' }),
 
-  // ⏭️ API เหล่านี้ยังไม่มีใน Backend (ต้องเพิ่มทีหลัง)
-  create: async (data: CreateStreamRequest): Promise<Stream> => {
-    // TODO: รอ Backend เพิ่ม API
-    throw new Error('Not implemented yet')
-  },
+  // สร้างกล้องใหม่
+  create: async (data: CreateStreamRequest): Promise<Stream> =>
+    request<Stream>(`${RTSP_BASE_URL}/cameras`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }),
 
-  update: async (cameraId: string, data: UpdateStreamRequest): Promise<Stream> => {
-    // TODO: รอ Backend เพิ่ม API
-    throw new Error('Not implemented yet')
-  },
+  // แก้ไขข้อมูลกล้อง
+  update: async (cameraId: string, data: UpdateStreamRequest): Promise<Stream> =>
+    request<Stream>(`${RTSP_BASE_URL}/cameras/${cameraId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }),
 
-  delete: async (cameraId: string): Promise<void> => {
-    // TODO: รอ Backend เพิ่ม API
-    throw new Error('Not implemented yet')
-  }
+  // ลบกล้อง
+  delete: async (cameraId: string): Promise<void> =>
+    request<void>(`${RTSP_BASE_URL}/cameras/${cameraId}`, { method: 'DELETE' }),
 }

@@ -55,17 +55,17 @@ export const useStreamWebSocket = ({
   const [isConnecting, setIsConnecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lastFrame, setLastFrame] = useState<string | null>(null)
-  
+
   const wsRef = useRef<WebSocket | null>(null)
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>()
   const reconnectAttemptsRef = useRef(0)
-  
+
   const MAX_RECONNECT_ATTEMPTS = 5
   const RECONNECT_DELAY = 3000
 
   const connect = () => {
     if (!enabled || !cameraId) return
-    
+
     // ปิด connection เดิม (ถ้ามี)
     if (wsRef.current) {
       wsRef.current.close()
@@ -75,10 +75,11 @@ export const useStreamWebSocket = ({
     try {
       setIsConnecting(true)
       setError(null)
-      
-      const wsUrl = `ws://localhost:5003/api/v1/stream/${cameraId}`
+
+      const wsBaseUrl = process.env.NEXT_PUBLIC_RTSP_WEBSOCKET_URL || 'ws://localhost:5003/api/rtsp/stream'
+      const wsUrl = `${wsBaseUrl}/${cameraId}`
       const ws = new WebSocket(wsUrl)
-      
+
       ws.onopen = () => {
         console.log(`[WebSocket] Connected to camera: ${cameraId}`)
         setIsConnected(true)
@@ -86,53 +87,53 @@ export const useStreamWebSocket = ({
         setError(null)
         reconnectAttemptsRef.current = 0
       }
-      
+
       ws.onmessage = (event) => {
         try {
           const message: StreamMessage = JSON.parse(event.data)
-          
+
           switch (message.type) {
-          case 'frame':
-            setLastFrame(message.image)
-            onFrame?.(message)
-            break
-            
-          case 'info':
-            console.log('[WebSocket] Camera info:', message.camera)
-            onInfo?.(message)
-            break
-            
-          case 'detection':
-            console.log('[WebSocket] Detection:', message.plate_id)
-            onDetection?.(message)
-            break
-            
-          default:
-            console.warn('[WebSocket] Unknown message type:', message)
+            case 'frame':
+              setLastFrame(message.image)
+              onFrame?.(message)
+              break
+
+            case 'info':
+              console.log('[WebSocket] Camera info:', message.camera)
+              onInfo?.(message)
+              break
+
+            case 'detection':
+              console.log('[WebSocket] Detection:', message.plate_id)
+              onDetection?.(message)
+              break
+
+            default:
+              console.warn('[WebSocket] Unknown message type:', message)
           }
         } catch (err) {
           console.error('[WebSocket] Failed to parse message:', err)
         }
       }
-      
+
       ws.onerror = (event) => {
         console.error('[WebSocket] Error:', event)
         setError('WebSocket connection error')
         setIsConnecting(false)
       }
-      
+
       ws.onclose = (event) => {
         console.log(`[WebSocket] Disconnected from camera: ${cameraId}`, event.code, event.reason)
         setIsConnected(false)
         setIsConnecting(false)
         wsRef.current = null
-        
+
         // Auto reconnect ถ้ายังไม่เกินจำนวนครั้งที่กำหนด
         if (enabled && reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS) {
           reconnectAttemptsRef.current++
           console.log(`[WebSocket] Reconnecting... (attempt ${reconnectAttemptsRef.current}/${MAX_RECONNECT_ATTEMPTS})`)
           setError(`Reconnecting... (${reconnectAttemptsRef.current}/${MAX_RECONNECT_ATTEMPTS})`)
-          
+
           reconnectTimeoutRef.current = setTimeout(() => {
             connect()
           }, RECONNECT_DELAY)
@@ -140,9 +141,9 @@ export const useStreamWebSocket = ({
           setError('Failed to connect. Please check if the camera is running.')
         }
       }
-      
+
       wsRef.current = ws
-      
+
     } catch (err) {
       console.error('[WebSocket] Connection failed:', err)
       setError('Failed to create WebSocket connection')
@@ -159,7 +160,7 @@ export const useStreamWebSocket = ({
     if (enabled && cameraId) {
       connect()
     }
-    
+
     return () => {
       // Cleanup
       if (reconnectTimeoutRef.current) {

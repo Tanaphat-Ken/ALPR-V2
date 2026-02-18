@@ -2,11 +2,11 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { Button, Space, Typography, Tag, Breadcrumb, Card, Row, Col, Spin } from 'antd'
-import { HomeOutlined, VideoCameraOutlined, EditOutlined, DeleteOutlined, ArrowLeftOutlined } from '@ant-design/icons'
+import { HomeOutlined, VideoCameraOutlined, EditOutlined, DeleteOutlined, ArrowLeftOutlined, PlayCircleOutlined, StopOutlined } from '@ant-design/icons'
 import { useDispatch } from 'react-redux'
 import { AppDispatch } from '@/shared/store'
 import { setStreamToEdit, setStreamToDelete } from '@/shared/store/dashboard/streams-page-slice'
-import { useStream, useStreams } from '@/api/dashboard/streams/hooks'
+import { useStream, useStreams, useStartStream, useStopStream } from '@/api/dashboard/streams/hooks'
 import StreamViewer from './_components/stream-viewer'
 import DetectionTable from './_components/detection-table'
 import StreamModals from './_components/stream-modals'
@@ -21,6 +21,8 @@ const StreamDetailPage = () => {
 
   const { data: streams, isLoading: isLoadingStreams } = useStreams()
   const stream = streams?.find(s => s.id === cameraId)
+  const { mutate: startStream, isPending: isStarting } = useStartStream()
+  const { mutate: stopStream, isPending: isStopping } = useStopStream()
 
   const handleBack = () => {
     router.push('/dashboard/streams')
@@ -34,13 +36,21 @@ const StreamDetailPage = () => {
     dispatch(setStreamToDelete(cameraId))
   }
 
+  const handleToggle = () => {
+    if (stream?.running) {
+      stopStream(cameraId)
+    } else {
+      startStream(cameraId)
+    }
+  }
+
   if (isLoadingStreams) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        minHeight: '400px' 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '400px'
       }}>
         <Spin size="large" />
       </div>
@@ -86,8 +96,8 @@ const StreamDetailPage = () => {
       </Breadcrumb>
 
       {/* Back Button */}
-      <Button 
-        icon={<ArrowLeftOutlined />} 
+      <Button
+        icon={<ArrowLeftOutlined />}
         onClick={handleBack}
         style={{ marginBottom: '16px' }}
       >
@@ -98,7 +108,7 @@ const StreamDetailPage = () => {
       <Row gutter={[24, 24]} style={{ marginBottom: '24px' }}>
         {/* Left: Stream Viewer - ใหญ่กว่า */}
         <Col xs={24} lg={16}>
-          <StreamViewer 
+          <StreamViewer
             cameraId={cameraId}
             streamUrl={stream.rtsp_url}
             cameraName={stream.name}
@@ -133,15 +143,24 @@ const StreamDetailPage = () => {
                   </div>
                 </Space>
               </div>
-              <Space style={{ width: '100%' }}>
-                <Button 
+              <Space style={{ width: '100%' }} wrap>
+                <Button
+                  type={stream.running ? 'default' : 'primary'}
+                  icon={stream.running ? <StopOutlined /> : <PlayCircleOutlined />}
+                  onClick={handleToggle}
+                  loading={isStarting || isStopping}
+                  style={{ flex: 1 }}
+                >
+                  {stream.running ? 'Stop' : 'Start'}
+                </Button>
+                <Button
                   icon={<EditOutlined />}
                   onClick={handleEdit}
                   style={{ flex: 1 }}
                 >
                   Edit
                 </Button>
-                <Button 
+                <Button
                   danger
                   icon={<DeleteOutlined />}
                   onClick={handleDelete}

@@ -54,9 +54,13 @@ services:
         - NEXT_PUBLIC_BASE_API_GATE_WAY_URL=http://35.187.233.205/api/general
         - NEXT_PUBLIC_API_UPLOAD_IMAGE=http://35.187.233.205/api/image
         - NEXT_PUBLIC_WEBSOCKET_VIDEO_HANLER=ws://35.187.233.205/ws/video
+        - NEXT_PUBLIC_RTSP_SERVICE_URL=http://35.187.233.205/api/rtsp
+        - NEXT_PUBLIC_RTSP_WEBSOCKET_URL=ws://35.187.233.205/api/rtsp/stream
     container_name: alpr_nextjs
     environment:
       NODE_ENV: "production"
+      NEXT_PUBLIC_RTSP_SERVICE_URL: "http://35.187.233.205/api/rtsp"
+      NEXT_PUBLIC_RTSP_WEBSOCKET_URL: "ws://35.187.233.205/api/rtsp/stream"
     restart: always
     networks:
       - alpr-network
@@ -133,16 +137,23 @@ services:
       - ./alpr_rtsp_service/configs:/app/configs
       - ./alpr_rtsp_service/images_logs:/app/images_logs
       - ./alpr_rtsp_service/tests:/app/tests
+      - ./videos:/app/videos:ro
+      # --- DEV: mount source code → แก้โค้ดแล้วไม่ต้อง build ใหม่ (uvicorn --reload จะ reload อัตโนมัติ) ---
+      - ./alpr_rtsp_service/src:/app/src
+      - ./alpr_rtsp_service/main.py:/app/main.py
+    command: uvicorn main:app --host 0.0.0.0 --port 5003 --reload
     environment:
       - HOST=0.0.0.0
       - PORT=5003
-      - ENVIRONMENT=production
+      - ENVIRONMENT=development
       - PLATE_RECOGNIZER_URL=http://plate-recognizer:5000/api/v1/image/process
+      - PLATE_RECOG_BASE_URL=http://plate-recognizer:5000/api/v1
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_NAME=alpr_db
       - DB_USER=postgres
       - DB_PASSWORD=postgres
+      - DATABASE_ENABLED=true
     depends_on:
       - postgres
       - plate-recognizer

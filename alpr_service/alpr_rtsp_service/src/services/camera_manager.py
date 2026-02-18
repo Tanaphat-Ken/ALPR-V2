@@ -169,8 +169,11 @@ class CameraManager:
             status["cameras"].append({
                 "id": camera.id,
                 "name": camera.name,
+                "rtsp_url": camera.rtsp_url,
                 "location": camera.location,
                 "enabled": camera.enabled,
+                "fps": camera.fps,
+                "frame_skip": camera.frame_skip,
                 "running": camera.id in self.tasks
             })
         
