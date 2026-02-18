@@ -25,7 +25,7 @@ async def consume(websocket: WebSocket, token: str, user_id: str, client_queue: 
   try:
     while True:
       frame_bytes = await client_queue.get()
-      logger.info(f"Processing frame #{frame_counter}, size: {len(frame_bytes)} bytes")
+      logger.info(f"Processing frame #{frame_counter}, size: {len(frame_bytes)} bytes, queue remaining: {client_queue.qsize()}")
 
       # Send progress update to frontend
       try:
@@ -117,6 +117,7 @@ async def consume(websocket: WebSocket, token: str, user_id: str, client_queue: 
         logger.info(f"Frame #{frame_counter}: No plate finalized yet, skipping")
 
       frame_counter += 1
+      client_queue.task_done()  # Mark frame as fully processed
 
   except asyncio.CancelledError:
     logger.info("Consumer task cancelled - cleaning up")

@@ -55,17 +55,18 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
     logger.error(f"Unexpected error in WebSocket: {e}")
 
   finally:
-    # Wait for queue to be fully processed before closing
+    # Wait for ALL queued frames to be fully processed (including the one currently being consumed)
     logger.info(f"Waiting for {client_queue.qsize()} remaining frames to process")
-    
-    # Wait up to 120 seconds for queue to empty
-    wait_time = 0
-    while not client_queue.empty() and wait_time < 120:
-      await asyncio.sleep(1)
-      wait_time += 1
-      if wait_time % 10 == 0:
-        logger.info(f"Still processing... {client_queue.qsize()} frames remaining")
-    
+    try:
+      # queue.join() blocks until every item has had task_done() called
+      # Use wait_for to enforce a max-wait of 300 seconds
+      await asyncio.wait_for(client_queue.join(), timeout=300)
+      logger.info("All frames fully processed")
+    except asyncio.TimeoutError:
+      logger.warning("Timed out waiting for queue to finish – some frames may not have been processed")
+    except Exception as e:
+      logger.error(f"Error while waiting for queue: {e}")
+
     # Send completion message before canceling consumer
     try:
       await websocket.send_json({"status": "completed", "message": "All frames processed"})

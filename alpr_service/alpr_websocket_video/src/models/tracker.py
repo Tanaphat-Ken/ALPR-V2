@@ -5,6 +5,12 @@ from ultralytics import YOLO
 from src.constants import configs
 from src.utils import logger
 
+# Minimum confidence from YOLO to accept a detection
+MIN_CONF = 0.4
+# Minimum bounding-box area (pixels²) to consider a plate "close enough" for OCR
+# A 100×30 px plate ≈ 3 000 px² – usually too blurry; 5 000 px² is a safer floor
+MIN_PLATE_AREA = 1500
+
 class VideoPlateTracker:
   """
   Track license plates in video stream using PlateDetector (not car detection).
@@ -28,6 +34,10 @@ class VideoPlateTracker:
       detections = sv.Detections.from_ultralytics(results)
       detections = detections[np.isin(detections.class_id, self.selected_classes)]
 
+      # --- confidence filter: drop weak detections before tracking ---
+      if detections.confidence is not None:
+        detections = detections[detections.confidence >= MIN_CONF]
+
       detections = self.tracker.update_with_detections(detections)
 
       if len(detections) > 0:
@@ -46,14 +56,18 @@ class VideoPlateTracker:
     if self.display_item["idx"] is None or self.display_item["idx"] != current_idx:
       if self.display_item["idx"] is not None:
         # Return cropped plate when plate tracking changes (plate finalized)
-        cropped_plate = self._numpy_crop(self.display_item["frame"], self.display_item["bbox"])
-        self.display_item.update({
-          "idx": current_idx,
-          "frame": frame,
-          "bbox": current_bbox,
-          "area": current_area,
-        })
-        return cropped_plate, True  # Return plate crop + detected flag
+        # --- area filter: skip plates that are too small (car was too far away) ---
+        if self.display_item["area"] < MIN_PLATE_AREA:
+          logger.info(f"Skipping switched plate (area={self.display_item['area']:.0f} < {MIN_PLATE_AREA}) – plate too small/blurry")
+        else:
+          cropped_plate = self._numpy_crop(self.display_item["frame"], self.display_item["bbox"])
+          self.display_item.update({
+            "idx": current_idx,
+            "frame": frame,
+            "bbox": current_bbox,
+            "area": current_area,
+          })
+          return cropped_plate, True  # Return plate crop + detected flag
 
       self.display_item.update({
         "idx": current_idx,
@@ -74,6 +88,11 @@ class VideoPlateTracker:
   def _finalize_display_item(self):
     if self.display_item["idx"] is not None:
       # Return cropped plate when plate leaves (finalized by blank frame or no detection)
+      # --- area filter: skip plates that are too small (car was too far away) ---
+      if self.display_item["area"] < MIN_PLATE_AREA:
+        logger.info(f"Skipping finalized plate (area={self.display_item['area']:.0f} < {MIN_PLATE_AREA}) – plate too small/blurry")
+        self.display_item = {"idx": None, "frame": None, "bbox": None, "area": 0}
+        return None, None
       cropped_plate = self._numpy_crop(self.display_item["frame"], self.display_item["bbox"])
       self.display_item = {
         "idx": None,
