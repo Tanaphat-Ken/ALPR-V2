@@ -1,0 +1,43 @@
+{
+  "test_time": "2026-02-16T23:22:54.009205",
+  "video_file": "tests/TC2ML_L 192.168.40.226_001_2025-08-12-07-00-00_2025-08-12-07-21-03.mp4",
+  "summary": {
+    "total_frames": 28377,
+    "processed_frames": 1000,
+    "corrupted_frames": 0,
+    "plates_detected": 3,
+    "plates_recognized": 3,
+    "success_rate": 100.0,
+    "processing_time": 45.109000000025844,
+    "fps": 22.168525128010533
+  },
+  "results": [
+    {
+      "frame": 4,
+      "timestamp": 0.181818,
+      "plate_id": "7กห9962",
+      "province": "ระยอง",
+      "full_plate": "7กห9962 ระยอง",
+      "format_flag": "complete",
+      "saved_path": "tests\\output_plates\\plate_test_camera_20260216_232209_518853.jpg"
+    },
+    {
+      "frame": 216,
+      "timestamp": 9.818172,
+      "plate_id": "1ข172",
+      "province": null,
+      "full_plate": "1ข172",
+      "format_flag": "complete",
+      "saved_path": "tests\\output_plates\\plate_test_camera_20260216_232214_277279.jpg"
+    },
+    {
+      "frame": 1168,
+      "timestamp": 53.090856,
+      "plate_id": "ธบ4",
+      "province": null,
+      "full_plate": "ธบ4",
+      "format_flag": "complete",
+      "saved_path": "tests\\output_plates\\plate_test_camera_20260216_232235_267513.jpg"
+    }
+  ]
+}

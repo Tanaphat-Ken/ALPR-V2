@@ -5,13 +5,14 @@ import numpy as np
 from typing import Optional, Callable
 from datetime import datetime
 
-from src.models import Camera, VideoCarTracker
+from src.models import Camera, VideoPlateTracker
 from src.utils.logging import logger
 
 class RTSPReader:
     """
     อ่าน RTSP stream จากกล้อง IP Camera
     รองรับทั้ง RTSP URL และไฟล์วิดีโอ (สำหรับทดสอบ)
+    ใช้ VideoPlateTracker เพื่อ detect ป้ายทะเบียนโดยตรง
     """
     
     def __init__(self, camera: Camera):
@@ -19,7 +20,7 @@ class RTSPReader:
         self.cap: Optional[cv2.VideoCapture] = None
         self.is_running = False
         self.frame_count = 0
-        self.tracker = VideoCarTracker()
+        self.tracker = VideoPlateTracker()  # ✅ เปลี่ยนเป็น VideoPlateTracker
         
     async def connect(self) -> bool:
         """เชื่อมต่อกับกล้อง"""
@@ -62,7 +63,7 @@ class RTSPReader:
         
         Args:
             on_frame: callback สำหรับส่ง frame ทุกๆ frame (สำหรับแสดงผล)
-            on_detection: callback เมื่อเจอรถ (สำหรับอ่านป้าย)
+            on_detection: callback เมื่อเจอป้ายทะเบียน (สำหรับอ่านป้าย)
         """
         self.is_running = True
         reconnect_delay = 5
@@ -76,31 +77,67 @@ class RTSPReader:
                     continue
                 
                 self.frame_count = 0
+                consecutive_failures = 0
+                max_consecutive_failures = 30  # ถ้าอ่านไม่ได้ 30 frame ติดกัน ถึงจะถือว่าจบ
                 
                 # อ่าน frames ต่อเนื่อง
                 while self.is_running:
                     ret, frame = await self.read_frame()
                     
                     if not ret or frame is None:
-                        logger.warning(f"[{self.camera.name}] End of video/stream")
-                        # ถ้าเป็นไฟล์วิดีโอ → loop กลับไปเริ่มต้น
-                        if not self.camera.rtsp_url.startswith('rtsp://'):
-                            logger.info(f"[{self.camera.name}] Looping video...")
-                            self.disconnect()
-                            await asyncio.sleep(1)
-                            break  # reconnect
-                        else:
-                            break  # RTSP ขาดการเชื่อมต่อจริงๆ
+                        consecutive_failures += 1
+                        logger.debug(f"[{self.camera.name}] Failed to read frame ({consecutive_failures}/{max_consecutive_failures})")
+                        
+                        # ถ้าอ่านไม่ได้หลายครั้งติดกัน → ถือว่าจบจริงๆ
+                        if consecutive_failures >= max_consecutive_failures:
+                            logger.warning(f"[{self.camera.name}] End of video/stream (consecutive failures: {consecutive_failures})")
+                            # ถ้าเป็นไฟล์วิดีโอ → loop กลับไปเริ่มต้น
+                            if not self.camera.rtsp_url.startswith('rtsp://'):
+                                logger.info(f"[{self.camera.name}] Looping video...")
+                                self.disconnect()
+                                await asyncio.sleep(1)
+                                break  # reconnect
+                            else:
+                                break  # RTSP ขาดการเชื่อมต่อจริงๆ
+                        
+                        # ข้าม frame ที่เสีย แล้วลองต่อ
+                        await asyncio.sleep(0.01)
+                        continue
                     
-                    # ส่ง frame ไปแสดงผล (ทุก frame)
-                    await on_frame(self.camera.id, frame, self.frame_count)
+                    # อ่านสำเร็จ → reset counter
+                    consecutive_failures = 0
+                    
+                    # ตรวจสอบ corrupted frame (HEVC decoder error)
+                    if frame.size == 0:
+                        logger.debug(f"[{self.camera.name}] Corrupted frame (size=0), skipping...")
+                        continue
+                    
+                    # ✅ ส่ง frame ไปแสดงผล (wrap ด้วย try-except เพื่อไม่ให้ error ทำให้หยุด)
+                    try:
+                        await on_frame(self.camera.id, frame, self.frame_count)
+                    except Exception as e:
+                        logger.error(f"[{self.camera.name}] Error in on_frame callback: {e}")
+                        # ไม่ break, ทำงานต่อไป
                     
                     # ประมวลผลเฉพาะบาง frames (เพื่อประหยัด CPU)
                     if self.frame_count % self.camera.frame_skip == 0:
-                        car_image, bbox = await self._process_frame(frame)
-                        
-                        if car_image is not None:
-                            await on_detection(self.camera.id, car_image, bbox, frame)
+                        try:
+                            plate_crop, plate_detected = await self._process_frame(frame)
+                            
+                            if plate_crop is not None and plate_detected:
+                                # ✅ wrap callback ด้วย try-except เพื่อไม่ให้ error ทำให้ stream หยุด
+                                try:
+                                    await on_detection(self.camera.id, plate_crop, None, frame)
+                                except Exception as e:
+                                    logger.error(f"[{self.camera.name}] Error in on_detection callback: {e}")
+                                    import traceback
+                                    logger.error(traceback.format_exc())
+                                    # ไม่ break loop, ทำงานต่อไป
+                        except Exception as e:
+                            logger.error(f"[{self.camera.name}] Error in detection processing: {e}")
+                            import traceback
+                            logger.error(traceback.format_exc())
+                            # ไม่ break loop, ทำงานต่อไป
                     
                     self.frame_count += 1
                     

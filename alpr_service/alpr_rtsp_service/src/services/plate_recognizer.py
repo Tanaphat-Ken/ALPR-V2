@@ -1,5 +1,6 @@
-import httpx
-from typing import Optional
+from typing import Dict, Any
+
+from httpx import AsyncClient, Response, HTTPStatusError
 from fastapi import UploadFile
 
 from src.constants import configs
@@ -9,41 +10,54 @@ class PlateRecognizerService:
     """เชื่อมต่อกับ AI สำหรับอ่านป้ายทะเบียน"""
     
     def __init__(self):
-        self.url = configs.PLATE_RECOGNIZER_URL
-        self.timeout = 30.0
+        self.client = AsyncClient(base_url=configs.PLATE_RECOG_BASE_URL, timeout=60.0)
     
-    async def process_image(self, bbox: list, image_file: UploadFile) -> httpx.Response:
+    async def process_image(self, upload_file: UploadFile, headers: Dict[str, Any] = None) -> Response:
         """
-        ส่งรูปรถไปให้ AI ประมวลผล
+        ส่งรูปเต็มไปให้ AI ประมวลผล (AI จะ detect plate เอง)
         
         Args:
-            bbox: ตำแหน่งรถ [x1, y1, x2, y2]
-            image_file: ไฟล์รูปรถ
+            upload_file: ไฟล์รูป
+            headers: HTTP headers (optional)
         """
+        files = {
+            "file": (upload_file.filename, await upload_file.read(), upload_file.content_type)
+        }
+
         try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                files = {
-                    "file": (image_file.filename, image_file.file, "image/jpeg")
-                }
-                data = {
-                    "car_bbox": str(bbox.tolist() if hasattr(bbox, 'tolist') else list(bbox))
-                }
-                
-                response = await client.post(
-                    f"{self.url}/skip/car",
-                    files=files,
-                    data=data
-                )
-                
-                response.raise_for_status()
-                return response
-                
-        except httpx.TimeoutException:
-            logger.error("Plate recognizer timeout")
-            raise ValueError("AI service timeout")
-        except httpx.HTTPStatusError as e:
+            response = await self.client.post("/image/process", files=files, headers=headers)
+            response.raise_for_status()
+            return response
+        except HTTPStatusError as e:
             logger.error(f"Plate recognizer HTTP error: {e}")
-            raise ValueError(f"AI service error: {e.response.status_code}")
-        except Exception as e:
-            logger.error(f"Plate recognizer error: {e}")
-            raise ValueError(f"AI service error: {str(e)}")
+            if e.response is not None:
+                raise ValueError(e.response)
+            raise ValueError("AI service error")
+    
+    async def process_plate_crop(self, upload_file: UploadFile, headers: Dict[str, Any] = None) -> Response:
+        """
+        ส่ง cropped plate ไปให้ AI ประมวลผล (ข้าม PlateDetector step)
+        ใช้ /image/process/from-plate-crop endpoint เพื่อความเร็วและแม่นยำ
+        
+        Args:
+            upload_file: ไฟล์รูปป้ายทะเบียนที่ crop แล้ว (จาก VideoPlateTracker)
+            headers: HTTP headers (optional)
+        """
+        files = {
+            "file": (upload_file.filename, await upload_file.read(), upload_file.content_type)
+        }
+
+        try:
+            # เรียก endpoint ที่ข้าม PlateDetector (เพราะเรา detect แล้วด้วย VideoPlateTracker)
+            response = await self.client.post("/image/process/from-plate-crop", files=files, headers=headers)
+            response.raise_for_status()
+            return response
+        except HTTPStatusError as e:
+            logger.error(f"Plate recognizer HTTP error: {e}")
+            if e.response is not None:
+                raise ValueError(e.response)
+            raise ValueError("AI service error")
+
+    async def close(self):
+        """ปิด HTTP client"""
+        await self.client.aclose()
