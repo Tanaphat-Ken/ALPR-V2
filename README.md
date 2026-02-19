@@ -297,8 +297,8 @@ GET    /api/general/info/subscribe/{user_id}
 | Metric | Value |
 |--------|-------|
 | Inference time (single image) | ~200 ms |
-| OCR accuracy | ~92% |
-| Province classification accuracy | ~95% |
+| OCR accuracy | ~96% |
+| Province classification accuracy | ~97% |
 | Concurrent users (load balanced) | 100+ |
 | Max upload size (HTTP) | 10 MB |
 | Max WebSocket frame (video) | 5 MB |
