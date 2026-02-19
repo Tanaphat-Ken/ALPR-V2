@@ -131,3 +131,24 @@ async def get_user_id_with_token(token_key: str):
       raise ValueError("Token is expired")
 
   return user_id
+
+async def devalue_video_quota(user_id: int):
+  """Decrement request_quota for video processing. NULL = unlimited (Tier 3), no decrement."""
+  try:
+    async with async_session_fatory() as session:
+      # Only decrement when quota is finite (NOT NULL) and > 0
+      query = text("""
+        UPDATE user_subscription
+        SET request_quota = request_quota - 1
+        WHERE user_id = :user_id
+          AND is_activate = true
+          AND request_quota IS NOT NULL
+          AND request_quota > 0
+          AND sub_id IN (
+            SELECT sub_id FROM subscription WHERE has_video_upload = 1
+          )
+      """)
+      await session.execute(query, {"user_id": user_id})
+      await session.commit()
+  except Exception as e:
+    logger.error(f"Failed to devalue video quota for user {user_id}: {e}")

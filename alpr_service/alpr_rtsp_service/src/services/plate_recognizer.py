@@ -1,5 +1,6 @@
 from typing import Dict, Any
 
+import httpx
 from httpx import AsyncClient, Response, HTTPStatusError
 from fastapi import UploadFile
 
@@ -10,7 +11,12 @@ class PlateRecognizerService:
     """เชื่อมต่อกับ AI สำหรับอ่านป้ายทะเบียน"""
     
     def __init__(self):
-        self.client = AsyncClient(base_url=configs.PLATE_RECOG_BASE_URL, timeout=60.0)
+        # timeout=10s: ป้องกัน httpx รอนานจน nginx timeout ก่อน
+        # connect_timeout=5s: fail fast ถ้า service ไม่ตอบ
+        self.client = AsyncClient(
+            base_url=configs.PLATE_RECOG_BASE_URL,
+            timeout=httpx.Timeout(connect=5.0, read=10.0, write=10.0, pool=5.0)
+        )
     
     async def process_image(self, upload_file: UploadFile, headers: Dict[str, Any] = None) -> Response:
         """

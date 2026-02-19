@@ -19,18 +19,38 @@ router = APIRouter()
 @router.get("/get_all_service")
 async def get_all_service(db: AsyncSession = Depends(get_db)):
     try:
-        # Only return TIER subscriptions (TIER_1, TIER_2, TIER_3)
-        query = select(Subscription).where(Subscription.service_type.like('TIER_%'))
+        # Return Tier subscriptions — รองรับทั้ง "Tier X" และ "TIER_X" format
+        query = select(Subscription).where(
+            Subscription.service_type.ilike('tier%')
+        )
         result = await db.execute(query)
         subscriptions = result.scalars().all()
-        
+
         if not subscriptions:
             raise HTTPException(
                 status_code=404,
                 detail="No tier subscriptions found"
             )
-        
-        return subscriptions
+
+        return [
+            {
+                "sub_id": s.sub_id,
+                "service_type": s.service_type,
+                "billing_period": s.billing_period,
+                "price": s.price,
+                "description": s.description,
+                "api_request_limit": s.api_request_limit,
+                "video_upload_limit": s.video_upload_limit,
+                "has_api_access": s.has_api_access,
+                "has_websocket_access": s.has_websocket_access,
+                "has_video_upload": s.has_video_upload,
+                "has_rtsp_stream": s.has_rtsp_stream,
+                "token_limit": s.token_limit,
+            }
+            for s in subscriptions
+        ]
+    except HTTPException:
+        raise
     except Exception as e:
         return response_exception(e)
 

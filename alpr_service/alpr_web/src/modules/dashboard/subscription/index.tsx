@@ -133,26 +133,28 @@ const SubscriptionPage = () => {
               <Text strong>Features & Limits</Text>
             </List.Item>
 
-            {/* API Access */}
+            {/* WebSocket Image */}
             {renderFeatureItem(
-              `${(plan.api_request_limit || 0).toLocaleString()} API Requests/day`,
-              !!plan.has_api_access
+              plan.has_websocket_access
+                ? plan.api_request_limit
+                  ? `${plan.api_request_limit.toLocaleString()} WebSocket Image Requests/day`
+                  : 'Unlimited WebSocket Image Requests'
+                : 'WebSocket Image Processing',
+              !!plan.has_websocket_access
             )}
 
-            {/* WebSocket */}
-            {renderFeatureItem('WebSocket Support', !!plan.has_websocket_access)}
-
-            {/* Video */}
+            {/* Video WebSocket */}
             {renderFeatureItem(
-              plan.has_video_upload ? `${(plan.video_upload_limit || 0).toLocaleString()} Video Uploads/day` : 'Video Analysis',
+              plan.has_video_upload
+                ? plan.video_upload_limit
+                  ? `${plan.video_upload_limit.toLocaleString()} Video WebSocket Requests/day`
+                  : 'Unlimited Video WebSocket Requests'
+                : 'Video WebSocket Analysis',
               !!plan.has_video_upload
             )}
 
             {/* RTSP */}
-            {renderFeatureItem(
-              plan.has_rtsp_stream ? 'RTSP Stream Processing' : 'RTSP Stream Processing',
-              !!plan.has_rtsp_stream
-            )}
+            {renderFeatureItem('RTSP Stream Processing', !!plan.has_rtsp_stream)}
           </List>
 
           <div style={{ marginTop: 24 }}>

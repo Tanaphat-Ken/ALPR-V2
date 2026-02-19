@@ -74,10 +74,10 @@ const EditStreamModal = () => {
         <Form.Item
           label="Stream URL"
           name="rtsp_url"
-          tooltip="รองรับ RTSP URL (rtsp://...) หรือ path ไฟล์วิดีโอ เช่น /app/videos/demo.mp4 สำหรับ dev/demo"
+          tooltip="รองรับ RTSP URL (rtsp://...), HLS stream (https://...m3u8) หรือ path ไฟล์วิดีโอ เช่น /app/videos/demo.mp4"
           rules={[{ required: true, message: 'Please enter stream URL' }]}
         >
-          <Input placeholder="rtsp://admin:password@192.168.1.100:554/stream1" />
+          <Input placeholder="rtsp://admin:password@192.168.1.100:554/stream1  หรือ  https://example.com/live/cam.m3u8" />
         </Form.Item>
 
         <Form.Item

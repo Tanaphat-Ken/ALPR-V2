@@ -30,10 +30,12 @@ class UserSubscription(Base):
     async def validate_user_subscription(user_id: int, db: AsyncSession):
         try:
             # Perform the query to find the active subscription for the user
+            # NULL request_quota = unlimited (Tier 3)
+            from sqlalchemy import or_
             query = select(UserSubscription).where(
                 UserSubscription.user_id == user_id,
                 UserSubscription.is_activate == True,
-                UserSubscription.request_quota > 0
+                or_(UserSubscription.request_quota == None, UserSubscription.request_quota > 0)
             )
             logging.info(f"Executing query: {query}")
             result = await db.execute(query)
@@ -66,10 +68,12 @@ class UserSubscription(Base):
     async def devalue_user_quota(user_id: int, db: AsyncSession):
         try:
             # Perform the query to find the active subscription for the user
+            # NULL request_quota = unlimited (Tier 3) — no deduction needed
+            from sqlalchemy import or_
             query = select(UserSubscription).where(
                 UserSubscription.user_id == user_id,
                 UserSubscription.is_activate == True,
-                UserSubscription.request_quota > 0
+                or_(UserSubscription.request_quota == None, UserSubscription.request_quota > 0)
             )
             logging.info(f"Executing query: {query}")
             result = await db.execute(query)
@@ -81,8 +85,9 @@ class UserSubscription(Base):
                     detail="No active subscription with available quota."
                 )
 
-            # Update the request_quota by decrementing it by 1
-            subscription.request_quota -= 1
+            # Only decrement if quota is not unlimited (NULL)
+            if subscription.request_quota is not None:
+                subscription.request_quota -= 1
 
             # Commit the change to the database
             db.add(subscription)
@@ -101,13 +106,14 @@ class UserSubscription(Base):
     @staticmethod
     async def validate_user_subscription_web_socket(user_id: int, websocket: WebSocket, db: AsyncSession):
         try:
+            from sqlalchemy import or_
             query = select(UserSubscription).join(
                 Subscription,
                 UserSubscription.sub_id == Subscription.sub_id
             ).where(
                 UserSubscription.user_id == user_id,
                 UserSubscription.is_activate == True,
-                UserSubscription.request_quota > 0,
+                or_(UserSubscription.request_quota == None, UserSubscription.request_quota > 0),
                 Subscription.has_websocket_access == 1
             )
 
@@ -129,13 +135,14 @@ class UserSubscription(Base):
     @staticmethod
     async def devalue_user_quota_web_socket(user_id: int, websocket: WebSocket, db: AsyncSession):
         try:
+            from sqlalchemy import or_
             query = select(UserSubscription).join(
                 Subscription,
                 UserSubscription.sub_id == Subscription.sub_id
             ).where(
                 UserSubscription.user_id == user_id,
                 UserSubscription.is_activate == True,
-                UserSubscription.request_quota > 0,
+                or_(UserSubscription.request_quota == None, UserSubscription.request_quota > 0),
                 Subscription.has_websocket_access == 1
             )
 
@@ -145,9 +152,10 @@ class UserSubscription(Base):
                 await websocket.send_text("No active subscription with WebSocket access")
                 raise WebSocketException("No active subscription with WebSocket access")
 
-            # Decrement request_quota
-            subscription.request_quota -= 1
-            await websocket.send_text(f"Quota deducted. Remaining: {subscription.request_quota}")
+            # Only decrement if quota is not unlimited (NULL = Tier 3 unlimited)
+            if subscription.request_quota is not None:
+                subscription.request_quota -= 1
+            await websocket.send_text(f"Quota deducted. Remaining: {subscription.request_quota if subscription.request_quota is not None else 'unlimited'}")
             db.add(subscription)
             await db.commit()
 

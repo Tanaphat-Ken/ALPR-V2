@@ -28,11 +28,12 @@ class UserSubscription(Base):
     @staticmethod
     async def validate_user_subscription(user_id: int, db: AsyncSession):
         try:
-            # Perform the query to find the active subscription for the user
+            # NULL request_quota = unlimited (Tier 3)
+            from sqlalchemy import or_
             query = select(UserSubscription).where(
                 UserSubscription.user_id == user_id,
                 UserSubscription.is_activate == True,
-                UserSubscription.request_quota > 0
+                or_(UserSubscription.request_quota == None, UserSubscription.request_quota > 0)
             )
             logging.info(f"Executing query: {query}")
             result = await db.execute(query)
@@ -64,11 +65,12 @@ class UserSubscription(Base):
     @staticmethod
     async def devalue_user_quota(user_id: int, db: AsyncSession):
         try:
-            # Perform the query to find the active subscription for the user
+            # NULL request_quota = unlimited (Tier 3)
+            from sqlalchemy import or_
             query = select(UserSubscription).where(
                 UserSubscription.user_id == user_id,
                 UserSubscription.is_activate == True,
-                UserSubscription.request_quota > 0
+                or_(UserSubscription.request_quota == None, UserSubscription.request_quota > 0)
             )
             logging.info(f"Executing query: {query}")
             result = await db.execute(query)
@@ -80,8 +82,9 @@ class UserSubscription(Base):
                     detail="No active subscription with available quota."
                 )
 
-            # Update the request_quota by decrementing it by 1
-            subscription.request_quota -= 1
+            # Only decrement if quota is not unlimited (NULL = Tier 3)
+            if subscription.request_quota is not None:
+                subscription.request_quota -= 1
 
             # Commit the change to the database
             db.add(subscription)
@@ -100,11 +103,11 @@ class UserSubscription(Base):
     @staticmethod
     async def validate_user_subscription_web_socket(user_id: int, websocket: WebSocket, db: AsyncSession):
         try:
+            from sqlalchemy import or_
             query = select(UserSubscription).where(
                 UserSubscription.user_id == user_id,
                 UserSubscription.is_activate == True,
-                UserSubscription.request_quota > 0,
-                UserSubscription.sub_id == 2  # Your specific subscription ID
+                or_(UserSubscription.request_quota == None, UserSubscription.request_quota > 0)
             )
 
             result = await db.execute(query)
@@ -131,11 +134,11 @@ class UserSubscription(Base):
     @staticmethod
     async def devalue_user_quota_web_socket(user_id: int, websocket: WebSocket, db: AsyncSession):
         try:
+            from sqlalchemy import or_
             query = select(UserSubscription).where(
                 UserSubscription.user_id == user_id,
                 UserSubscription.is_activate == True,
-                UserSubscription.request_quota > 0,
-                UserSubscription.sub_id == 2  # Your specific subscription ID
+                or_(UserSubscription.request_quota == None, UserSubscription.request_quota > 0)
             )
 
             result = await db.execute(query)
@@ -144,8 +147,9 @@ class UserSubscription(Base):
                 await websocket.send_text("No active subscription")
                 raise WebSocketException("No active subscription")
 
-            # Decrement request_quota
-            subscription.request_quota -= 1
+            # Only decrement if quota is not unlimited (NULL = Tier 3)
+            if subscription.request_quota is not None:
+                subscription.request_quota -= 1
             await websocket.send_text(f"Subscription updated. Remaining quota: {subscription.request_quota}")
             # No need to start a new transaction manually, just add and commit
             db.add(subscription)

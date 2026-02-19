@@ -11,7 +11,7 @@ from .logging import logger
 from .consumer_util import *
 from src.models.tracker import VideoPlateTracker
 from src.services.plate_recognizer import PlateRecognizerService
-from src.services.database import commit_websocket_log
+from src.services.database import commit_websocket_log, devalue_video_quota
 from src.constants import errors
 
 plate_recognizer = PlateRecognizerService()
@@ -77,6 +77,7 @@ async def consume(websocket: WebSocket, token: str, user_id: str, client_queue: 
 
           await save_image_async(plate_crop, filename)
           await commit_websocket_log(response_data, token, user_id, filename)
+          await devalue_video_quota(user_id)
 
           result_data = response.json()
           result_data['filename'] = filename

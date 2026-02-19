@@ -1,16 +1,19 @@
 import os
 import cv2
+import time
 import asyncio
 import numpy as np
+from concurrent.futures import ThreadPoolExecutor
 from typing import Optional, Callable
 from datetime import datetime
 
 from src.models import Camera, VideoPlateTracker
 from src.utils.logging import logger
 
-# ไม่ใช้ semaphore fire-and-forget อีกต่อไป
-# → ใช้ single detection worker + pending frame buffer
-# worker จะเสมอ process frame ล่าสุดที่มีอยู่ ไม่ drop frame ทั้งหมดเมื่อ YOLO ยุ่ง
+# --- Dedicated thread pool สำหรับ YOLO inference ---
+# แยกออกจาก default asyncio thread pool เพื่อไม่แย่ง HTTP handlers
+# max_workers=1: YOLO รันได้ทีละ 1 งาน (shared across all cameras)
+_yolo_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="yolo")
 
 class RTSPReader:
     """
@@ -33,25 +36,37 @@ class RTSPReader:
         self._pending_frame: Optional[np.ndarray] = None
         self._detection_event: asyncio.Event = asyncio.Event()
         self._detection_worker_task: Optional[asyncio.Task] = None
+
+        # --- FPS throttle สำหรับ WebSocket display (RTSP/HLS mode) ---
+        # ไม่ throttle OpenCV read (ทำให้ buffer ล้น) แต่ throttle on_frame broadcast
+        self._last_display_time: float = 0.0
         
     async def connect(self) -> bool:
         """เชื่อมต่อกับกล้อง"""
         try:
             logger.info(f"[{self.camera.name}] Connecting to {self.camera.rtsp_url}")
-            
-            # รัน cv2.VideoCapture ใน thread pool (blocking operation)
-            loop = asyncio.get_event_loop()
-            self.cap = await loop.run_in_executor(
-                None, cv2.VideoCapture, self.camera.rtsp_url
-            )
-            
+
+            url = self.camera.rtsp_url
+            is_live = url.startswith('rtsp://') or url.startswith('http://') or url.startswith('https://')
+            connect_timeout = 15.0 if is_live else 30.0  # HLS/RTSP timeout
+
+            loop = asyncio.get_running_loop()
+            try:
+                self.cap = await asyncio.wait_for(
+                    loop.run_in_executor(None, cv2.VideoCapture, url),
+                    timeout=connect_timeout
+                )
+            except asyncio.TimeoutError:
+                logger.error(f"[{self.camera.name}] Connection timeout after {connect_timeout}s")
+                return False
+
             if not self.cap.isOpened():
                 logger.error(f"[{self.camera.name}] Failed to open stream")
                 return False
-            
+
             logger.info(f"[{self.camera.name}] Connected successfully")
             return True
-            
+
         except Exception as e:
             logger.error(f"[{self.camera.name}] Connection error: {e}")
             return False
@@ -60,9 +75,9 @@ class RTSPReader:
         """อ่าน frame เดียว"""
         if self.cap is None or not self.cap.isOpened():
             return False, None
-        
+
         try:
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             ret, frame = await loop.run_in_executor(None, self.cap.read)
             return ret, frame
         except Exception as e:
@@ -78,18 +93,24 @@ class RTSPReader:
             on_detection: callback เมื่อเจอป้ายทะเบียน (สำหรับอ่านป้าย)
         """
         self.is_running = True
-        is_file = not self.camera.rtsp_url.startswith('rtsp://')
+        url = self.camera.rtsp_url
+        is_live_stream = (
+            url.startswith('rtsp://')
+            or url.startswith('http://')
+            or url.startswith('https://')
+        )
 
-        if is_file:
-            # Video file: imgsz=1280 (accuracy, ไม่ต้อง real-time) — เหมือน websocket service
+        if is_live_stream:
+            # RTSP / HLS (http/https .m3u8): imgsz=640 (speed, real-time constraint)
+            self.tracker = VideoPlateTracker(imgsz=640)
+            stream_type = "HLS" if url.startswith('http') else "RTSP"
+            logger.info(f"[{self.camera.name}] {stream_type} mode: imgsz=640 (speed)")
+            await self._stream_rtsp(on_frame, on_detection)
+        else:
+            # Video file path: imgsz=1280 (accuracy, ไม่ต้อง real-time)
             self.tracker = VideoPlateTracker(imgsz=1280)
             logger.info(f"[{self.camera.name}] Video file mode: imgsz=1280 (accuracy)")
             await self._stream_video_file(on_frame, on_detection)
-        else:
-            # RTSP: imgsz=640 (speed, real-time constraint)
-            self.tracker = VideoPlateTracker(imgsz=640)
-            logger.info(f"[{self.camera.name}] RTSP mode: imgsz=640 (speed)")
-            await self._stream_rtsp(on_frame, on_detection)
 
     async def _stream_video_file(self, on_frame: Callable, on_detection: Callable):
         """
@@ -148,9 +169,11 @@ class RTSPReader:
 
                 self.frame_count += 1
                 # Video file: หน่วง frame_delay เพื่อให้ display ไม่เร็วเกิน
-                # (YOLO ใช้เวลาอยู่แล้ว แต่ frame ที่ skip YOLO จะใช้เวลา frame_delay)
+                # เสมอ yield event loop อย่างน้อย 1 รอบเพื่อป้องกัน starvation
                 if self.frame_count % self.camera.frame_skip != 0:
                     await asyncio.sleep(frame_delay)
+                else:
+                    await asyncio.sleep(0)  # บังคับ yield แม้ frame นี้รัน YOLO
 
         except Exception as e:
             logger.error(f"[{self.camera.name}] Video streaming error: {e}")
@@ -180,18 +203,27 @@ class RTSPReader:
                     continue
 
                 self.frame_count = 0
+                self._last_display_time = 0.0
                 consecutive_failures = 0
                 max_consecutive_failures = 30
+                display_interval = 1.0 / max(self.camera.fps, 1)
+                # throttle cap.read() ตาม fps เพื่อไม่ให้ thread pool ถูกยึดทั้งหมด
+                # HLS buffers frames เป็น segment ทำให้ cap.read() return เร็วมาก
+                # ถ้าไม่ throttle: ~1000 tasks/sec → thread pool 6 workers หมด → HTTP hang
+                read_interval = display_interval  # อ่านไม่เกิน fps ครั้ง/วินาที
+                logger.info(f"[{self.camera.name}] FPS cap={self.camera.fps} (read_interval={read_interval:.3f}s), frame_skip={self.camera.frame_skip}")
 
                 while self.is_running:
+                    read_start = time.monotonic()
                     ret, frame = await self.read_frame()
+                    read_elapsed = time.monotonic() - read_start
 
                     if not ret or frame is None:
                         consecutive_failures += 1
                         if consecutive_failures >= max_consecutive_failures:
                             logger.warning(f"[{self.camera.name}] RTSP stream lost")
                             break
-                        await asyncio.sleep(0.01)
+                        await asyncio.sleep(0.05)
                         continue
 
                     consecutive_failures = 0
@@ -200,17 +232,25 @@ class RTSPReader:
                     if frame.size == 0:
                         continue
 
-                    try:
-                        await on_frame(self.camera.id, frame, self.frame_count)
-                    except Exception as e:
-                        logger.error(f"[{self.camera.name}] Error in on_frame: {e}")
+                    # --- FPS throttle: ส่ง WebSocket เฉพาะเมื่อถึงเวลา ---
+                    now = time.monotonic()
+                    if now - self._last_display_time >= display_interval:
+                        self._last_display_time = now
+                        try:
+                            await on_frame(self.camera.id, frame, self.frame_count)
+                        except Exception as e:
+                            logger.error(f"[{self.camera.name}] Error in on_frame: {e}")
 
                     if self.frame_count % self.camera.frame_skip == 0:
                         self._pending_frame = frame.copy()
                         self._detection_event.set()
 
                     self.frame_count += 1
-                    await asyncio.sleep(0.001)
+
+                    # throttle read loop: สลีปเวลาที่เหลือจาก read_interval
+                    # ป้องกัน HLS buffer flush ทำให้ cap.read() return เร็วมากเกินไป
+                    sleep_time = max(0.001, read_interval - read_elapsed)
+                    await asyncio.sleep(sleep_time)
 
                 self.disconnect()
                 logger.warning(f"[{self.camera.name}] Reconnecting in {reconnect_delay}s...")
@@ -262,9 +302,11 @@ class RTSPReader:
         logger.info(f"[{self.camera.name}] Detection worker stopped")
 
     async def _process_frame(self, frame: np.ndarray):
-        """ประมวลผล frame ด้วย YOLO tracker (รันใน thread pool เพื่อไม่ block event loop)"""
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, self.tracker.process_frame, frame)
+        """ประมวลผล frame ด้วย YOLO tracker
+        ใช้ _yolo_executor (dedicated) ไม่ใช้ default asyncio pool
+        ทำให้ YOLO ไม่แย่ง thread กับ HTTP request handlers"""
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(_yolo_executor, self.tracker.process_frame, frame)
     
     def stop(self):
         """หยุดการทำงาน"""

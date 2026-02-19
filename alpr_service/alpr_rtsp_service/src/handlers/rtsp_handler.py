@@ -85,6 +85,7 @@ async def startup_rtsp():
                         enabled=row["enabled"],
                         fps=row.get("fps", 10),
                         frame_skip=row.get("frame_skip", 3),
+                        token_key=row.get("token_key"),
                     )
                     camera_manager.cameras[cam_id] = camera
                     _stream_id_map[cam_id] = row["stream_id"]
@@ -120,7 +121,7 @@ async def broadcast_frame(camera_id: str, frame: np.ndarray, frame_count: int):
     
     try:
         # Encode frame เป็น JPEG - run in thread pool
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         _, buffer = await loop.run_in_executor(
             None,
             lambda: cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
@@ -158,7 +159,7 @@ async def process_detection(camera_id: str, plate_crop: np.ndarray, bbox, origin
         
         # ✅ ส่ง plate_crop (เหมือน test_rtsp_integration.py)
         # Run blocking cv2 operations in thread pool
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         success, encoded = await loop.run_in_executor(None, cv2.imencode, '.jpg', plate_crop)
         if not success:
             logger.error("Failed to encode plate crop")
@@ -317,7 +318,7 @@ async def broadcast_detection(camera_id: str, result: dict, plate_image: np.ndar
     
     try:
         # Encode รูปป้าย - run in thread pool
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         _, buffer = await loop.run_in_executor(
             None,
             lambda: cv2.imencode('.jpg', plate_image, [cv2.IMWRITE_JPEG_QUALITY, 90])
@@ -450,6 +451,7 @@ async def create_camera(body: StreamCreate):
         enabled=row["enabled"],
         fps=row.get("fps", 10),
         frame_skip=row.get("frame_skip", 3),
+        token_key=body.token_key,
     )
     camera_manager.cameras[cam_id] = camera
     _stream_id_map[cam_id] = row["stream_id"]

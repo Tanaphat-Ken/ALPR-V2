@@ -174,6 +174,7 @@ class CameraManager:
                 "enabled": camera.enabled,
                 "fps": camera.fps,
                 "frame_skip": camera.frame_skip,
+                "token_key": camera.token_key,
                 "running": camera.id in self.tasks
             })
         

@@ -83,9 +83,18 @@ const SubscriptionCard = ({
       hoverable
     >
       <div style={{ marginBottom: 12 }}>
-        <Text style={{ fontSize: '2rem', fontWeight: 'bold' }}>{requestQuota !== null ? requestQuota : '-'}</Text>
-        <Text> / {requestLimit !== null ? requestLimit : '∞'} </Text>
-        <Text type="secondary">Remaining</Text>
+        {requestLimit === null ? (
+          <>
+            <Text style={{ fontSize: '2rem', fontWeight: 'bold' }}>∞</Text>
+            <Text type="secondary"> Unlimited</Text>
+          </>
+        ) : (
+          <>
+            <Text style={{ fontSize: '2rem', fontWeight: 'bold' }}>{requestQuota !== null ? requestQuota : 0}</Text>
+            <Text> / {requestLimit.toLocaleString()} </Text>
+            <Text type="secondary">Remaining</Text>
+          </>
+        )}
       </div>
 
       {isServiceActive
