@@ -29,11 +29,18 @@ class UserSubscription(Base):
     async def validate_user_subscription(user_id: int, db: AsyncSession):
         try:
             # NULL request_quota = unlimited (Tier 3)
+            # Only validate subscriptions that have API access
             from sqlalchemy import or_
-            query = select(UserSubscription).where(
-                UserSubscription.user_id == user_id,
-                UserSubscription.is_activate == True,
-                or_(UserSubscription.request_quota == None, UserSubscription.request_quota > 0)
+            from sqlalchemy.orm import joinedload
+            query = (
+                select(UserSubscription)
+                .join(UserSubscription.subscription)
+                .where(
+                    UserSubscription.user_id == user_id,
+                    UserSubscription.is_activate == True,
+                    Subscription.has_api_access == 1,
+                    or_(UserSubscription.request_quota == None, UserSubscription.request_quota > 0),
+                )
             )
             logging.info(f"Executing query: {query}")
             result = await db.execute(query)
@@ -66,11 +73,17 @@ class UserSubscription(Base):
     async def devalue_user_quota(user_id: int, db: AsyncSession):
         try:
             # NULL request_quota = unlimited (Tier 3)
+            # Only deduct from subscriptions that have API access
             from sqlalchemy import or_
-            query = select(UserSubscription).where(
-                UserSubscription.user_id == user_id,
-                UserSubscription.is_activate == True,
-                or_(UserSubscription.request_quota == None, UserSubscription.request_quota > 0)
+            query = (
+                select(UserSubscription)
+                .join(UserSubscription.subscription)
+                .where(
+                    UserSubscription.user_id == user_id,
+                    UserSubscription.is_activate == True,
+                    Subscription.has_api_access == 1,
+                    or_(UserSubscription.request_quota == None, UserSubscription.request_quota > 0),
+                )
             )
             logging.info(f"Executing query: {query}")
             result = await db.execute(query)

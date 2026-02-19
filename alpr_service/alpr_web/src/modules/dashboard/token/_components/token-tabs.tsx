@@ -11,10 +11,10 @@ import type { ServiceType } from '@/shared/types/subscription'
 
 const tokenTabItems = [
   {
-    key: 'WEBSOCKET',
-    label: 'WebSocket',
+    key: 'API',
+    label: 'API',
     children: <TokenTable />,
-    icon: <ApiOutlined />
+    icon: <SwapOutlined />
   },
   {
     key: 'VIDEO_WEBSOCKET',
@@ -44,7 +44,7 @@ const TokenTabs = () => {
     <div style={{ backgroundColor: 'white', padding: 16 }}>
       <Tabs
         onChange={handleTabChange}
-        defaultActiveKey='WEBSOCKET'
+        defaultActiveKey='API'
         tabBarExtraContent={<CreateNewModelButton onClick={() => handleOpenCreateTokenModal()} />}
         items={tokenTabItems}
       />

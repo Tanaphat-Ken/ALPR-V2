@@ -10,7 +10,7 @@ import SubscriptionCard from './subscription-card'
 import useSubscription from '@/api/dashboard/subscription'
 import type { ServiceType } from '@/shared/types/subscription'
 
-const serviceOrder: ServiceType[] = ['WEBSOCKET', 'VIDEO_WEBSOCKET', 'RTSP']
+const serviceOrder: ServiceType[] = ['API', 'WEBSOCKET', 'VIDEO_WEBSOCKET', 'RTSP']
 
 const SubscriptionList = () => {
   const dispatch = useDispatch<AppDispatch>()
@@ -42,6 +42,18 @@ const SubscriptionList = () => {
 
     const details = sub.subscription_details
     const baseKey = `${sub.user_sub_id}`
+
+    // API — limit = api_request_limit (null = unlimited), quota = remaining request_quota
+    if (details.has_api_access) {
+      serviceItems.push({
+        serviceType: 'API',
+        limit: details.api_request_limit ?? null,
+        quota: sub.request_quota ?? null,
+        isActive: sub.is_activate,
+        expireDate: sub.end_date || undefined,
+        key: `${baseKey}-API`
+      })
+    }
 
     // WEBSOCKET — limit = api_request_limit (null = unlimited), quota = remaining request_quota
     if (details.has_websocket_access) {

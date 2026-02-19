@@ -16,7 +16,7 @@ const SubmitButton = () => {
   const uploadedImage = useSelector((state: RootState) => state.uploadImagePage.image)
   const imageName = useSelector((state: RootState) => state.uploadImagePage.imageName)
   const [selectedToken, setSelectedToken] = useState<string>()
-  const { data: tokenList } = useTokens(userId, 'WEBSOCKET')
+  const { data: tokenList } = useTokens(userId, 'API')
   const { mutate: processImage, isPending } = useProcessImage()
 
   const tokenOptionList = tokenList

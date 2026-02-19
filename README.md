@@ -1,6 +1,6 @@
-# 🚗 ALPR-V2 - Automatic License Plate Recognition System
+# 🚗 ALPR-V2 — Automatic License Plate Recognition System
 
-> Advanced AI-powered License Plate Recognition System with Real-time Processing, WebSocket Support, and Multi-Service Architecture
+> AI-powered License Plate Recognition System with Real-time Processing, WebSocket Support, and Microservices Architecture
 
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](https://www.docker.com/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
@@ -13,58 +13,26 @@
 ## 📋 Table of Contents
 
 - [Overview](#-overview)
-- [Features](#-features)
 - [Architecture](#-architecture)
 - [Services](#-services)
 - [Tech Stack](#-tech-stack)
-- [Performance](#-performance)
-- [Installation](#-installation)
+- [Quick Start](#-quick-start)
+- [Environment Variables](#-environment-variables)
 - [API Documentation](#-api-documentation)
-- [License](#-license)
+- [Performance](#-performance)
 
 ---
 
 ## 🎯 Overview
 
-ALPR-V2 เป็นระบบจดจำป้ายทะเบียนรถอัตโนมัติที่พัฒนาด้วย AI และ Deep Learning โดยรองรับ:
+ALPR-V2 is an Automatic License Plate Recognition system built with AI and Deep Learning, supporting:
 
-- 🖼️ **การประมวลผลรูปภาพแบบ Real-time**
-- 🎥 **การประมวลผลวิดีโอและ RTSP Stream**
-- 🔌 **WebSocket สำหรับการสื่อสารแบบ Real-time**
-- 🌐 **RESTful API สำหรับการ Integration**
-- 💰 **ระบบ Subscription และ Payment Gateway**
-- 🔐 **Authentication และ Authorization**
-
-ระบบนี้ออกแบบมาสำหรับการใช้งานจริงในระดับ Production พร้อม Load Balancing และ Reverse Proxy ด้วย Nginx
-
----
-
-## ✨ Features
-
-### 🎯 Core Features
-
-- ✅ **License Plate Detection** - ตรวจจับป้ายทะเบียนด้วย YOLOv11
-- ✅ **OCR Recognition** - อ่านข้อความบนป้ายทะเบียนด้วย CTC/CRNN
-- ✅ **Province Classification** - จำแนกจังหวัดด้วย MobileNetV3
-- ✅ **Multi-format Support** - รองรับรูปภาพและวิดีโอหลายรูปแบบ
-- ✅ **Real-time Processing** - ประมวลผลแบบ Real-time ผ่าน WebSocket
-- ✅ **RTSP Streaming** - รองรับ RTSP stream จากกล้อง IP
-
-### 💼 Business Features
-
-- 🔐 **User Authentication** - JWT-based authentication
-- 💳 **Payment Integration** - รองรับการชำระเงินออนไลน์
-- 📊 **Subscription Management** - จัดการ subscription plans
-- 📈 **API Quota Management** - จัดการโควต้าการใช้งาน API
-- 📝 **Logging & Analytics** - บันทึกการใช้งานและสถิติ
-
-### 🏗️ Infrastructure Features
-
-- 🔄 **Load Balancing** - Nginx reverse proxy with round-robin
-- 🐳 **Docker Compose** - รัน 7 services พร้อมกัน
-- 📦 **Microservices Architecture** - แยก services ตามหน้าที่
-- 🔌 **Service Discovery** - Docker network routing
-- 🛡️ **Security** - Token-based authentication, request validation
+- 🖼️ **Real-time image processing** via HTTP upload and WebSocket
+- 🎥 **Video frame streaming** via WebSocket
+- 📡 **RTSP stream processing** from IP cameras
+- 🔌 **RESTful API** for system integration
+- 💳 **Subscription & quota management**
+- 🔐 **JWT-based authentication**
 
 ---
 
@@ -72,248 +40,248 @@ ALPR-V2 เป็นระบบจดจำป้ายทะเบียนร
 
 ```mermaid
 graph TB
-    Client[Client/Browser] -->|HTTP/WebSocket| Nginx[Nginx Reverse Proxy :80]
+    Client[Client / Browser] -->|HTTP / WebSocket| Nginx[Nginx Reverse Proxy :80]
 
-    Nginx -->|/| Web[Next.js Frontend :3000]
-    Nginx -->|/api/v1/recognize| LB[Load Balancer]
-    Nginx -->|/api/general| GeneralAPI[General API :8092]
-    Nginx -->|/api/image| ImageAPI[Image API :8089]
-    Nginx -->|/ws/image| WSImage[WebSocket Image :8090]
-    Nginx -->|/ws/video| WSVideo[WebSocket Video :5000]
-    Nginx -->|/api/rtsp| RTSP[RTSP Service :5003]
+    Nginx -->|/| Web[Next.js Frontend]
+    Nginx -->|/api/v1/image/| PR["Plate Recognizer × 2 (Load Balanced)"]
+    Nginx -->|/api/general/| GeneralAPI[General API :8092]
+    Nginx -->|/api/image/| ImageAPI[Image Upload API :8089]
+    Nginx -->|/ws/image/| WSImage[WebSocket Image :8090]
+    Nginx -->|/ws/video/| WSVideo[WebSocket Video :5000]
+    Nginx -->|/api/rtsp/| RTSP[RTSP Service :5003]
 
-    LB -->|Round Robin| PR1[Plate Recognizer 1]
-    LB -->|Round Robin| PR2[Plate Recognizer 2]
-
-    ImageAPI -->|HTTP| PR1
-    WSImage -->|HTTP| PR1
-    WSVideo -->|HTTP| PR1
-    RTSP -->|HTTP| PR1
-
-    GeneralAPI -->|SQL| DB[(PostgreSQL)]
+    GeneralAPI -->|SQL| DB[(PostgreSQL :5432)]
     ImageAPI -->|SQL| DB
+    WSImage -->|SQL| DB
     RTSP -->|SQL| DB
 
-    PR1 -->|YOLO v11| Detection[Plate Detection]
-    Detection --> Splitter[Plate Splitter]
-    Splitter --> Province[Province Classifier]
-    Splitter --> OCR[CTC OCR Reader]
+    ImageAPI -->|HTTP| PR
+    WSImage -->|HTTP| PR
+    WSVideo -->|HTTP| PR
+    RTSP -->|HTTP| PR
+
+    PR --> Detector["PlateDetector (YOLOv11s)"]
+    Detector --> Splitter["PlateSplitter (YOLOv11n)"]
+    Splitter --> Province["Province Classifier (MobileNetV3)"]
+    Splitter --> OCR["OCR Reader (CTC/CRNN)"]
 ```
 
-### 🔄 Processing Pipeline
+### Processing Pipeline
 
 ```
 Image Input
     ↓
-PlateDetector (YOLOv11s)
+PlateDetector (YOLOv11s)      ← detects car + plate regions
     ↓
-PlateSplitter (YOLOv11n)
+PlateSplitter (YOLOv11n)      ← splits plate into character segments
     ↓
-    ├── Province Classifier (MobileNetV3) → จังหวัด
-    └── CTC OCR Reader (CRNN) → ตัวเลข/อักษร
+    ├── Province Classifier (MobileNetV3) → province name
+    └── CTC OCR Reader (CRNN)            → plate digits / letters
     ↓
-Combined Result: "1ฒว8052 ชลบุรี"
+Result: { plate_id, province, full_plate, format_flag }
 ```
 
 ---
 
 ## 🔧 Services
 
-### 1️⃣ **plate_recognizer** (AI Core Engine)
+| # | Service | Container | Internal Port | Public Path |
+|---|---------|-----------|--------------|-------------|
+| 1 | **Nginx** | `alpr_nginx` | 80 | — |
+| 2 | **Next.js Frontend** | `alpr_nextjs` | 3000 | `/` |
+| 3 | **General API** | `alpr_general_api` | 8092 | `/api/general/` |
+| 4 | **Image Upload API** | `alpr_api_image` | 8089 | `/api/image/` |
+| 5 | **WebSocket Video** | `alpr_websocket_video` | 5000 | `/ws/video/` |
+| 6 | **RTSP Service** | `alpr_rtsp_service` | 5003 | `/api/rtsp/` |
+| 7 | **Plate Recognizer** | *(2 replicas)* | 5000 | `/api/v1/image/` |
+| 8 | **PostgreSQL** | `alpr_postgres` | 5432 | — |
 
-- **Port**: 5000
-- **Replicas**: 2 (Load Balanced)
-- **Memory**: 2GB per instance
-- **Tech**: FastAPI, PyTorch, YOLOv11
-- **Models**:
-  - Plate Detector (YOLOv11s)
-  - Plate Splitter (YOLOv11n)
-  - Province Classifier (MobileNetV3)
-  - OCR Reader (CTC/CRNN)
+### Service Descriptions
 
-### 2️⃣ **alpr_web** (Frontend)
+**plate_recognizer** — AI core engine running 4 models (YOLOv11s detector, YOLOv11n splitter, MobileNetV3 province classifier, CTC/CRNN OCR). Deployed as 2 load-balanced replicas, each limited to 2 GB RAM.
 
-- **Port**: 3000
-- **Tech**: Next.js 14+, TypeScript, TailwindCSS
-- **Features**: Dashboard, Analytics, Payment UI
+**alpr_web** — Next.js 14 dashboard for managing tokens, subscriptions, RTSP streams, image/video upload, and viewing detection logs.
 
-### 3️⃣ **alpr_general_api** (General API Gateway)
+**alpr_general_api** — FastAPI gateway handling authentication (JWT), token CRUD, subscription info, payment, and user management.
 
-- **Port**: 8092
-- **Tech**: FastAPI, SQLAlchemy
-- **Features**: Authentication, Payment, Subscription, User Management
+**alpr_api_image** — FastAPI service for authenticated one-shot image uploads. Validates **API-type** service tokens, deducts quota (`request_quota`), calls the plate recognizer, and persists structured logs to PostgreSQL.
 
-### 4️⃣ **alpr_api_image** (Image Upload API)
+**alpr_websocket_video** — WebSocket endpoint for video frame streaming. Token is embedded in the URL path. Optimised for high-throughput frame delivery (up to 5 MB/frame).
 
-- **Port**: 8089
-- **Tech**: FastAPI, httpx
-- **Features**: Image upload, File validation, Quota management
-
-### 5️⃣ **alpr_websocket_image** (WebSocket Image)
-
-- **Port**: 8090
-- **Tech**: FastAPI WebSocket
-- **Features**: Real-time image processing via WebSocket
-
-### 6️⃣ **alpr_websocket_video** (WebSocket Video)
-
-- **Port**: 5000
-- **Tech**: FastAPI WebSocket, OpenCV
-- **Features**: Real-time video processing, Frame extraction
-
-### 7️⃣ **alpr_rtsp_service** (RTSP Streaming)
-
-- **Port**: 5003
-- **Tech**: FastAPI, OpenCV, YOLOv8
-- **Features**: RTSP stream processing, Car detection, Recording
-
-### 🔄 **nginx** (Reverse Proxy)
-
-- **Port**: 80
-- **Tech**: Nginx Alpine
-- **Features**: Load balancing, SSL termination, Request routing
-
-### 🗄️ **postgres** (Database)
-
-- **Port**: 5432
-- **Tech**: PostgreSQL 15
-- **Features**: User data, Subscriptions, Logs, Analytics
+**alpr_rtsp_service** — Manages RTSP camera streams, performs continuous license plate detection, and supports a live Web Viewer. Stores detection events to the database.
 
 ---
 
 ## 🛠️ Tech Stack
 
-### Backend
-
-- **FastAPI** - High-performance async API framework
-- **PyTorch** - Deep learning framework
-- **YOLOv11** - Object detection (Ultralytics)
-- **OpenCV** - Image/video processing
-- **SQLAlchemy** - ORM for PostgreSQL
-- **Pydantic** - Data validation
-
-### Frontend
-
-- **Next.js 14+** - React framework with SSR
-- **TypeScript** - Type-safe JavaScript
-- **TailwindCSS** - Utility-first CSS framework
-
-### AI/ML Models
-
-- **YOLOv11s** - Plate detection
-- **YOLOv11n** - Plate character splitting
-- **MobileNetV3** - Province classification
-- **CTC/CRNN** - OCR text recognition
-
-### DevOps
-
-- **Docker & Docker Compose** - Containerization
-- **Nginx** - Reverse proxy & load balancer
-- **PostgreSQL** - Relational database
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 14, TypeScript, Ant Design, Redux Toolkit |
+| Backend APIs | FastAPI (Python 3.11+), SQLAlchemy, Pydantic |
+| AI Models | PyTorch, YOLOv11 (Ultralytics), MobileNetV3, CTC/CRNN |
+| Image Processing | OpenCV, Pillow |
+| Database | PostgreSQL 15 |
+| Reverse Proxy | Nginx Alpine |
+| Containerisation | Docker & Docker Compose |
+| Auth | JWT (python-jose / PyJWT) |
 
 ---
 
-## 📊 Performance
-
-| Metric                | Before | After  | Improvement       |
-| --------------------- | ------ | ------ | ----------------- |
-| **Inference Time**    | ~800ms | ~200ms | **4x faster** ⚡  |
-| **OCR Accuracy**      | ~85%   | ~92%   | **+7%** 📈        |
-| **Province Accuracy** | ~75%   | ~95%   | **+20%** 🎯       |
-| **Model Loading**     | ~5s    | ~2s    | **2.5x faster**   |
-| **Concurrent Users**  | N/A    | 100+   | **Load Balanced** |
-
----
-
-## 🚀 Installation
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Docker & Docker Compose
-- 8GB+ RAM (recommended 16GB)
-- Linux/Windows/macOS
+- Docker ≥ 24 and Docker Compose ≥ 2
+- 8 GB RAM minimum (16 GB recommended for 2 AI replicas)
+- Linux / macOS / Windows (WSL2)
 
-### Quick Start
-
-1. **Clone the repository**
+### 1 — Clone
 
 ```bash
 git clone https://github.com/yourusername/ALPR-V2.git
 cd ALPR-V2/alpr_service
 ```
 
-2. **Configure environment variables**
+### 2 — Configure environment variables
+
+Copy and edit `.env` for each service that needs one:
 
 ```bash
-# Copy .env.example to .env for each service
 cp alpr_general_api/.env.example alpr_general_api/.env
-cp alpr_api_image/.env.example alpr_api_image/.env
-# ... (configure other services)
+# edit DB credentials, JWT_SECRET, etc.
 ```
 
-3. **Start all services**
-
-```bash
-docker-compose up -d
-```
-
-4. **Check service status**
-
-```bash
-docker-compose ps
-```
-
-5. **Access the application**
-
-- Frontend: http://localhost
-- API Docs: http://localhost/api/general/docs
-- Plate Recognition: http://localhost/api/v1/recognize
-
-### Configuration
-
-#### Database (PostgreSQL)
+Key variables to set before first run:
 
 ```env
+# PostgreSQL
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=your_secure_password
+POSTGRES_PASSWORD=postgres
 POSTGRES_DB=alpr_db
+
+# General API
+JWT_SECRET=<random_secret>
+
+# Plate Recognizer
+DEVICE=cpu          # set to 'cuda' for GPU inference
 ```
 
-#### Plate Recognizer
+### 3 — Start all services
 
-```env
-MODEL_PATH=./data/models/
-DEVICE=cpu  # or cuda for GPU
+```bash
+docker compose up -d
 ```
 
-#### API Gateway
+### 4 — Check status
 
-```env
-JWT_SECRET=your_jwt_secret_key
-STRIPE_API_KEY=your_stripe_key
+```bash
+docker compose ps
+docker compose logs -f plate-recognizer
 ```
+
+### 5 — Access
+
+| Interface | URL |
+|-----------|-----|
+| Dashboard | http://localhost |
+| General API docs | http://localhost/api/general/docs |
+| Plate Recognizer health | http://localhost/api/v1/image/readyz |
+| RTSP Service docs | http://localhost/api/rtsp/docs |
+
+### Development mode
+
+A separate `docker-compose.dev.yml` is available for hot-reload development:
+
+```bash
+docker compose -f docker-compose.dev.yml up -d
+```
+
+---
+
+## 🔐 Environment Variables
+
+### alpr_general_api
+
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | PostgreSQL async connection string |
+| `JWT_SECRET` | Secret key for signing JWTs |
+| `JWT_ALGORITHM` | Algorithm (default: `HS256`) |
+| `ACCESS_TOKEN_EXPIRE_DAYS` | Token lifetime in days (default: `7`) |
+
+### alpr_rtsp_service
+
+| Variable | Description |
+|----------|-------------|
+| `PLATE_RECOGNIZER_URL` | Plate recognizer endpoint (internal: `http://plate-recognizer:5000/api/v1/image/process`) |
+| `DB_HOST / DB_PORT / DB_NAME` | PostgreSQL connection |
+| `DATABASE_ENABLED` | `true` / `false` |
+
+### alpr_web (Next.js build args)
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_BASE_API_GATE_WAY_URL` | General API base URL |
+| `NEXT_PUBLIC_API_UPLOAD_IMAGE` | Image Upload API base URL |
+| `NEXT_PUBLIC_WEBSOCKET_VIDEO_HANLER` | WebSocket video base URL |
+| `NEXT_PUBLIC_RTSP_SERVICE_URL` | RTSP HTTP API base URL |
+| `NEXT_PUBLIC_RTSP_WEBSOCKET_URL` | RTSP WebSocket base URL |
 
 ---
 
 ## 📚 API Documentation
 
-### Plate Recognition API
+Full interactive documentation is available in the dashboard at **Dashboard → Documentation**, or via the auto-generated Swagger UIs:
 
-#### Process Image
+| Service | Swagger UI |
+|---------|-----------|
+| General API | `/api/general/docs` |
+| RTSP Service | `/api/rtsp/docs` |
 
-```http
-POST /api/v1/recognize
-Content-Type: multipart/form-data
+### Key endpoints at a glance
 
-file: <image_file>
+```
+# Auth
+POST   /api/general/auth/register
+POST   /api/general/auth/login
+GET    /api/general/auth/me
+
+# Plate Recognition (direct, no token required)
+POST   /api/v1/image/process
+POST   /api/v1/image/process/skip/car
+POST   /api/v1/image/process/from-plate-crop
+GET    /readyz
+
+# Image Upload (API token required — service_type: API)
+POST   /api/image/upload-image
+
+# WebSocket — Video (VIDEO_WEBSOCKET token in path)
+WS     ws://host/ws/video/{token}
+
+# RTSP Streams
+GET    /api/rtsp/streams
+POST   /api/rtsp/streams
+POST   /api/rtsp/streams/{id}/start
+POST   /api/rtsp/streams/{id}/stop
+WS     ws://host/api/rtsp/stream/{id}
+
+# Token Management
+GET    /api/general/tokens/{user_id}?service_type=API
+POST   /api/general/tokens
+PUT    /api/general/tokens
+DELETE /api/general/tokens
+# service_type values: API | VIDEO_WEBSOCKET | RTSP
+
+# Subscription
+GET    /api/general/info/subscribe/{user_id}
 ```
 
-**Response:**
+### Plate recognizer response
 
 ```json
 {
   "car_bbox": null,
-  "plate_bbox": [[x1, y1], [x2, y2], [x3, y3], [x4, y4]],
+  "plate_bbox": [[x1,y1],[x2,y2],[x3,y3],[x4,y4]],
   "plate_id": "1ฒว8052",
   "province": "ชลบุรี",
   "full_plate": "1ฒว8052 ชลบุรี",
@@ -322,54 +290,42 @@ file: <image_file>
 }
 ```
 
-#### Health Check
+---
 
-```http
-GET /readyz
-```
+## 📊 Performance
 
-### General API
-
-#### Authentication
-
-```http
-POST /api/general/auth/login
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
-```
-
-#### Get User Info
-
-```http
-GET /api/general/user/me
-Authorization: Bearer {token}
-```
-
-### WebSocket API
-
-#### Image WebSocket
-
-```javascript
-const ws = new WebSocket("ws://localhost/ws/image");
-ws.send(imageData);
-ws.onmessage = (event) => {
-  const result = JSON.parse(event.data);
-  console.log(result);
-};
-```
+| Metric | Value |
+|--------|-------|
+| Inference time (single image) | ~200 ms |
+| OCR accuracy | ~92% |
+| Province classification accuracy | ~95% |
+| Concurrent users (load balanced) | 100+ |
+| Max upload size (HTTP) | 10 MB |
+| Max WebSocket frame (video) | 5 MB |
+| Max WebSocket frame (image) | 50 MB |
 
 ---
 
-## 👥 Team
+## 🗂️ Project Structure
 
-Developed by ALPRV2 Development Team
+```
+alpr_service/
+├── nginx.conf                  # Nginx reverse proxy + routing rules
+├── docker-compose.yml          # Production compose
+├── docker-compose.dev.yml      # Development compose (hot reload)
+├── dump.sql                    # Initial DB schema + seed data
+├── plate_recognizer/           # AI inference engine (YOLOv11 + OCR)
+├── alpr_web/                   # Next.js 14 frontend dashboard
+├── alpr_general_api/           # Auth, tokens, subscriptions, users
+├── alpr_api_image/             # Authenticated image upload + logging (service_type: API)
+├── alpr_websocket_image/       # WS image service (not exposed in dashboard)
+├── alpr_websocket_video/       # WebSocket real-time video processing (service_type: VIDEO_WEBSOCKET)
+├── alpr_rtsp_service/          # RTSP camera stream management (service_type: RTSP)
+└── videos/                     # Shared video storage (read-only mount)
+```
 
 ---
 
 <div align="center">
-  <strong>Built using FastAPI, Next.js, and PyTorch</strong>
+  <strong>Built with FastAPI · Next.js · PyTorch · YOLOv11</strong>
 </div>

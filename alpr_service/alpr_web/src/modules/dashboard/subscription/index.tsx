@@ -133,14 +133,14 @@ const SubscriptionPage = () => {
               <Text strong>Features & Limits</Text>
             </List.Item>
 
-            {/* WebSocket Image */}
+            {/* API Image Upload */}
             {renderFeatureItem(
-              plan.has_websocket_access
+              plan.has_api_access
                 ? plan.api_request_limit
-                  ? `${plan.api_request_limit.toLocaleString()} WebSocket Image Requests/day`
-                  : 'Unlimited WebSocket Image Requests'
-                : 'WebSocket Image Processing',
-              !!plan.has_websocket_access
+                  ? `${plan.api_request_limit.toLocaleString()} API Image Requests/day`
+                  : 'Unlimited API Image Requests'
+                : 'API Image Processing',
+              !!plan.has_api_access
             )}
 
             {/* Video WebSocket */}

@@ -12,9 +12,14 @@ class Subscription(Base):
     service_type = Column(String(255), nullable=False)
     price = Column(Float, nullable=True)
     request_limit = Column(Integer, nullable=True)
+    api_request_limit = Column(Integer, nullable=True)
     description = Column(String(255), nullable=True)
     created_at = Column(TIMESTAMP, nullable=True)
     updated_at = Column(TIMESTAMP, nullable=True)
+    has_api_access = Column(Integer, default=0)
+    has_websocket_access = Column(Integer, default=0)
+    has_video_upload = Column(Integer, default=0)
+    has_rtsp_stream = Column(Integer, default=0)
 
     user_subscriptions = relationship(
         "UserSubscription", back_populates="subscription")
