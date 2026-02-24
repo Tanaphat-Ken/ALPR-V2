@@ -2,7 +2,7 @@
 
 import { useDispatch } from 'react-redux'
 import { Tabs, Button } from 'antd'
-import { SwapOutlined, ApiOutlined, VideoCameraOutlined, PlusOutlined } from '@ant-design/icons'
+import { SwapOutlined, ApiOutlined, VideoCameraOutlined, PlayCircleOutlined, PlusOutlined } from '@ant-design/icons'
 
 import { AppDispatch } from '@/shared/store'
 import { setIsCreateModalOpen, setActiveTab } from '@/shared/store/dashboard/tokens-page-slice'
@@ -26,7 +26,7 @@ const tokenTabItems = [
     key: 'RTSP',
     label: 'Streams',
     children: <TokenTable />,
-    icon: <VideoCameraOutlined />
+    icon: <PlayCircleOutlined />
   }
 ]
 
