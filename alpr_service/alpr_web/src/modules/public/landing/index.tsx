@@ -346,7 +346,7 @@ const LandingPage = () => {
           <Row gutter={[32, 32]}>
             <Col xs={24} sm={8}>
               <StatCard>
-                <StatNumber>99.5%</StatNumber>
+                <StatNumber>97%</StatNumber>
                 <StatLabel>Recognition Accuracy</StatLabel>
               </StatCard>
             </Col>

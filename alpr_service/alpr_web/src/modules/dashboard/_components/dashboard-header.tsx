@@ -45,7 +45,7 @@ const DashboardHeader = () => {
   return (
     <Header style={{ color: 'white', background: '#150E4B', flexShrink: 0 }}>
       <Flex justify='space-between' align='center'>
-        <h1 style={{ margin: 0, padding: 0, color: 'white', fontFamily: 'var(--font-unbounded), Unbounded, sans-serif', fontWeight: 400 }}>ALPR - Automatice License Plate Recognition</h1>
+        <h1 style={{ margin: 0, padding: 0, color: 'white', fontFamily: 'var(--font-unbounded), Unbounded, sans-serif', fontWeight: 400 }}>ALPR - Automatic License Plate Recognition</h1>
         <Flex align='center' justify='center' gap={24}>
           <SearchOutlined />
           <QuestionCircleOutlined />
