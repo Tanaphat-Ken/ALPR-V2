@@ -37,7 +37,7 @@ const UserProfile = ({ userEmail }: UserProfileProps) => {
   return (
     <Dropdown menu={{ items }} placement="bottomRight" arrow>
       <Flex gap={8} align="center" style={{ cursor: 'pointer' }}>
-        <Avatar size={32} icon={<UserOutlined />} src="https://api.dicebear.com/7.x/miniavs/svg?seed=1" />
+        <Avatar size={32} icon={<UserOutlined />} src="https://pbs.twimg.com/profile_images/2017539721279508481/o1GAgYmj.jpg" />
         <Text style={{ color: 'white', fontWeight: 500 }}>{userName}</Text>
       </Flex>
     </Dropdown>
