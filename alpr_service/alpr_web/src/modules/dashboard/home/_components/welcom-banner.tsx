@@ -11,7 +11,7 @@ const WelcomeBanner = () => {
   return (
     <Flex style={{ backgroundColor: 'white', padding: '2rem' }} align='end' gap={16}>
       <Title style={{ fontSize: 20, margin: 0 }} level={2}>Welcome, {userName}</Title>
-      <Text type='secondary'>This is subtitle</Text>      
+      <Text type='secondary'>Monitor and manage your license plate recognition services</Text>      
     </Flex>
   )
 }

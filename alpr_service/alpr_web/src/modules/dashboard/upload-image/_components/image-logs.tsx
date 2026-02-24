@@ -7,7 +7,7 @@ import { Table, Image as AntdImage } from 'antd'
 import type { TableColumnsType } from 'antd'
 
 import SectionTitle from '@/shared/components/section-title'
-import { convertImageListToTableDataType } from '@/shared/libs/image'
+import { convertImageListToTableDataTypeSkipCar } from '@/shared/libs/image'
 import type { RootState } from '@/shared/store'
 import { convertToReadableTimeStamp } from '@/shared/libs/times'
 
@@ -22,10 +22,10 @@ type ImageDataType = {
 
 const columns: TableColumnsType<ImageDataType> = [
   { 
-    title: 'Car Image', 
+    title: 'Full Image', 
     dataIndex: 'carImage', 
     key: 'carImage',
-    render: (carImage: string) => <AntdImage width={100} src={carImage} alt='car-image' />
+    render: (carImage: string) => <AntdImage width={100} src={carImage} alt='full-image' />
   },
   { 
     title: 'Plate Image', 
@@ -49,7 +49,7 @@ const ImageLogs = () => {
 
   useEffect(() => {
     const processAllImages = async () => {
-      const processedList = await Promise.all(imageList.map(convertImageListToTableDataType))
+      const processedList = await Promise.all(imageList.map(convertImageListToTableDataTypeSkipCar))
       setImageListConverted(processedList.filter(Boolean) as ImageDataType[])
     }
     processAllImages()

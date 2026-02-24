@@ -22,10 +22,10 @@ type ImageDataType = {
 
 const columns: TableColumnsType<ImageDataType> = [
   { 
-    title: 'Car Image', 
+    title: 'Full Image', 
     dataIndex: 'carImage', 
     key: 'carImage',
-    render: (carImage: string) => <AntdImage width={100} src={carImage} alt='car-image' />
+    render: (carImage: string) => <AntdImage width={100} src={carImage} alt='full-image' />
   },
   { 
     title: 'Plate Image', 
