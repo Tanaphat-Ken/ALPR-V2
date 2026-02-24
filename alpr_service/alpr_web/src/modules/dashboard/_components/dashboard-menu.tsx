@@ -7,11 +7,15 @@ import { Menu } from 'antd'
 import Sider from 'antd/es/layout/Sider'
 import {
   HomeOutlined,
-  KeyOutlined,
+  SearchOutlined,
   CloudUploadOutlined,
   VideoCameraOutlined,
   ReadOutlined,
-  SettingOutlined
+  SettingOutlined,
+  PictureOutlined,
+  StarOutlined,
+  PlayCircleOutlined,
+  ProfileOutlined,
 } from '@ant-design/icons'
 
 type MenuItem = Required<MenuProps>['items'][number];
@@ -24,7 +28,7 @@ const items: MenuItem[] = [
   },
   {
     key: '/dashboard/tokens',
-    icon: <KeyOutlined />,
+    icon: <SearchOutlined />,
     label: 'Tokens',
   },
   {
@@ -32,13 +36,13 @@ const items: MenuItem[] = [
     icon: <CloudUploadOutlined />,
     label: 'Upload',
     children: [
-      { key: '/dashboard/upload/image', label: 'Image' },
-      { key: '/dashboard/upload/video', label: 'Video' },
+      { key: '/dashboard/upload/image', icon: <PictureOutlined />, label: 'Image' },
+      { key: '/dashboard/upload/video', icon: <VideoCameraOutlined />, label: 'Video' },
     ],
   },
   {
     key: '/dashboard/streams',
-    icon: <VideoCameraOutlined />,
+    icon: <PlayCircleOutlined />,
     label: 'Streams',
   },
   {
@@ -51,7 +55,7 @@ const items: MenuItem[] = [
     icon: <SettingOutlined />,
     label: 'Settings',
     children: [
-      { key: '/dashboard/settings/subscription', label: 'Subscription' },
+      { key: '/dashboard/settings/subscription', icon: <ProfileOutlined />, label: 'Subscription' },
       { key: 'logout', label: 'Logout', danger: true },
     ],
   },
@@ -63,15 +67,10 @@ const DashboardMenu = () => {
 
   const handleOnClick: MenuProps['onClick'] = ({ key }) => {
     if (key === 'logout') {
-      // Clear local storage
       localStorage.removeItem('token')
       localStorage.removeItem('userId')
-
-      // Clear cookies if any
       document.cookie = 'token=; Max-Age=0; path=/;'
       document.cookie = 'userId=; Max-Age=0; path=/;'
-
-      // Redirect to login
       router.push('/login')
       return
     }
@@ -80,7 +79,11 @@ const DashboardMenu = () => {
   }
 
   return (
-    <Sider theme='light'>
+      <Sider theme='light' style={{ overflow: 'auto' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '16px 24px 8px' }}>
+        <span style={{ fontWeight: 600, fontSize: 15 }}>Quick Access</span>
+        <StarOutlined style={{ fontSize: 14 }} />
+      </div>
       <Menu
         onClick={handleOnClick}
         defaultSelectedKeys={['/dashboard']}

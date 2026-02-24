@@ -8,9 +8,9 @@ import DashboardContent from './_components/dashboard-content'
 
 const DashboardLayout = ({ children }: PropsWithChildren) => {
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ height: '100vh', overflow: 'hidden' }}>
       <DashboardHeader />
-      <Layout>
+      <Layout style={{ flex: 1, overflow: 'hidden' }}>
         <DashboardMenu />
         <DashboardContent>{children}</DashboardContent>
       </Layout>
