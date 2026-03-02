@@ -9,11 +9,27 @@
 1. [Use Case Diagram](#1-use-case-diagram)
 2. [Sequence Diagrams](#2-sequence-diagrams)
    - [2.1 User Registration & Login](#21-user-registration--login)
-   - [2.2 Image Upload & Plate Recognition (HTTP)](#22-image-upload--plate-recognition-http)
-   - [2.3 Real-time Video via WebSocket](#23-real-time-video-via-websocket)
-   - [2.4 RTSP Stream Management](#24-rtsp-stream-management)
-   - [2.5 Token Management (Create / Delete)](#25-token-management-create--delete)
-   - [2.6 Subscription Purchase](#26-subscription-purchase)
+   - [2.2 User Authentication](#22-user-authentication)
+   - [2.3 Token Management](#23-token-management)
+     - [2.3.1 Create Token](#231-create-token)
+     - [2.3.2 Edit Token](#232-edit-token)
+     - [2.3.3 Delete Token](#233-delete-token)
+   - [2.4 Image Recognition](#24-image-recognition)
+     - [2.4.1 Upload Image — Dashboard](#241-upload-image--dashboard)
+     - [2.4.2 Send Image via API](#242-send-image-via-api)
+   - [2.5 Video Streaming](#25-video-streaming)
+     - [2.5.1 Upload Video — Dashboard](#251-upload-video--dashboard)
+     - [2.5.2 Send Video via WebSocket](#252-send-video-via-websocket)
+   - [2.6 RTSP Camera Management](#26-rtsp-camera-management)
+     - [2.6.1 Register Camera](#261-register-camera)
+     - [2.6.2 Process Video Stream via RTSP](#262-process-video-stream-via-rtsp)
+     - [2.6.3 Edit Camera Information](#263-edit-camera-information)
+     - [2.6.4 Remove Camera](#264-remove-camera)
+     - [2.6.5 View Stream Status](#265-view-stream-status)
+   - [2.7 Subscription Management](#27-subscription-management)
+     - [2.7.1 Subscribe Plan](#271-subscribe-plan)
+     - [2.7.2 Change Subscription Plan](#272-change-subscription-plan)
+     - [2.7.3 Cancel Subscription](#273-cancel-subscription)
 3. [Test Cases — System Testing](#3-test-cases--system-testing)
    - [TC-AUTH — Authentication](#tc-auth--authentication)
    - [TC-TOKEN — Token Management](#tc-token--token-management)
@@ -151,235 +167,663 @@ flowchart TD
 ```mermaid
 sequenceDiagram
     actor User
-    participant FE as Next.js Frontend
-    participant Nginx
-    participant GenAPI as General API :8092
-    participant DB as PostgreSQL
+    participant AuthPage as Auth Page
+    participant AuthController as Auth Controller
+    participant UserModel as User Model
+    participant DB as Database
 
     Note over User,DB: ── Registration ──
-    User->>FE: Fill register form (email, password)
-    FE->>Nginx: POST /api/general/api/v1/auth/register
-    Nginx->>GenAPI: POST /api/v1/auth/register
-    GenAPI->>GenAPI: Validate email format & password length
-    GenAPI->>DB: INSERT INTO users (email, hashed_password)
-    DB-->>GenAPI: user_id, email
-    GenAPI-->>Nginx: 201 { user_id, email, message }
-    Nginx-->>FE: 201 Created
-    FE-->>User: "Registration successful"
+    User->>AuthPage: submit_register(email, password)
+    AuthPage->>AuthController: register(email, password)
+    AuthController->>AuthController: validate_input()
+    AuthController->>UserModel: create_user(email, hashed_password)
+    UserModel->>DB: INSERT INTO users
+    DB-->>UserModel: return user_id
+    UserModel-->>AuthController: return user
+    AuthController-->>AuthPage: return success
+    AuthPage-->>User: display_message("Registration Successful")
 
     Note over User,DB: ── Login ──
-    User->>FE: Enter email & password
-    FE->>Nginx: POST /api/general/api/v1/auth/login
-    Nginx->>GenAPI: POST /api/v1/auth/login
-    GenAPI->>DB: SELECT user WHERE email=?
-    DB-->>GenAPI: user record
-    GenAPI->>GenAPI: bcrypt.verify(password, hash)
+    User->>AuthPage: submit_login(email, password)
+    AuthPage->>AuthController: login(email, password)
+    AuthController->>UserModel: find_user(email)
+    UserModel->>DB: SELECT FROM users
+    DB-->>UserModel: return user_record
+    UserModel-->>AuthController: return user_record
+    AuthController->>AuthController: verify_password()
     alt Credentials valid
-        GenAPI->>GenAPI: create_access_token(user_id, email, exp=7days)
-        GenAPI-->>FE: 200 { access_token, token_type, user_id, email }
-        FE->>FE: Store JWT in localStorage / Redux
-        FE-->>User: Redirect to Dashboard
-    else Invalid credentials
-        GenAPI-->>FE: 401 Unauthorized
-        FE-->>User: "Incorrect email or password"
+        AuthController->>AuthController: generate_access_token()
+        AuthController-->>AuthPage: return access_token
+        AuthPage-->>User: redirect to Dashboard
+    else Credentials invalid
+        AuthController-->>AuthPage: return error
+        AuthPage-->>User: display_message("Incorrect email or password")
     end
 ```
 
 ---
 
-### 2.2 Image Upload & Plate Recognition (HTTP)
+### 2.2 User Authentication
 
 ```mermaid
 sequenceDiagram
     actor Client
-    participant Nginx
-    participant ImgAPI as Image API :8089
-    participant DB as PostgreSQL
-    participant PR as Plate Recognizer ×2
+    participant TAM as Token Auth Middleware
+    participant TokenModel as Token Model
+    participant SubModel as User Subscription Model
 
-    Client->>Nginx: POST /api/image/api/v1/images/upload-image\nHeaders: X-API-Token: <token>\nBody: multipart/form-data image
-    Nginx->>ImgAPI: Forward request
-
-    Note over ImgAPI: TokenAuthMiddleware
-    ImgAPI->>DB: SELECT token WHERE key=<token> AND service_type='API'
-    DB-->>ImgAPI: token record (quota, expiry, user_id)
-
-    alt Token invalid / expired
-        ImgAPI-->>Client: 401 Unauthorized
-    else Quota exhausted
-        ImgAPI-->>Client: 403 Quota exceeded
-    else Token valid
-        ImgAPI->>ImgAPI: Decode image bytes
-        ImgAPI->>PR: POST /api/v1/image/process (load balanced)
-        PR->>PR: YOLOv11s — detect car + plate bbox
-        PR->>PR: YOLOv11n — split plate into character segments
-        PR->>PR: MobileNetV3 — classify province
-        PR->>PR: CTC/CRNN OCR — read plate digits/chars
-        PR-->>ImgAPI: { plate_id, province, full_plate, format_flag, plate_bbox }
-        ImgAPI->>DB: INSERT image_logs (token_id, plate_id, province, timestamp, …)
-        ImgAPI->>DB: UPDATE token SET request_quota = request_quota - 1
-        DB-->>ImgAPI: OK
-        ImgAPI-->>Client: 200 { plate_id, province, full_plate, format_flag }
-    end
+    Client->>TAM: request(token)
+    TAM->>TokenModel: is_token_valid(token)
+    TokenModel-->>TAM: return status
+    TAM->>SubModel: is_user_subscribed(user_id)
+    SubModel-->>TAM: return status
+    TAM-->>Client: return result
 ```
 
 ---
 
-### 2.3 Real-time Video via WebSocket
+### 2.3 Token Management
 
-```mermaid
-sequenceDiagram
-    actor Client
-    participant Nginx
-    participant WSVid as WebSocket Video :5000
-    participant PR as Plate Recognizer
-
-    Client->>Nginx: WS Upgrade: ws://host/ws/video/<token>
-    Nginx->>WSVid: WS /{token}
-
-    WSVid->>WSVid: Validate token (service_type=VIDEO_WEBSOCKET)
-    alt Token invalid
-        WSVid-->>Client: WS Close 4001 Unauthorized
-    else Token valid
-        WSVid-->>Client: WS Open (connection accepted)
-
-        loop For each video frame
-            Client->>WSVid: Binary frame data (≤5 MB)
-            WSVid->>WSVid: Decode frame bytes → image
-            WSVid->>PR: POST /api/v1/image/process (image bytes)
-            PR-->>WSVid: { plate_id, province, full_plate, format_flag }
-            WSVid-->>Client: JSON { plate_id, province, full_plate, format_flag }
-        end
-
-        Client->>WSVid: WS Close
-        WSVid->>WSVid: Cleanup task & resources
-    end
-```
-
----
-
-### 2.4 RTSP Stream Management
+#### 2.3.1 Create Token
 
 ```mermaid
 sequenceDiagram
     actor User
-    participant FE as Frontend
-    participant Nginx
-    participant RTSP as RTSP Service :5003
-    participant Camera as IP Camera
-    participant PR as Plate Recognizer
-    participant DB as PostgreSQL
+    participant TokenPage as Manage Tokens Page
+    participant TokenController as Token Controller
+    participant SubModel as Subscription Model
+    participant TokenModel as Token Model
+    participant DB as Database
 
-    Note over User,DB: ── Add & Start Stream ──
-    User->>FE: Enter RTSP URL + stream name
-    FE->>Nginx: POST /api/rtsp/api/v1/streams\n{ name, rtsp_url, token_id }
-    Nginx->>RTSP: POST /api/v1/streams
-    RTSP->>DB: INSERT INTO rtsp_streams
-    DB-->>RTSP: stream_id
-    RTSP-->>FE: 201 { stream_id, name, status: "stopped" }
+    User->>TokenPage: create_token(name, service_type, expire_time)
+    TokenPage->>TokenController: create_token()
+    TokenController->>SubModel: get_subscription(user_id)
+    SubModel->>DB: SELECT FROM user_subscriptions
+    DB-->>SubModel: return subscription
+    SubModel-->>TokenController: return token_limit
+    alt Limit reached
+        TokenController-->>TokenPage: return error
+        TokenPage-->>User: display_error("Token limit reached")
+    else Under limit
+        TokenController->>TokenController: validate_token_data()
+        TokenController->>TokenModel: save_token()
+        TokenModel->>DB: INSERT INTO tokens
+        DB-->>TokenModel: return token_record
+        TokenModel-->>TokenController: return token
+        TokenController-->>TokenPage: return token
+        TokenPage-->>User: display_token_key()
+    end
+```
 
-    User->>FE: Click "Start Stream"
-    FE->>Nginx: POST /api/rtsp/api/v1/streams/{id}/start
-    Nginx->>RTSP: POST /api/v1/streams/{id}/start
-    RTSP->>RTSP: Spawn async capture task
+---
 
-    loop Continuous frame capture
-        RTSP->>Camera: OpenCV VideoCapture (RTSP)
-        Camera-->>RTSP: Raw frame
-        RTSP->>PR: POST /api/v1/image/process
-        PR-->>RTSP: { plate_id, province, full_plate }
-        RTSP->>DB: INSERT detection_logs
+#### 2.3.2 Edit Token
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant TokenPage as Manage Tokens Page
+    participant TokenController as Token Controller
+    participant TokenModel as Token Model
+    participant DB as Database
+
+    User->>TokenPage: edit_token(token_key, new_name, new_expire_time)
+    TokenPage->>TokenController: edit_token()
+    TokenController->>TokenController: validate_token_data()
+    TokenController->>TokenModel: update_token()
+    TokenModel->>DB: UPDATE tokens SET ...
+    DB-->>TokenModel: return status
+    TokenModel-->>TokenController: return status
+    TokenController-->>TokenPage: return status
+    TokenPage-->>User: display_message("Token Updated")
+```
+
+---
+
+#### 2.3.3 Delete Token
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant TokenPage as Manage Tokens Page
+    participant TokenController as Token Controller
+    participant TokenModel as Token Model
+    participant DB as Database
+
+    User->>TokenPage: delete_token(token_key)
+    TokenPage->>TokenController: delete_token()
+    TokenController->>TokenModel: delete_token()
+    TokenModel->>DB: DELETE FROM tokens
+    DB-->>TokenModel: return status
+    TokenModel-->>TokenController: return status
+    TokenController-->>TokenPage: return status
+    TokenPage-->>User: display_message("Token Deleted")
+```
+
+---
+
+### 2.4 Image Recognition
+
+#### 2.4.1 Upload Image — Dashboard
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant UploadPage as Upload Image Page
+    participant ImageController as Image Controller
+    participant TAM as Token Auth Middleware
+    participant TokenModel as Token Model
+    participant PR as Plate Recognizer Service
+    participant ImageLogsModel as Image Logs Model
+    participant DB as Database
+
+    User->>UploadPage: select_image()
+    UploadPage->>UploadPage: validate_image()
+    UploadPage-->>User: return status
+    User->>UploadPage: select_token()
+    UploadPage-->>User: return status
+    User->>UploadPage: submit_image()
+    UploadPage->>ImageController: upload_image(image, token)
+    ImageController->>TAM: authenticate(token)
+    TAM->>TokenModel: validate_token(token)
+    TokenModel->>DB: SELECT FROM tokens
+    DB-->>TokenModel: return token_record
+    TokenModel-->>TAM: return status
+    TAM-->>ImageController: return status
+    ImageController->>PR: process_image(image)
+    PR-->>ImageController: return plate_data
+    ImageController->>ImageLogsModel: save_image_log()
+    ImageLogsModel->>DB: INSERT INTO image_logs
+    DB-->>ImageLogsModel: return status
+    ImageLogsModel-->>ImageController: return status
+    ImageController-->>UploadPage: return plate_data
+    UploadPage-->>User: display_result(plate_data)
+```
+
+---
+
+#### 2.4.2 Send Image via API
+
+```mermaid
+sequenceDiagram
+    actor Client
+    participant ImageController as Image Controller
+    participant TAM as Token Auth Middleware
+    participant TokenModel as Token Model
+    participant PR as Plate Recognizer Service
+    participant ImageLogsModel as Image Logs Model
+    participant DB as Database
+
+    Client->>ImageController: send_image(image, token)
+    ImageController->>TAM: authenticate(token)
+    TAM->>TokenModel: validate_token(token)
+    TokenModel->>DB: SELECT FROM tokens
+    DB-->>TokenModel: return token_record
+    TokenModel-->>TAM: return status
+
+    alt Token invalid or expired
+        TAM-->>Client: return 401 Unauthorized
+    else Quota exhausted
+        TAM-->>Client: return 403 Quota Exceeded
+    else Token valid
+        TAM-->>ImageController: return status
+        ImageController->>ImageController: validate_image()
+        ImageController->>PR: process_image(image)
+        PR-->>ImageController: return plate_data
+        ImageController->>ImageLogsModel: save_image_log()
+        ImageLogsModel->>DB: INSERT INTO image_logs
+        DB-->>ImageLogsModel: return status
+        ImageLogsModel->>TokenModel: deduct_quota(token)
+        TokenModel->>DB: UPDATE tokens SET quota = quota - 1
+        DB-->>TokenModel: return status
+        TokenModel-->>ImageLogsModel: return status
+        ImageLogsModel-->>ImageController: return status
+        ImageController-->>Client: return plate_data
+    end
+```
+
+---
+
+### 2.5 Video Streaming
+
+#### 2.5.1 Upload Video — Dashboard
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant UploadPage as Upload Video Page
+    participant WSHandler as WebSocket Handler
+    participant AuthService as Auth Service
+    participant TokenModel as Token Model
+    participant VideoService as Video Recognition Service
+    participant PR as Plate Recognizer Service
+    participant VideoLogsModel as Video Logs Model
+    participant DB as Database
+
+    User->>UploadPage: select_video()
+    UploadPage->>UploadPage: validate_video()
+    UploadPage-->>User: return status
+    User->>UploadPage: select_token()
+    UploadPage->>WSHandler: create_connection(token)
+    WSHandler->>AuthService: authenticate(token)
+    AuthService->>TokenModel: validate_token(token)
+    TokenModel->>DB: SELECT FROM tokens
+    DB-->>TokenModel: return token_record
+    TokenModel-->>AuthService: return status
+    AuthService-->>WSHandler: return status
+    WSHandler-->>UploadPage: return connection_status
+    UploadPage-->>User: return status
+
+    loop
+        UploadPage->>WSHandler: send_frame(frame)
+        WSHandler->>VideoService: process_frame(frame)
+        VideoService->>VideoService: detect_plate_region(frame)
+        alt Plate detected
+            VideoService->>PR: recognize_plate(plate_crop)
+            PR-->>VideoService: return plate_data
+            VideoService->>VideoLogsModel: save_video_log()
+            VideoLogsModel->>DB: INSERT INTO video_logs
+            DB-->>VideoLogsModel: return status
+        end
+        VideoService-->>WSHandler: return result
+        WSHandler-->>UploadPage: return result
     end
 
-    Note over User,DB: ── Live Web Viewer ──
-    User->>FE: Open Web Viewer
-    FE->>Nginx: WS ws://host/api/rtsp/stream/{id}
-    Nginx->>RTSP: WS /api/v1/stream/{id}
-    loop Broadcast frames
-        RTSP-->>FE: JPEG frame + detection overlay
+    User->>UploadPage: cancel()
+    UploadPage->>WSHandler: close_connection()
+    WSHandler-->>UploadPage: return status
+    UploadPage-->>User: display_message("Stopped")
+```
+
+---
+
+#### 2.5.2 Send Video via WebSocket
+
+```mermaid
+sequenceDiagram
+    actor Client
+    participant WSHandler as WebSocket Handler
+    participant AuthService as Auth Service
+    participant TokenModel as Token Model
+    participant VideoService as Video Recognition Service
+    participant PR as Plate Recognizer Service
+    participant VideoLogsModel as Video Logs Model
+    participant DB as Database
+
+    Client->>WSHandler: create_connection(token)
+    WSHandler->>AuthService: authenticate(token)
+    AuthService->>TokenModel: validate_token(token)
+    TokenModel->>DB: SELECT FROM tokens
+    DB-->>TokenModel: return token_record
+    TokenModel-->>AuthService: return status
+    AuthService-->>WSHandler: return status
+
+    alt Token invalid or expired
+        WSHandler-->>Client: close_connection(4001, Unauthorized)
+    else Token valid
+        WSHandler-->>Client: return connection_status
+
+        loop For each video frame
+            Client->>WSHandler: send_frame(frame)
+            WSHandler->>VideoService: process_frame(frame)
+            VideoService->>VideoService: detect_plate_region(frame)
+            alt Plate detected
+                VideoService->>PR: recognize_plate(plate_crop)
+                PR-->>VideoService: return plate_data
+                VideoService->>VideoLogsModel: save_video_log()
+                VideoLogsModel->>DB: INSERT INTO video_logs
+                DB-->>VideoLogsModel: return status
+            end
+            VideoService-->>WSHandler: return result
+            WSHandler-->>Client: return result
+        end
+
+        Client->>WSHandler: close_connection()
+        WSHandler->>WSHandler: cleanup_tasks()
+        WSHandler-->>Client: connection_closed
+    end
+```
+
+---
+
+### 2.6 RTSP Camera Management
+
+#### 2.6.1 Register Camera
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant StreamPage as Manage Stream Page
+    participant StreamController as Stream Controller
+    participant StreamService as Stream Service
+    participant CameraModel as Camera Model
+    participant CAM as IP Camera
+    participant DB as Database
+
+    User->>StreamPage: open_manage_stream()
+    StreamPage->>StreamController: get_camera_list(user_id)
+    StreamController->>CameraModel: fetch_camera_list(user_id)
+    CameraModel->>DB: SELECT FROM rtsp_streams
+    DB-->>CameraModel: return camera_list
+    CameraModel-->>StreamController: return camera_list
+    StreamController-->>StreamPage: return camera_list
+    StreamPage-->>User: display_camera_list()
+
+    User->>StreamPage: add_camera(rtsp_url, camera_name)
+    StreamPage->>StreamController: add_camera()
+    StreamController->>StreamService: validate_stream(rtsp_url, token)
+    StreamService->>CAM: open_rtsp_connection(rtsp_url)
+    CAM-->>StreamService: return connection_status
+
+    alt Connection failed
+        StreamService-->>StreamController: return error
+        StreamController-->>StreamPage: return error
+        StreamPage-->>User: display_error("Connection Failed")
+    else Connection success
+        StreamService->>CameraModel: save_camera(user_id, camera_name, rtsp_url)
+        CameraModel->>DB: INSERT INTO rtsp_streams
+        DB-->>CameraModel: return status
+        CameraModel-->>StreamService: return status
+        StreamService-->>StreamController: return success
+        StreamController-->>StreamPage: return success
+        StreamPage-->>User: display_message("Camera Connected")
+    end
+```
+
+---
+
+#### 2.6.2 Process Video Stream via RTSP
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant StreamPage as Manage Stream Page
+    participant StreamController as Stream Controller
+    participant StreamService as Stream Service
+    participant TAM as Token Auth Middleware
+    participant TokenModel as Token Model
+    participant CAM as IP Camera
+    participant PR as Plate Recognizer Service
+    participant StreamLogsModel as Stream Logs Model
+    participant DB as Database
+
+    User->>StreamPage: start_stream(camera_id)
+    StreamPage->>StreamController: start_stream(camera_id, token)
+    StreamController->>TAM: authenticate(token)
+    TAM->>TokenModel: validate_token(token)
+    TokenModel->>DB: SELECT FROM tokens
+    DB-->>TokenModel: return token_record
+    TokenModel-->>TAM: return status
+    TAM-->>StreamController: return status
+    StreamController->>StreamService: open_rtsp_connection(rtsp_url)
+    StreamService->>CAM: connect(rtsp_url)
+    CAM-->>StreamService: return stream_status
+    StreamController-->>StreamPage: return connection_status
+    StreamPage-->>User: display_message("Stream Started")
+
+    loop While connection is active
+        StreamService->>CAM: capture_frame()
+        CAM-->>StreamService: return frame
+        StreamService->>PR: process_frame(frame)
+        PR-->>StreamService: return plate_data
+        StreamService->>StreamLogsModel: save_detection(user_id, plate_data)
+        StreamLogsModel->>DB: INSERT INTO detection_logs
+        alt Database Failed
+            DB-->>StreamLogsModel: return error
+            StreamLogsModel->>StreamLogsModel: log_error()
+        else Success
+            DB-->>StreamLogsModel: return status
+            StreamService->>StreamPage: push_realtime_result(plate_data)
+        end
     end
 
     Note over User,DB: ── Stop Stream ──
-    User->>FE: Click "Stop Stream"
-    FE->>Nginx: POST /api/rtsp/api/v1/streams/{id}/stop
-    Nginx->>RTSP: POST /api/v1/streams/{id}/stop
-    RTSP->>RTSP: Cancel capture task
-    RTSP->>DB: UPDATE stream SET status='stopped'
-    RTSP-->>FE: 200 { status: "stopped" }
+    User->>StreamPage: stop_stream(camera_id)
+    StreamPage->>StreamController: stop_stream(camera_id)
+    StreamController->>StreamService: cancel_capture_task(camera_id)
+    StreamService->>CAM: disconnect()
+    CAM-->>StreamService: return status
+    StreamService->>CameraModel: update_stream_status(camera_id, "stopped")
+    CameraModel->>DB: UPDATE rtsp_streams SET status
+    DB-->>CameraModel: return status
+    CameraModel-->>StreamService: return status
+    StreamService-->>StreamController: return status
+    StreamController-->>StreamPage: return status
+    StreamPage-->>User: display_message("Stream Stopped")
 ```
 
 ---
 
-### 2.5 Token Management (Create / Delete)
+#### 2.6.3 Edit Camera Information
 
 ```mermaid
 sequenceDiagram
     actor User
-    participant FE as Frontend
-    participant Nginx
-    participant GenAPI as General API
-    participant DB as PostgreSQL
+    participant StreamPage as Manage Stream Page
+    participant StreamController as Stream Controller
+    participant CameraModel as Camera Model
+    participant DB as Database
 
-    Note over User,DB: ── Create Token ──
-    User->>FE: Click "New Token" (service_type, name, expiry)
-    FE->>Nginx: POST /api/general/api/v1/tokens\nAuthorization: Bearer <JWT>
-    Nginx->>GenAPI: POST /api/v1/tokens
-    GenAPI->>GenAPI: Verify JWT
-    GenAPI->>DB: SELECT user_subscription WHERE user_id=?
-    DB-->>GenAPI: subscription + token_limit
-    GenAPI->>DB: SELECT COUNT(*) FROM tokens WHERE user_id=?
-    alt Limit reached
-        GenAPI-->>FE: 403 Token limit reached
-    else Under limit
-        GenAPI->>GenAPI: Generate unique token key (UUID)
-        GenAPI->>DB: INSERT INTO tokens\n(user_id, key, service_type, name, expire_time)
-        DB-->>GenAPI: token record
-        GenAPI-->>FE: 200 TokenResponse { key, name, service_type, expire_time }
-        FE-->>User: Display new token key
+    User->>StreamPage: open_manage_stream()
+    StreamPage->>StreamController: get_camera_list(user_id)
+    StreamController->>CameraModel: fetch_camera_list(user_id)
+    CameraModel->>DB: SELECT FROM rtsp_streams
+    DB-->>CameraModel: return camera_list
+    CameraModel-->>StreamController: return camera_list
+    StreamController-->>StreamPage: return camera_list
+    StreamPage-->>User: display_camera_list()
+
+    User->>StreamPage: edit_camera(camera_id, new_name, new_url)
+    StreamPage->>StreamController: edit_camera()
+    StreamController->>CameraModel: update_camera(camera_id, new_name, new_url)
+    CameraModel->>DB: UPDATE rtsp_streams SET ...
+    DB-->>CameraModel: return status
+    CameraModel-->>StreamController: return status
+    StreamController-->>StreamPage: return status
+    StreamPage-->>User: display_message("Camera Info Updated")
+```
+
+---
+
+#### 2.6.4 Remove Camera
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant StreamPage as Manage Stream Page
+    participant StreamController as Stream Controller
+    participant CameraModel as Camera Model
+    participant DB as Database
+
+    User->>StreamPage: open_manage_stream()
+    StreamPage->>StreamController: get_camera_list(user_id)
+    StreamController->>CameraModel: fetch_camera_list(user_id)
+    CameraModel->>DB: SELECT FROM rtsp_streams
+    DB-->>CameraModel: return camera_list
+    CameraModel-->>StreamController: return camera_list
+    StreamController-->>StreamPage: return camera_list
+    StreamPage-->>User: display_camera_list()
+
+    User->>StreamPage: remove_camera(camera_id)
+    StreamPage-->>User: confirm_popup("Confirm Delete?")
+    User->>StreamPage: confirm()
+    StreamPage->>StreamController: delete_camera(camera_id)
+    StreamController->>CameraModel: delete_camera(camera_id)
+    CameraModel->>DB: DELETE FROM rtsp_streams
+    DB-->>CameraModel: return status
+    CameraModel-->>StreamController: return status
+    StreamController-->>StreamPage: return status
+    StreamPage-->>User: display_message("Camera Removed")
+```
+
+---
+
+#### 2.6.5 View Stream Status
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant StreamPage as Manage Stream Page
+    participant StreamController as Stream Controller
+    participant CameraModel as Camera Model
+    participant StreamService as Stream Service
+    participant DB as Database
+
+    User->>StreamPage: open_manage_stream()
+    StreamPage->>StreamController: get_camera_list(user_id)
+    StreamController->>CameraModel: fetch_camera_list(user_id)
+    CameraModel->>DB: SELECT FROM rtsp_streams
+    DB-->>CameraModel: return camera_list
+    CameraModel-->>StreamController: return camera_list
+    StreamController-->>StreamPage: return camera_list
+
+    loop For each camera
+        StreamPage->>StreamController: check_camera_status(camera_id)
+        StreamController->>StreamService: get_stream_status(camera_id)
+        StreamService-->>StreamController: return status
+        StreamController-->>StreamPage: return status
     end
 
-    Note over User,DB: ── Delete Token ──
-    User->>FE: Click "Delete" on token
-    FE->>Nginx: DELETE /api/general/api/v1/tokens\nBody: { key: "<token_key>" }
-    Nginx->>GenAPI: DELETE /api/v1/tokens
-    GenAPI->>DB: DELETE FROM tokens WHERE key=?
-    DB-->>GenAPI: rows_affected
-    GenAPI-->>FE: 200 { message: "Token deleted" }
-    FE-->>User: Token removed from list
+    StreamPage-->>User: display_all_camera_status()
 ```
 
 ---
 
-### 2.6 Subscription Purchase
+### 2.7 Subscription Management
+
+#### 2.7.1 Subscribe Plan
 
 ```mermaid
 sequenceDiagram
     actor User
-    participant FE as Frontend
-    participant GenAPI as General API
-    participant DB as PostgreSQL
+    participant SubPage as Subscription Page
+    participant SubController as Subscription Controller
+    participant SubModel as Subscription Model
+    participant PaymentController as Payment Controller
+    participant PaymentModel as Payment Model
+    participant DB as Database
 
-    User->>FE: Open Subscription page
-    FE->>GenAPI: GET /api/v1/subscription/get_all_service
-    GenAPI->>DB: SELECT subscriptions WHERE service_type ILIKE 'tier%'
-    DB-->>GenAPI: [Tier1, Tier2, Tier3, …]
-    GenAPI-->>FE: List of plans
+    User->>SubPage: open_subscription_page()
+    SubPage->>SubController: get_available_plans()
+    SubController->>SubModel: fetch_all_plans()
+    SubModel->>DB: SELECT FROM subscriptions
+    DB-->>SubModel: return plan_list
+    SubModel-->>SubController: return plan_list
+    SubController-->>SubPage: return plan_list
+    SubPage-->>User: display_plan_list()
 
-    User->>FE: Select plan & confirm purchase
-    FE->>GenAPI: POST /api/v1/subscription/create_user_subscription\n{ user_id, sub_id }
-    GenAPI->>DB: SELECT subscription WHERE sub_id=?
-    GenAPI->>DB: SELECT user WHERE user_id=?
-    GenAPI->>DB: INSERT INTO user_subscriptions\n(user_id, sub_id, start_date, end_date, …)
-    DB-->>GenAPI: user_subscription record
-    GenAPI-->>FE: 200 { message: "Subscription activated" }
-    FE-->>User: Show active plan + quota
+    User->>SubPage: select_plan(plan_id)
+    SubPage->>PaymentController: process_payment(user_id, plan_price)
+    PaymentController->>PaymentModel: create_payment_record()
+    PaymentModel->>DB: INSERT INTO payment_logs
+    DB-->>PaymentModel: return status
+    PaymentModel-->>PaymentController: return payment_status
 
-    User->>FE: View subscription details
-    FE->>GenAPI: GET /api/v1/info/subscribe/{user_id}
-    GenAPI->>DB: SELECT user_subscription JOIN subscription
-    DB-->>GenAPI: quota, expiry, limits
-    GenAPI-->>FE: Subscription info
-    FE-->>User: Display quota dashboard
+    alt Payment Failed
+        PaymentController-->>SubPage: return error
+        SubPage-->>User: display_error("Payment Failed")
+    else Payment Success
+        PaymentController->>SubController: activate_subscription(user_id, plan_id)
+        SubController->>SubModel: create_user_subscription()
+        SubModel->>DB: INSERT INTO user_subscriptions
+        DB-->>SubModel: return status
+        SubModel-->>SubController: return status
+        SubController-->>SubPage: return success
+        SubPage-->>User: display_message("Subscription Activated")
+    end
+```
+
+---
+
+#### 2.7.2 Change Subscription Plan
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant SubPage as Subscription Page
+    participant SubController as Subscription Controller
+    participant SubModel as Subscription Model
+    participant PaymentController as Payment Controller
+    participant PaymentModel as Payment Model
+    participant DB as Database
+
+    User->>SubPage: open_subscription_page()
+    SubPage->>SubController: get_current_plan(user_id)
+    SubController->>SubModel: fetch_user_subscription(user_id)
+    SubModel->>DB: SELECT FROM user_subscriptions
+    DB-->>SubModel: return current_plan
+    SubModel-->>SubController: return current_plan
+    SubController-->>SubPage: return plan_info
+    SubPage-->>User: display_current_plan()
+
+    User->>SubPage: select_new_plan(new_plan_id)
+    SubPage->>SubController: get_plan_price(new_plan_id)
+    SubController->>SubModel: fetch_plan(new_plan_id)
+    SubModel->>DB: SELECT FROM subscriptions
+    DB-->>SubModel: return plan_price
+    SubModel-->>SubController: return plan_price
+    SubController-->>SubPage: return plan_price
+
+    alt Upgrade Plan
+        SubPage->>PaymentController: process_payment(user_id, amount_difference)
+        PaymentController->>PaymentModel: create_payment_record()
+        PaymentModel->>DB: INSERT INTO payment_logs
+        DB-->>PaymentModel: return status
+        PaymentModel-->>PaymentController: return payment_status
+        alt Payment Success
+            PaymentController->>SubController: update_subscription(user_id, new_plan_id)
+            SubController->>SubModel: update_user_subscription()
+            SubModel->>DB: UPDATE user_subscriptions SET ...
+            DB-->>SubModel: return status
+            SubModel-->>SubController: return status
+            SubController-->>SubPage: return success
+            SubPage-->>User: display_message("Plan Upgraded")
+        else Payment Failed
+            PaymentController-->>SubPage: return error
+            SubPage-->>User: display_error("Payment Failed")
+        end
+    else Downgrade Plan
+        SubPage->>SubController: schedule_downgrade(user_id, new_plan_id)
+        SubController->>SubModel: schedule_downgrade()
+        SubModel->>DB: UPDATE user_subscriptions SET next_plan_id
+        DB-->>SubModel: return status
+        SubModel-->>SubController: return status
+        SubController-->>SubPage: return success
+        SubPage-->>User: display_message("Plan will change at next cycle")
+    end
+```
+
+---
+
+#### 2.7.3 Cancel Subscription
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant SubPage as Subscription Page
+    participant SubController as Subscription Controller
+    participant SubModel as Subscription Model
+    participant DB as Database
+
+    User->>SubPage: open_subscription_page()
+    SubPage->>SubController: get_current_plan(user_id)
+    SubController->>SubModel: fetch_user_subscription(user_id)
+    SubModel->>DB: SELECT FROM user_subscriptions
+    DB-->>SubModel: return plan_info
+    SubModel-->>SubController: return plan_info
+    SubController-->>SubPage: return plan_info
+    SubPage-->>User: display_current_plan()
+
+    User->>SubPage: click_cancel_subscription()
+    SubPage-->>User: confirm_popup("Cancel Subscription?")
+    User->>SubPage: confirm()
+    SubPage->>SubController: cancel_subscription(user_id)
+    SubController->>SubModel: update_subscription_status(user_id, "Cancelled")
+    SubModel->>DB: UPDATE user_subscriptions SET status
+    DB-->>SubModel: return status
+    SubModel-->>SubController: return status
+    SubController-->>SubPage: return success
+    SubPage-->>User: display_message("Subscription Cancelled")
 ```
 
 ---
@@ -507,11 +951,11 @@ sequenceDiagram
 
 | Category                   | Use Cases    | Sequence Diagrams | Test Cases |
 | -------------------------- | ------------ | ----------------- | ---------- |
-| Authentication             | 3            | 1                 | 11         |
-| Token Management           | 7            | 1                 | 10         |
-| Image Upload & Recognition | 5            | 1                 | 11         |
-| WebSocket Video            | 3            | 1                 | 8          |
-| RTSP Stream                | 4            | 1                 | 10         |
-| Subscription               | 4            | 1                 | 8          |
+| Authentication             | 3            | 2                 | 11         |
+| Token Management           | 7            | 3                 | 10         |
+| Image Recognition          | 5            | 2                 | 11         |
+| Video Streaming            | 3            | 2                 | 8          |
+| RTSP Camera Management     | 4            | 5                 | 10         |
+| Subscription Management    | 4            | 3                 | 8          |
 | AI Engine                  | — (internal) | —                 | 10         |
-| **Total**                  | **26**       | **6**             | **68**     |
+| **Total**                  | **26**       | **17**            | **68**     |
