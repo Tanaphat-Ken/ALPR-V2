@@ -196,7 +196,7 @@ docker compose logs -f plate-recognizer
 | General API docs | http://localhost/api/general/docs *(dev mode only)* |
 | Image API docs | http://localhost/api/image/docs *(dev mode only)* |
 | RTSP Service docs | http://localhost/api/rtsp/docs *(dev mode only)* |
-| Plate Recognizer health | http://localhost/api/v1/image/readyz |
+| Plate Recognizer health | http://localhost/readyz |
 
 > **Note:** Swagger UI (`/docs`) is disabled in production (`APP_ENV=production`). It is only available when running dev mode.
 
@@ -232,6 +232,7 @@ Dev mode enables:
 |----------|-------------|
 | `DB_NAME / DB_USER / DB_PASSWORD / DB_HOST / DB_PORT` | PostgreSQL connection |
 | `SECRET_KEY` | Secret key for signing JWTs — generate with `python3 -c "import secrets; print(secrets.token_hex(32))"` |
+| `CORS_ORIGINS` | Additional allowed CORS origins (comma-separated), e.g. `http://your-domain.com` |
 | `APP_ENV` | `production` disables Swagger UI; `development` enables it |
 
 ### alpr_api_image
@@ -293,11 +294,14 @@ POST   /api/image/upload-image
 # WebSocket — Video (VIDEO_WEBSOCKET token in path)
 WS     ws://host/ws/video/{token}
 
-# RTSP Streams
-GET    /api/rtsp/streams
-POST   /api/rtsp/streams
-POST   /api/rtsp/streams/{id}/start
-POST   /api/rtsp/streams/{id}/stop
+# RTSP Streams (cameras)
+GET    /api/rtsp/cameras
+POST   /api/rtsp/cameras
+GET    /api/rtsp/cameras/{id}
+POST   /api/rtsp/cameras/{id}/start
+POST   /api/rtsp/cameras/{id}/stop
+DELETE /api/rtsp/cameras/{id}
+GET    /api/rtsp/cameras/{id}/detections
 WS     ws://host/api/rtsp/stream/{id}
 
 # Token Management
@@ -329,15 +333,21 @@ GET    /api/general/info/subscribe/{user_id}
 
 ## 📊 Performance
 
+Benchmarked on 334 test images (1920×1080, GPU with CUDA):
+
 | Metric | Value |
 |--------|-------|
-| Inference time (single image) | ~200 ms |
-| OCR accuracy | ~96% |
-| Province classification accuracy | ~97% |
-| Concurrent users (load balanced) | 100+ |
+| End-to-end latency (mean) | ~32 ms |
+| End-to-end latency (p95) | ~35 ms |
+| Throughput | ~31 FPS |
+| Plate detection rate | 99.10% |
+| Plate text exact match (Exact Match) | 94.31% |
+| Province exact match | 97.60% |
+| Character Error Rate (CER) | 2.10% |
+| Plate detector inference (mean) | 17.4 ms |
+| OCR inference (mean) | 2.3 ms |
 | Max upload size (HTTP) | 10 MB |
 | Max WebSocket frame (video) | 5 MB |
-| Max WebSocket frame (image) | 50 MB |
 
 ---
 
