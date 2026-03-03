@@ -388,7 +388,7 @@ file: <cropped_plate_image>
                         {/* Health Check */}
                         <Divider />
                         <Title level={5}>Health Check</Title>
-                        <EndpointRow method="GET" path="/api/v1/image/readyz" description="Service liveness probe" />
+                        <EndpointRow method="GET" path="/readyz" description="Service liveness probe" />
                         <CodeBlock>{`GET /readyz
 
 // 200 OK
@@ -485,17 +485,19 @@ ws.onmessage = (event) => {
                             Stream viewer WebSocket is on <Text code>/api/rtsp/stream/</Text> (upgraded by Nginx).
                         </Paragraph>
 
-                        <EndpointRow method="GET" path="/api/rtsp/streams" description="List all registered RTSP streams" />
-                        <EndpointRow method="POST" path="/api/rtsp/streams" description="Register a new RTSP stream" />
-                        <EndpointRow method="GET" path="/api/rtsp/streams/{id}" description="Get detail of a single stream" />
-                        <EndpointRow method="PUT" path="/api/rtsp/streams/{id}" description="Update stream configuration" />
-                        <EndpointRow method="DELETE" path="/api/rtsp/streams/{id}" description="Remove a stream" />
-                        <EndpointRow method="POST" path="/api/rtsp/streams/{id}/start" description="Start streaming / detection" />
-                        <EndpointRow method="POST" path="/api/rtsp/streams/{id}/stop" description="Stop streaming" />
-                        <EndpointRow method="WS" path="ws://host/api/rtsp/stream/{id}" description="Live viewer WebSocket" />
+                        <EndpointRow method="GET" path="/api/rtsp/cameras" description="List all registered RTSP cameras" />
+                        <EndpointRow method="POST" path="/api/rtsp/cameras" description="Register a new RTSP camera" />
+                        <EndpointRow method="GET" path="/api/rtsp/cameras/{camera_id}" description="Get detail of a single camera" />
+                        <EndpointRow method="PUT" path="/api/rtsp/cameras/{camera_id}" description="Update camera configuration" />
+                        <EndpointRow method="DELETE" path="/api/rtsp/cameras/{camera_id}" description="Remove a camera" />
+                        <EndpointRow method="POST" path="/api/rtsp/cameras/{camera_id}/start" description="Start streaming / detection" />
+                        <EndpointRow method="POST" path="/api/rtsp/cameras/{camera_id}/stop" description="Stop streaming" />
+                        <EndpointRow method="GET" path="/api/rtsp/cameras/{camera_id}/detections" description="Get detections for a camera" />
+                        <EndpointRow method="GET" path="/api/rtsp/detections/recent" description="List recent detections across all cameras" />
+                        <EndpointRow method="WS" path="ws://host/api/rtsp/stream/{camera_id}" description="Live viewer WebSocket" />
 
-                        <CodeBlock>{`// Register a new stream
-POST /api/rtsp/streams
+                        <CodeBlock>{`// Register a new camera
+POST /api/rtsp/cameras
 Content-Type: application/json
 
 {
