@@ -1,10 +1,18 @@
+import os
 from fastapi import FastAPI, Request
 from Middlewares.token_auth import TokenAuthMiddleware
 from Configs.dbconfig import init_db, engine, get_db, DATABASE_URL
 from Controllers import image
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+IS_DEV = os.getenv("APP_ENV", "production") == "development"
+
+app = FastAPI(
+    root_path="/api/image",
+    docs_url="/docs" if IS_DEV else None,
+    redoc_url="/redoc" if IS_DEV else None,
+    openapi_url="/openapi.json" if IS_DEV else None,
+)
 
 app.add_middleware(TokenAuthMiddleware, db_url=DATABASE_URL)
 app.add_middleware(

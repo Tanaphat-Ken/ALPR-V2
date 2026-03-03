@@ -18,6 +18,10 @@ class TokenAuthMiddleware(BaseHTTPMiddleware):
             self.async_engine, class_=AsyncSession, expire_on_commit=False)
 
     async def dispatch(self, request: Request, call_next):
+        # Skip auth for OpenAPI documentation endpoints
+        if request.url.path in ("/docs", "/redoc", "/openapi.json"):
+            return await call_next(request)
+
         db_session = None
         try:
             db_session = self.AsyncSession()

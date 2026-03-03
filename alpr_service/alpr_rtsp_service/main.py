@@ -30,7 +30,16 @@ async def lifespan(app: FastAPI):
     await rtsp_handler.shutdown_rtsp()
 
 
-app = FastAPI(title="ALPR RTSP Service", lifespan=lifespan)
+IS_DEV = os.getenv("APP_ENV", "production") == "development"
+
+app = FastAPI(
+    title="ALPR RTSP Service",
+    lifespan=lifespan,
+    root_path="/api/rtsp",
+    docs_url="/docs" if IS_DEV else None,
+    redoc_url="/redoc" if IS_DEV else None,
+    openapi_url="/openapi.json" if IS_DEV else None,
+)
 
 # CORS Middleware
 app.add_middleware(

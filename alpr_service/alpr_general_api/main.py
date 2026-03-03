@@ -1,12 +1,19 @@
+import os
 from Controllers import info, token, payment, subscription, user, auth
 from Configs.dbconfig import engine, Base
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 
+IS_DEV = os.getenv("APP_ENV", "production") == "development"
+
 app = FastAPI(
     title="ALPR V2 API",
     description="Automatic License Plate Recognition Service API",
-    version="2.0.0"
+    version="2.0.0",
+    root_path="/api/general",
+    docs_url="/docs" if IS_DEV else None,
+    redoc_url="/redoc" if IS_DEV else None,
+    openapi_url="/openapi.json" if IS_DEV else None,
 )
 
 origins = [

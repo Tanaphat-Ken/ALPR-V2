@@ -2,3 +2,4 @@
 **/*.ipynb
 **/*todo*
 images_logs/
+.env

@@ -6,3 +6,4 @@ models/weights/old
 /outputs
 /debug
 /testing/output_video
+.env

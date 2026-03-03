@@ -36,3 +36,15 @@ services:
       # Enable hot reload
       WATCHPACK_POLLING: "true"
       CHOKIDAR_USEPOLLING: "true"
+
+  fastapi_image_container:
+    environment:
+      APP_ENV: development
+
+  alpr-api-web-gateway:
+    environment:
+      APP_ENV: development
+
+  alpr_rtsp_service:
+    environment:
+      APP_ENV: development
