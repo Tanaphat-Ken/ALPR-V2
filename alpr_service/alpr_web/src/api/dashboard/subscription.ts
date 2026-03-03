@@ -29,10 +29,11 @@ export const useServices = () => {
 }
 
 export const useSubscription = (userId: number) => {
-  return useQuery({ 
-    queryKey: ['subscription', { userId }], 
-    queryFn: fetchSubscriptionListByUserId, 
-    enabled: !!userId
+  return useQuery({
+    queryKey: ['subscription', { userId }],
+    queryFn: fetchSubscriptionListByUserId,
+    enabled: !!userId,
+    retry: false
   })
 }
 

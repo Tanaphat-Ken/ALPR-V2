@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import {
   Card,
   Breadcrumb,
@@ -9,9 +8,8 @@ import {
   Typography,
   Button,
   Spin,
-  Modal,
+  App,
   Badge,
-  message,
   List,
   Tag,
   Divider,
@@ -33,6 +31,7 @@ import type { SubscriptionType, SubscriptionDetailsType } from '@/shared/types/s
 const { Title, Text, Paragraph } = Typography
 
 const SubscriptionPage = () => {
+  const { modal, message } = App.useApp()
   const user = useSelector((state: RootState) => state.user)
   const { data: allServices, isLoading: isLoadingServices } = useServices()
   const { data: userSubscriptionsData, isLoading: isLoadingUserSubs, refetch } = useSubscription(user?.userId || 0)
@@ -48,7 +47,7 @@ const SubscriptionPage = () => {
   const activeSubscription = userSubscriptions.find(sub => sub.is_activate)
 
   const handleChangePlan = (subId: number) => {
-    Modal.confirm({
+    modal.confirm({
       title: 'Confirm Plan Change',
       content: 'Are you sure you want to switch to this plan? Changes will apply immediately.',
       onOk: async () => {
@@ -64,7 +63,7 @@ const SubscriptionPage = () => {
   }
 
   const handleCancelSubscription = (userSubId: number) => {
-    Modal.confirm({
+    modal.confirm({
       title: 'Cancel Subscription?',
       content: 'Are you sure you want to cancel? You will lose access to premium features.',
       okText: 'Yes, Cancel',

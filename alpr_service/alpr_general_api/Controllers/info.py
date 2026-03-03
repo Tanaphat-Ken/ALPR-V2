@@ -38,8 +38,7 @@ async def get_user_subscriptions(user_id: int, db: AsyncSession = Depends(get_db
         user_subscriptions = result.unique().scalars().all()
 
         if not user_subscriptions:
-            raise HTTPException(
-                status_code=404, detail="No subscriptions found for this user.")
+            return {"user_id": user_id, "subscriptions": []}
 
         # Prepare the response
         subscriptions_response = [

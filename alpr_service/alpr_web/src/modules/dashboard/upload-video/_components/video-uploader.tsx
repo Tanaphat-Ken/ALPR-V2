@@ -2,7 +2,7 @@
 
 import { useDispatch, useSelector } from 'react-redux'
 import type { UploadProps } from 'antd'
-import { Flex, message, Upload, Spin, Progress } from 'antd'
+import { App, Flex, Upload, Spin, Progress } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 import { CloudUploadOutlined } from '@ant-design/icons'
 import { fileToBase64 } from '@/shared/libs/file'
@@ -64,6 +64,7 @@ const getProcessingProgress = (processedFrames: number, totalFrames: number): nu
 }
 
 const VideoUploader = () => {
+  const { message } = App.useApp()
   const dispatch = useDispatch<AppDispatch>()
   const isSending = useSelector((state: RootState) => state.uploadVideoPage.isSending)
   const videoFrameCount = useSelector((state: RootState) => state.uploadVideoPage.videoFramesCount)
@@ -90,7 +91,7 @@ const VideoUploader = () => {
   return (
     <Flex vertical align='center' style={{ height: 300 }}>
       <div style={{ height: 270 }}>
-        {isSending ? 
+        {isSending ?
           (
             <div>
               <Flex vertical align='center' justify='center' style={{ marginTop: 92 }}>
@@ -103,10 +104,10 @@ const VideoUploader = () => {
 
           ) :
           (
-            <Dragger 
-              style={{ width: 460 }} 
-              maxCount={1} 
-              onChange={handleOnChange} 
+            <Dragger
+              style={{ width: 460 }}
+              maxCount={1}
+              onChange={handleOnChange}
               beforeUpload={beforeUpload}
             >
               <p className='ant-upload-drag-icon'>

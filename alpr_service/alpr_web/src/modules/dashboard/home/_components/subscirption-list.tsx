@@ -1,7 +1,8 @@
 'use client'
 
 import { useSelector, useDispatch } from 'react-redux'
-import { Row, Col } from 'antd'
+import { Row, Col, Empty, Typography } from 'antd'
+import Link from 'next/link'
 
 import { RootState, AppDispatch } from '@/shared/store'
 import { setActiveService } from '@/shared/store/dashboard/home-page-slice'
@@ -15,11 +16,7 @@ const serviceOrder: ServiceType[] = ['API', 'VIDEO_WEBSOCKET', 'RTSP']
 const SubscriptionList = () => {
   const dispatch = useDispatch<AppDispatch>()
   const userId = useSelector((state: RootState) => state.user.userId)
-  const { data: subscriptionList, isError } = useSubscription(userId) // temporary handle undefine userId
-
-  if (isError) {
-    return <div>error</div>
-  }
+  const { data: subscriptionList, isError } = useSubscription(userId)
 
   const handleCardOnClick = (serviceType: ServiceType) => {
     dispatch(setActiveService(serviceType))
@@ -87,24 +84,37 @@ const SubscriptionList = () => {
   return (
     <div style={{ marginTop: 16 }}>
       <SectionTitle>Service Usage</SectionTitle>
-      <Row gutter={16}>
-        {sortedSubscriptions.map((item) => {
-          const subScriptionCardProps = {
-            serviceType: item.serviceType,
-            isServiceActive: !!item.isActive,
-            expireDate: item.expireDate || 'N/A',
-            requestLimit: item.limit,
-            requestQuota: item.quota,
-            onClick: () => handleCardOnClick(item.serviceType)
+      {sortedSubscriptions.length === 0 ? (
+        <Empty
+          description={
+            <Typography.Text type="secondary">
+              No active subscription.{' '}
+              <Link href="/dashboard/settings/subscription">Choose a plan</Link>
+              {' '}to get started.
+            </Typography.Text>
           }
+          style={{ margin: '24px 0' }}
+        />
+      ) : (
+        <Row gutter={16}>
+          {sortedSubscriptions.map((item) => {
+            const subScriptionCardProps = {
+              serviceType: item.serviceType,
+              isServiceActive: !!item.isActive,
+              expireDate: item.expireDate || 'N/A',
+              requestLimit: item.limit,
+              requestQuota: item.quota,
+              onClick: () => handleCardOnClick(item.serviceType)
+            }
 
-          return (
-            <Col span={8} key={item.key}>
-              <SubscriptionCard {...subScriptionCardProps} />
-            </Col>
-          )
-        })}
-      </Row>
+            return (
+              <Col span={8} key={item.key}>
+                <SubscriptionCard {...subScriptionCardProps} />
+              </Col>
+            )
+          })}
+        </Row>
+      )}
     </div>
   )
 }
