@@ -177,6 +177,7 @@ sequenceDiagram
     participant UserModel as User Model
     participant DB as Database
 
+    activate User
     User->>+AuthPage: submit_register(email, password)
     AuthPage->>+AuthController: register(email, password)
     AuthController->>+UserModel: create_user(email, hashed_password)
@@ -185,6 +186,7 @@ sequenceDiagram
     UserModel-->>-AuthController: return user
     AuthController-->>-AuthPage: return success
     AuthPage-->>-User: display_message("Registration Successful")
+    deactivate User
 ```
 
 ---
@@ -199,6 +201,7 @@ sequenceDiagram
     participant UserModel as User Model
     participant DB as Database
 
+    activate User
     User->>+AuthPage: submit_login(email, password)
     AuthPage->>+AuthController: login(email, password)
     AuthController->>+UserModel: find_user(email)
@@ -214,6 +217,7 @@ sequenceDiagram
     end
     deactivate AuthController
     deactivate AuthPage
+    deactivate User
 ```
 
 ---
@@ -228,6 +232,7 @@ sequenceDiagram
     participant SubModel as User Subscription Model
     participant DB as Database
 
+    activate Client
     Client->>+TAM: request(token)
     TAM->>+TokenModel: is_token_valid(token)
     TokenModel->>+DB: SELECT FROM tokens
@@ -238,6 +243,7 @@ sequenceDiagram
     DB-->>-SubModel: return subscription_record
     SubModel-->>-TAM: return subscription_status
     TAM-->>-Client: return result
+    deactivate Client
 ```
 
 ---
@@ -255,6 +261,7 @@ sequenceDiagram
     participant TokenModel as Token Model
     participant DB as Database
 
+    activate User
     User->>+TokenPage: create_token(name, service_type, expire_time)
     TokenPage->>+TokenController: create_token()
     TokenController->>+SubModel: get_subscription(user_id)
@@ -274,6 +281,7 @@ sequenceDiagram
     end
     deactivate TokenController
     deactivate TokenPage
+    deactivate User
 ```
 
 ---
@@ -288,6 +296,7 @@ sequenceDiagram
     participant TokenModel as Token Model
     participant DB as Database
 
+    activate User
     User->>+TokenPage: edit_token(token_key, new_name, new_expire_time)
     TokenPage->>+TokenController: edit_token()
     TokenController->>+TokenModel: update_token()
@@ -296,6 +305,7 @@ sequenceDiagram
     TokenModel-->>-TokenController: return status
     TokenController-->>-TokenPage: return status
     TokenPage-->>-User: display_message("Token Updated")
+    deactivate User
 ```
 
 ---
@@ -310,6 +320,7 @@ sequenceDiagram
     participant TokenModel as Token Model
     participant DB as Database
 
+    activate User
     User->>+TokenPage: delete_token(token_key)
     TokenPage->>+TokenController: delete_token()
     TokenController->>+TokenModel: delete_token()
@@ -318,6 +329,7 @@ sequenceDiagram
     TokenModel-->>-TokenController: return status
     TokenController-->>-TokenPage: return status
     TokenPage-->>-User: display_message("Token Deleted")
+    deactivate User
 ```
 
 ---
@@ -337,6 +349,7 @@ sequenceDiagram
     participant ImageLogsModel as Image Logs Model
     participant DB as Database
 
+    activate User
     User->>+UploadPage: submit_image(image, token)
     UploadPage->>+ImageController: upload_image(image, token)
     ImageController->>+TAM: authenticate(token)
@@ -353,6 +366,7 @@ sequenceDiagram
     ImageLogsModel-->>-ImageController: return status
     ImageController-->>-UploadPage: return plate_data
     UploadPage-->>-User: display_result(plate_data)
+    deactivate User
 ```
 
 ---
@@ -369,6 +383,7 @@ sequenceDiagram
     participant ImageLogsModel as Image Logs Model
     participant DB as Database
 
+    activate Client
     Client->>+ImageController: send_image(image, token)
     ImageController->>+TAM: authenticate(token)
     TAM->>+TokenModel: validate_token(token)
@@ -395,6 +410,7 @@ sequenceDiagram
         ImageController-->>Client: return plate_data
     end
     deactivate ImageController
+    deactivate Client
 ```
 
 ---
@@ -415,6 +431,7 @@ sequenceDiagram
     participant VideoLogsModel as Video Logs Model
     participant DB as Database
 
+    activate User
     User->>UploadPage: select_video()
     User->>UploadPage: select_token()
     UploadPage->>+WSHandler: create_connection(token)
@@ -446,6 +463,7 @@ sequenceDiagram
     User->>UploadPage: cancel()
     UploadPage->>WSHandler: close_connection()
     UploadPage-->>User: display_message("Stopped")
+    deactivate User
 ```
 
 ---
@@ -463,6 +481,7 @@ sequenceDiagram
     participant VideoLogsModel as Video Logs Model
     participant DB as Database
 
+    activate Client
     Client->>+WSHandler: create_connection(token)
     WSHandler->>+TAM: authenticate(token)
     TAM->>+TokenModel: validate_token(token)
@@ -497,6 +516,7 @@ sequenceDiagram
         WSHandler-->>Client: connection_closed
     end
     deactivate WSHandler
+    deactivate Client
 ```
 
 ---
@@ -515,6 +535,7 @@ sequenceDiagram
     participant CAM as IP Camera
     participant DB as Database
 
+    activate User
     User->>+StreamPage: open_manage_stream()
     StreamPage->>+StreamController: get_camera_list(user_id)
     StreamController->>+CameraModel: fetch_camera_list(user_id)
@@ -546,6 +567,7 @@ sequenceDiagram
     deactivate StreamService
     deactivate StreamController
     deactivate StreamPage
+    deactivate User
 ```
 
 ---
@@ -565,6 +587,7 @@ sequenceDiagram
     participant StreamLogsModel as Stream Logs Model
     participant DB as Database
 
+    activate User
     User->>+StreamPage: start_stream(camera_id)
     StreamPage->>+StreamController: start_stream(camera_id, token)
     StreamController->>+TAM: authenticate(token)
@@ -591,6 +614,7 @@ sequenceDiagram
         StreamLogsModel-->>-StreamService: return status
         StreamService->>StreamPage: push_realtime_result(plate_data)
     end
+    deactivate User
 ```
 
 ---
@@ -607,6 +631,7 @@ sequenceDiagram
     participant CAM as IP Camera
     participant DB as Database
 
+    activate User
     User->>+StreamPage: stop_stream(camera_id)
     StreamPage->>+StreamController: stop_stream(camera_id)
     StreamController->>+StreamService: cancel_capture_task(camera_id)
@@ -619,6 +644,7 @@ sequenceDiagram
     StreamService-->>-StreamController: return status
     StreamController-->>-StreamPage: return status
     StreamPage-->>-User: display_message("Stream Stopped")
+    deactivate User
 ```
 
 ---
@@ -633,6 +659,7 @@ sequenceDiagram
     participant CameraModel as Camera Model
     participant DB as Database
 
+    activate User
     User->>+StreamPage: edit_camera(camera_id, new_name, new_url)
     StreamPage->>+StreamController: edit_camera()
     StreamController->>+CameraModel: update_camera(camera_id, new_name, new_url)
@@ -641,6 +668,7 @@ sequenceDiagram
     CameraModel-->>-StreamController: return status
     StreamController-->>-StreamPage: return status
     StreamPage-->>-User: display_message("Camera Info Updated")
+    deactivate User
 ```
 
 ---
@@ -655,6 +683,7 @@ sequenceDiagram
     participant CameraModel as Camera Model
     participant DB as Database
 
+    activate User
     User->>+StreamPage: remove_camera(camera_id)
     StreamPage-->>User: confirm_popup("Confirm Delete?")
     User->>StreamPage: confirm()
@@ -665,6 +694,7 @@ sequenceDiagram
     CameraModel-->>-StreamController: return status
     StreamController-->>-StreamPage: return status
     StreamPage-->>-User: display_message("Camera Removed")
+    deactivate User
 ```
 
 ---
@@ -680,6 +710,7 @@ sequenceDiagram
     participant StreamService as Stream Service
     participant DB as Database
 
+    activate User
     User->>+StreamPage: open_manage_stream()
     StreamPage->>+StreamController: get_camera_list(user_id)
     StreamController->>+CameraModel: fetch_camera_list(user_id)
@@ -696,6 +727,7 @@ sequenceDiagram
     end
 
     StreamPage-->>-User: display_all_camera_status()
+    deactivate User
 ```
 
 ---
@@ -714,6 +746,7 @@ sequenceDiagram
     participant PaymentModel as Payment Model
     participant DB as Database
 
+    activate User
     User->>+SubPage: open_subscription_page()
     SubPage->>+SubController: get_available_plans()
     SubController->>+SubModel: fetch_all_plans()
@@ -745,6 +778,7 @@ sequenceDiagram
     end
     deactivate PaymentController
     deactivate SubPage
+    deactivate User
 ```
 
 ---
@@ -761,6 +795,7 @@ sequenceDiagram
     participant PaymentModel as Payment Model
     participant DB as Database
 
+    activate User
     User->>+SubPage: open_subscription_page()
     SubPage->>+SubController: get_current_plan(user_id)
     SubController->>+SubModel: fetch_user_subscription(user_id)
@@ -808,6 +843,7 @@ sequenceDiagram
         SubPage-->>User: display_message("Plan will change at next cycle")
     end
     deactivate SubPage
+    deactivate User
 ```
 
 ---
@@ -822,6 +858,7 @@ sequenceDiagram
     participant SubModel as Subscription Model
     participant DB as Database
 
+    activate User
     User->>+SubPage: open_subscription_page()
     SubPage->>+SubController: get_current_plan(user_id)
     SubController->>+SubModel: fetch_user_subscription(user_id)
@@ -841,6 +878,7 @@ sequenceDiagram
     SubModel-->>-SubController: return status
     SubController-->>-SubPage: return success
     SubPage-->>-User: display_message("Subscription Cancelled")
+    deactivate User
 ```
 
 ---
