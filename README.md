@@ -223,8 +223,8 @@ Dev mode enables:
 
 | Variable | Description |
 |----------|-------------|
-| `SERVER_URL` | HTTP base URL of the server, e.g. `http://35.187.233.205` |
-| `WS_URL` | WebSocket base URL of the server, e.g. `ws://35.187.233.205` |
+| `SERVER_URL` | HTTP base URL of the server, e.g. `http://your-domain.com` |
+| `WS_URL` | WebSocket base URL of the server, e.g. `ws://your-domain.com` |
 
 ### alpr_general_api
 

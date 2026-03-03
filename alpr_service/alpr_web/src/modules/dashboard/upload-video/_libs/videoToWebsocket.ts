@@ -15,7 +15,7 @@ const initialWebSocketConnection = async (
   return new Promise((resolve, reject) => {
     const baseUrl =
       process.env.NEXT_PUBLIC_WEBSOCKET_VIDEO_HANLER ||
-      "ws://35.187.233.205/ws/video";
+      "ws://localhost/ws/video";
     const ws = new WebSocket(`${baseUrl}/${token}`);
     ws.onopen = () => {
       message.info("Connected to Server");
