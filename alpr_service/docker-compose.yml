@@ -51,16 +51,16 @@ services:
       context: ./alpr_web
       dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_BASE_API_GATE_WAY_URL=http://35.187.233.205/api/general
-        - NEXT_PUBLIC_API_UPLOAD_IMAGE=http://35.187.233.205/api/image
-        - NEXT_PUBLIC_WEBSOCKET_VIDEO_HANLER=ws://35.187.233.205/ws/video
-        - NEXT_PUBLIC_RTSP_SERVICE_URL=http://35.187.233.205/api/rtsp
-        - NEXT_PUBLIC_RTSP_WEBSOCKET_URL=ws://35.187.233.205/api/rtsp/stream
+        - NEXT_PUBLIC_BASE_API_GATE_WAY_URL=${SERVER_URL}/api/general
+        - NEXT_PUBLIC_API_UPLOAD_IMAGE=${SERVER_URL}/api/image
+        - NEXT_PUBLIC_WEBSOCKET_VIDEO_HANLER=${WS_URL}/ws/video
+        - NEXT_PUBLIC_RTSP_SERVICE_URL=${SERVER_URL}/api/rtsp
+        - NEXT_PUBLIC_RTSP_WEBSOCKET_URL=${WS_URL}/api/rtsp/stream
     container_name: alpr_nextjs
     environment:
       NODE_ENV: "production"
-      NEXT_PUBLIC_RTSP_SERVICE_URL: "http://35.187.233.205/api/rtsp"
-      NEXT_PUBLIC_RTSP_WEBSOCKET_URL: "ws://35.187.233.205/api/rtsp/stream"
+      NEXT_PUBLIC_RTSP_SERVICE_URL: "${SERVER_URL}/api/rtsp"
+      NEXT_PUBLIC_RTSP_WEBSOCKET_URL: "${WS_URL}/api/rtsp/stream"
     restart: always
     networks:
       - alpr-network
