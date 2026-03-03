@@ -138,38 +138,47 @@ Result: { plate_id, province, full_plate, format_flag }
 ### 1 — Clone
 
 ```bash
-git clone https://github.com/yourusername/ALPR-V2.git
+git clone https://github.com/Tanaphat-Ken/ALPR-V2.git
 cd ALPR-V2/alpr_service
 ```
 
 ### 2 — Configure environment variables
 
-Copy and edit `.env` for each service that needs one:
+Copy the root env template and fill in your server IP:
 
 ```bash
-cp alpr_general_api/.env.example alpr_general_api/.env
-# edit DB credentials, JWT_SECRET, etc.
+cd alpr_service
+cp .env.example .env
+# edit SERVER_URL and WS_URL
+```
+
+Copy per-service env templates:
+
+```bash
+cp alpr_general_api/.env.example  alpr_general_api/.env
+cp alpr_api_image/.env.example     alpr_api_image/.env
+cp alpr_rtsp_service/.env.example  alpr_rtsp_service/.env
 ```
 
 Key variables to set before first run:
 
 ```env
-# PostgreSQL
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-POSTGRES_DB=alpr_db
+# alpr_service/.env  (controls Next.js public URLs)
+SERVER_URL=http://your-server-ip
+WS_URL=ws://your-server-ip
 
-# General API
-JWT_SECRET=<random_secret>
+# alpr_general_api/.env
+DB_PASSWORD=your_db_password
+SECRET_KEY=<random_secret>   # python3 -c "import secrets; print(secrets.token_hex(32))"
 
-# Plate Recognizer
-DEVICE=cpu          # set to 'cuda' for GPU inference
+# alpr_api_image/.env / alpr_rtsp_service/.env
+DB_PASSWORD=your_db_password
 ```
 
 ### 3 — Start all services
 
 ```bash
-docker compose up -d
+docker compose --env-file .env up -d --build
 ```
 
 ### 4 — Check status
@@ -184,40 +193,65 @@ docker compose logs -f plate-recognizer
 | Interface | URL |
 |-----------|-----|
 | Dashboard | http://localhost |
-| General API docs | http://localhost/api/general/docs |
+| General API docs | http://localhost/api/general/docs *(dev mode only)* |
+| Image API docs | http://localhost/api/image/docs *(dev mode only)* |
+| RTSP Service docs | http://localhost/api/rtsp/docs *(dev mode only)* |
 | Plate Recognizer health | http://localhost/api/v1/image/readyz |
-| RTSP Service docs | http://localhost/api/rtsp/docs |
+
+> **Note:** Swagger UI (`/docs`) is disabled in production (`APP_ENV=production`). It is only available when running dev mode.
 
 ### Development mode
 
-A separate `docker-compose.dev.yml` is available for hot-reload development:
+Copy the dev env template, then run with both compose files:
 
 ```bash
-docker compose -f docker-compose.dev.yml up -d
+cp .env.dev.example .env.dev
+# edit SERVER_URL and WS_URL in .env.dev
+
+docker compose --env-file .env.dev -f docker-compose.yml -f docker-compose.dev.yml up -d --build
 ```
+
+Dev mode enables:
+- Next.js hot reload (volume-mounted `src/`)
+- Swagger UI on all FastAPI services (`APP_ENV=development`)
 
 ---
 
 ## 🔐 Environment Variables
 
+### Root (`alpr_service/.env` and `.env.dev`)
+
+| Variable | Description |
+|----------|-------------|
+| `SERVER_URL` | HTTP base URL of the server, e.g. `http://35.187.233.205` |
+| `WS_URL` | WebSocket base URL of the server, e.g. `ws://35.187.233.205` |
+
 ### alpr_general_api
 
 | Variable | Description |
 |----------|-------------|
-| `DATABASE_URL` | PostgreSQL async connection string |
-| `JWT_SECRET` | Secret key for signing JWTs |
-| `JWT_ALGORITHM` | Algorithm (default: `HS256`) |
-| `ACCESS_TOKEN_EXPIRE_DAYS` | Token lifetime in days (default: `7`) |
+| `DB_NAME / DB_USER / DB_PASSWORD / DB_HOST / DB_PORT` | PostgreSQL connection |
+| `SECRET_KEY` | Secret key for signing JWTs — generate with `python3 -c "import secrets; print(secrets.token_hex(32))"` |
+| `APP_ENV` | `production` disables Swagger UI; `development` enables it |
+
+### alpr_api_image
+
+| Variable | Description |
+|----------|-------------|
+| `DB_NAME / DB_USER / DB_PASSWORD / DB_HOST / DB_PORT` | PostgreSQL connection |
+| `APP_ENV` | `production` disables Swagger UI; `development` enables it |
 
 ### alpr_rtsp_service
 
 | Variable | Description |
 |----------|-------------|
-| `PLATE_RECOGNIZER_URL` | Plate recognizer endpoint (internal: `http://plate-recognizer:5000/api/v1/image/process`) |
-| `DB_HOST / DB_PORT / DB_NAME` | PostgreSQL connection |
+| `PLATE_RECOG_BASE_URL` | Plate recognizer endpoint (internal: `http://plate-recognizer:5000/api/v1`) |
+| `DB_HOST / DB_PORT / DB_NAME / DB_USER / DB_PASSWORD` | PostgreSQL connection |
 | `DATABASE_ENABLED` | `true` / `false` |
+| `APP_ENV` | `production` disables Swagger UI; `development` enables it |
+| `FPS_LIMIT / FRAME_SKIP` | Stream processing tuning |
 
-### alpr_web (Next.js build args)
+### alpr_web (Next.js build args — set via root `.env`)
 
 | Variable | Description |
 |----------|-------------|
@@ -235,8 +269,9 @@ Full interactive documentation is available in the dashboard at **Dashboard → 
 
 | Service | Swagger UI |
 |---------|-----------|
-| General API | `/api/general/docs` |
-| RTSP Service | `/api/rtsp/docs` |
+| General API | `/api/general/docs` *(dev only)* |
+| Image API | `/api/image/docs` *(dev only)* |
+| RTSP Service | `/api/rtsp/docs` *(dev only)* |
 
 ### Key endpoints at a glance
 
@@ -310,9 +345,11 @@ GET    /api/general/info/subscribe/{user_id}
 
 ```
 alpr_service/
+├── .env.example                # Root env template (SERVER_URL, WS_URL)
+├── .env.dev.example            # Dev env template
 ├── nginx.conf                  # Nginx reverse proxy + routing rules
 ├── docker-compose.yml          # Production compose
-├── docker-compose.dev.yml      # Development compose (hot reload)
+├── docker-compose.dev.yml      # Development compose (hot reload + Swagger UI)
 ├── dump.sql                    # Initial DB schema + seed data
 ├── plate_recognizer/           # AI inference engine (YOLOv11 + OCR)
 ├── alpr_web/                   # Next.js 14 frontend dashboard
