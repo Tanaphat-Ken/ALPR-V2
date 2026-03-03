@@ -9,6 +9,8 @@
 1. [Use Case Diagram](#1-use-case-diagram)
 2. [Sequence Diagrams](#2-sequence-diagrams)
    - [2.1 User Registration & Login](#21-user-registration--login)
+     - [2.1.1 User Registration](#211-user-registration)
+     - [2.1.2 User Login](#212-user-login)
    - [2.2 User Authentication](#22-user-authentication)
    - [2.3 Token Management](#23-token-management)
      - [2.3.1 Create Token](#231-create-token)
@@ -22,10 +24,11 @@
      - [2.5.2 Send Video via WebSocket](#252-send-video-via-websocket)
    - [2.6 RTSP Camera Management](#26-rtsp-camera-management)
      - [2.6.1 Register Camera](#261-register-camera)
-     - [2.6.2 Process Video Stream via RTSP](#262-process-video-stream-via-rtsp)
-     - [2.6.3 Edit Camera Information](#263-edit-camera-information)
-     - [2.6.4 Remove Camera](#264-remove-camera)
-     - [2.6.5 View Stream Status](#265-view-stream-status)
+     - [2.6.2 Start RTSP Stream](#262-start-rtsp-stream)
+     - [2.6.3 Stop RTSP Stream](#263-stop-rtsp-stream)
+     - [2.6.4 Edit Camera Information](#264-edit-camera-information)
+     - [2.6.5 Remove Camera](#265-remove-camera)
+     - [2.6.6 View Stream Status](#266-view-stream-status)
    - [2.7 Subscription Management](#27-subscription-management)
      - [2.7.1 Subscribe Plan](#271-subscribe-plan)
      - [2.7.2 Change Subscription Plan](#272-change-subscription-plan)
@@ -164,6 +167,8 @@ flowchart TD
 
 ### 2.1 User Registration & Login
 
+#### 2.1.1 User Registration
+
 ```mermaid
 sequenceDiagram
     actor User
@@ -172,27 +177,34 @@ sequenceDiagram
     participant UserModel as User Model
     participant DB as Database
 
-    Note over User,DB: ── Registration ──
     User->>AuthPage: submit_register(email, password)
     AuthPage->>AuthController: register(email, password)
-    AuthController->>AuthController: validate_input()
     AuthController->>UserModel: create_user(email, hashed_password)
     UserModel->>DB: INSERT INTO users
-    DB-->>UserModel: return user_id
     UserModel-->>AuthController: return user
     AuthController-->>AuthPage: return success
     AuthPage-->>User: display_message("Registration Successful")
+```
 
-    Note over User,DB: ── Login ──
+---
+
+#### 2.1.2 User Login
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant AuthPage as Auth Page
+    participant AuthController as Auth Controller
+    participant UserModel as User Model
+    participant DB as Database
+
     User->>AuthPage: submit_login(email, password)
     AuthPage->>AuthController: login(email, password)
     AuthController->>UserModel: find_user(email)
     UserModel->>DB: SELECT FROM users
     DB-->>UserModel: return user_record
     UserModel-->>AuthController: return user_record
-    AuthController->>AuthController: verify_password()
     alt Credentials valid
-        AuthController->>AuthController: generate_access_token()
         AuthController-->>AuthPage: return access_token
         AuthPage-->>User: redirect to Dashboard
     else Credentials invalid
@@ -211,12 +223,17 @@ sequenceDiagram
     participant TAM as Token Auth Middleware
     participant TokenModel as Token Model
     participant SubModel as User Subscription Model
+    participant DB as Database
 
     Client->>TAM: request(token)
     TAM->>TokenModel: is_token_valid(token)
-    TokenModel-->>TAM: return status
+    TokenModel->>DB: SELECT FROM tokens
+    DB-->>TokenModel: return token_record
+    TokenModel-->>TAM: return token_status
     TAM->>SubModel: is_user_subscribed(user_id)
-    SubModel-->>TAM: return status
+    SubModel->>DB: SELECT FROM user_subscriptions
+    DB-->>SubModel: return subscription_record
+    SubModel-->>TAM: return subscription_status
     TAM-->>Client: return result
 ```
 
@@ -245,7 +262,6 @@ sequenceDiagram
         TokenController-->>TokenPage: return error
         TokenPage-->>User: display_error("Token limit reached")
     else Under limit
-        TokenController->>TokenController: validate_token_data()
         TokenController->>TokenModel: save_token()
         TokenModel->>DB: INSERT INTO tokens
         DB-->>TokenModel: return token_record
@@ -269,11 +285,8 @@ sequenceDiagram
 
     User->>TokenPage: edit_token(token_key, new_name, new_expire_time)
     TokenPage->>TokenController: edit_token()
-    TokenController->>TokenController: validate_token_data()
     TokenController->>TokenModel: update_token()
     TokenModel->>DB: UPDATE tokens SET ...
-    DB-->>TokenModel: return status
-    TokenModel-->>TokenController: return status
     TokenController-->>TokenPage: return status
     TokenPage-->>User: display_message("Token Updated")
 ```
@@ -294,8 +307,6 @@ sequenceDiagram
     TokenPage->>TokenController: delete_token()
     TokenController->>TokenModel: delete_token()
     TokenModel->>DB: DELETE FROM tokens
-    DB-->>TokenModel: return status
-    TokenModel-->>TokenController: return status
     TokenController-->>TokenPage: return status
     TokenPage-->>User: display_message("Token Deleted")
 ```
@@ -317,12 +328,7 @@ sequenceDiagram
     participant ImageLogsModel as Image Logs Model
     participant DB as Database
 
-    User->>UploadPage: select_image()
-    UploadPage->>UploadPage: validate_image()
-    UploadPage-->>User: return status
-    User->>UploadPage: select_token()
-    UploadPage-->>User: return status
-    User->>UploadPage: submit_image()
+    User->>UploadPage: submit_image(image, token)
     UploadPage->>ImageController: upload_image(image, token)
     ImageController->>TAM: authenticate(token)
     TAM->>TokenModel: validate_token(token)
@@ -334,8 +340,6 @@ sequenceDiagram
     PR-->>ImageController: return plate_data
     ImageController->>ImageLogsModel: save_image_log()
     ImageLogsModel->>DB: INSERT INTO image_logs
-    DB-->>ImageLogsModel: return status
-    ImageLogsModel-->>ImageController: return status
     ImageController-->>UploadPage: return plate_data
     UploadPage-->>User: display_result(plate_data)
 ```
@@ -367,17 +371,12 @@ sequenceDiagram
         TAM-->>Client: return 403 Quota Exceeded
     else Token valid
         TAM-->>ImageController: return status
-        ImageController->>ImageController: validate_image()
         ImageController->>PR: process_image(image)
         PR-->>ImageController: return plate_data
         ImageController->>ImageLogsModel: save_image_log()
         ImageLogsModel->>DB: INSERT INTO image_logs
-        DB-->>ImageLogsModel: return status
-        ImageLogsModel->>TokenModel: deduct_quota(token)
+        ImageController->>TokenModel: deduct_quota(token)
         TokenModel->>DB: UPDATE tokens SET quota = quota - 1
-        DB-->>TokenModel: return status
-        TokenModel-->>ImageLogsModel: return status
-        ImageLogsModel-->>ImageController: return status
         ImageController-->>Client: return plate_data
     end
 ```
@@ -393,7 +392,7 @@ sequenceDiagram
     actor User
     participant UploadPage as Upload Video Page
     participant WSHandler as WebSocket Handler
-    participant AuthService as Auth Service
+    participant TAM as Token Auth Middleware
     participant TokenModel as Token Model
     participant VideoService as Video Recognition Service
     participant PR as Plate Recognizer Service
@@ -401,20 +400,18 @@ sequenceDiagram
     participant DB as Database
 
     User->>UploadPage: select_video()
-    UploadPage->>UploadPage: validate_video()
-    UploadPage-->>User: return status
     User->>UploadPage: select_token()
     UploadPage->>WSHandler: create_connection(token)
-    WSHandler->>AuthService: authenticate(token)
-    AuthService->>TokenModel: validate_token(token)
+    WSHandler->>TAM: authenticate(token)
+    TAM->>TokenModel: validate_token(token)
     TokenModel->>DB: SELECT FROM tokens
     DB-->>TokenModel: return token_record
-    TokenModel-->>AuthService: return status
-    AuthService-->>WSHandler: return status
+    TokenModel-->>TAM: return status
+    TAM-->>WSHandler: return status
     WSHandler-->>UploadPage: return connection_status
     UploadPage-->>User: return status
 
-    loop
+    loop For each video frame
         UploadPage->>WSHandler: send_frame(frame)
         WSHandler->>VideoService: process_frame(frame)
         VideoService->>VideoService: detect_plate_region(frame)
@@ -423,7 +420,6 @@ sequenceDiagram
             PR-->>VideoService: return plate_data
             VideoService->>VideoLogsModel: save_video_log()
             VideoLogsModel->>DB: INSERT INTO video_logs
-            DB-->>VideoLogsModel: return status
         end
         VideoService-->>WSHandler: return result
         WSHandler-->>UploadPage: return result
@@ -431,7 +427,6 @@ sequenceDiagram
 
     User->>UploadPage: cancel()
     UploadPage->>WSHandler: close_connection()
-    WSHandler-->>UploadPage: return status
     UploadPage-->>User: display_message("Stopped")
 ```
 
@@ -443,7 +438,7 @@ sequenceDiagram
 sequenceDiagram
     actor Client
     participant WSHandler as WebSocket Handler
-    participant AuthService as Auth Service
+    participant TAM as Token Auth Middleware
     participant TokenModel as Token Model
     participant VideoService as Video Recognition Service
     participant PR as Plate Recognizer Service
@@ -451,17 +446,18 @@ sequenceDiagram
     participant DB as Database
 
     Client->>WSHandler: create_connection(token)
-    WSHandler->>AuthService: authenticate(token)
-    AuthService->>TokenModel: validate_token(token)
+    WSHandler->>TAM: authenticate(token)
+    TAM->>TokenModel: validate_token(token)
     TokenModel->>DB: SELECT FROM tokens
     DB-->>TokenModel: return token_record
-    TokenModel-->>AuthService: return status
-    AuthService-->>WSHandler: return status
+    TokenModel-->>TAM: return status
+    TAM-->>WSHandler: return status
 
     alt Token invalid or expired
         WSHandler-->>Client: close_connection(4001, Unauthorized)
     else Token valid
         WSHandler-->>Client: return connection_status
+
 
         loop For each video frame
             Client->>WSHandler: send_frame(frame)
@@ -472,7 +468,7 @@ sequenceDiagram
                 PR-->>VideoService: return plate_data
                 VideoService->>VideoLogsModel: save_video_log()
                 VideoLogsModel->>DB: INSERT INTO video_logs
-                DB-->>VideoLogsModel: return status
+
             end
             VideoService-->>WSHandler: return result
             WSHandler-->>Client: return result
@@ -522,9 +518,6 @@ sequenceDiagram
     else Connection success
         StreamService->>CameraModel: save_camera(user_id, camera_name, rtsp_url)
         CameraModel->>DB: INSERT INTO rtsp_streams
-        DB-->>CameraModel: return status
-        CameraModel-->>StreamService: return status
-        StreamService-->>StreamController: return success
         StreamController-->>StreamPage: return success
         StreamPage-->>User: display_message("Camera Connected")
     end
@@ -532,7 +525,7 @@ sequenceDiagram
 
 ---
 
-#### 2.6.2 Process Video Stream via RTSP
+#### 2.6.2 Start RTSP Stream
 
 ```mermaid
 sequenceDiagram
@@ -568,33 +561,37 @@ sequenceDiagram
         PR-->>StreamService: return plate_data
         StreamService->>StreamLogsModel: save_detection(user_id, plate_data)
         StreamLogsModel->>DB: INSERT INTO detection_logs
-        alt Database Failed
-            DB-->>StreamLogsModel: return error
-            StreamLogsModel->>StreamLogsModel: log_error()
-        else Success
-            DB-->>StreamLogsModel: return status
-            StreamService->>StreamPage: push_realtime_result(plate_data)
-        end
+        StreamService->>StreamPage: push_realtime_result(plate_data)
     end
+```
 
-    Note over User,DB: ── Stop Stream ──
+---
+
+#### 2.6.3 Stop RTSP Stream
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant StreamPage as Manage Stream Page
+    participant StreamController as Stream Controller
+    participant StreamService as Stream Service
+    participant CameraModel as Camera Model
+    participant CAM as IP Camera
+    participant DB as Database
+
     User->>StreamPage: stop_stream(camera_id)
     StreamPage->>StreamController: stop_stream(camera_id)
     StreamController->>StreamService: cancel_capture_task(camera_id)
     StreamService->>CAM: disconnect()
-    CAM-->>StreamService: return status
     StreamService->>CameraModel: update_stream_status(camera_id, "stopped")
     CameraModel->>DB: UPDATE rtsp_streams SET status
-    DB-->>CameraModel: return status
-    CameraModel-->>StreamService: return status
-    StreamService-->>StreamController: return status
     StreamController-->>StreamPage: return status
     StreamPage-->>User: display_message("Stream Stopped")
 ```
 
 ---
 
-#### 2.6.3 Edit Camera Information
+#### 2.6.4 Edit Camera Information
 
 ```mermaid
 sequenceDiagram
@@ -604,28 +601,17 @@ sequenceDiagram
     participant CameraModel as Camera Model
     participant DB as Database
 
-    User->>StreamPage: open_manage_stream()
-    StreamPage->>StreamController: get_camera_list(user_id)
-    StreamController->>CameraModel: fetch_camera_list(user_id)
-    CameraModel->>DB: SELECT FROM rtsp_streams
-    DB-->>CameraModel: return camera_list
-    CameraModel-->>StreamController: return camera_list
-    StreamController-->>StreamPage: return camera_list
-    StreamPage-->>User: display_camera_list()
-
     User->>StreamPage: edit_camera(camera_id, new_name, new_url)
     StreamPage->>StreamController: edit_camera()
     StreamController->>CameraModel: update_camera(camera_id, new_name, new_url)
     CameraModel->>DB: UPDATE rtsp_streams SET ...
-    DB-->>CameraModel: return status
-    CameraModel-->>StreamController: return status
     StreamController-->>StreamPage: return status
     StreamPage-->>User: display_message("Camera Info Updated")
 ```
 
 ---
 
-#### 2.6.4 Remove Camera
+#### 2.6.5 Remove Camera
 
 ```mermaid
 sequenceDiagram
@@ -634,15 +620,6 @@ sequenceDiagram
     participant StreamController as Stream Controller
     participant CameraModel as Camera Model
     participant DB as Database
-
-    User->>StreamPage: open_manage_stream()
-    StreamPage->>StreamController: get_camera_list(user_id)
-    StreamController->>CameraModel: fetch_camera_list(user_id)
-    CameraModel->>DB: SELECT FROM rtsp_streams
-    DB-->>CameraModel: return camera_list
-    CameraModel-->>StreamController: return camera_list
-    StreamController-->>StreamPage: return camera_list
-    StreamPage-->>User: display_camera_list()
 
     User->>StreamPage: remove_camera(camera_id)
     StreamPage-->>User: confirm_popup("Confirm Delete?")
@@ -650,15 +627,13 @@ sequenceDiagram
     StreamPage->>StreamController: delete_camera(camera_id)
     StreamController->>CameraModel: delete_camera(camera_id)
     CameraModel->>DB: DELETE FROM rtsp_streams
-    DB-->>CameraModel: return status
-    CameraModel-->>StreamController: return status
     StreamController-->>StreamPage: return status
     StreamPage-->>User: display_message("Camera Removed")
 ```
 
 ---
 
-#### 2.6.5 View Stream Status
+#### 2.6.6 View Stream Status
 
 ```mermaid
 sequenceDiagram
@@ -716,7 +691,6 @@ sequenceDiagram
     SubPage->>PaymentController: process_payment(user_id, plan_price)
     PaymentController->>PaymentModel: create_payment_record()
     PaymentModel->>DB: INSERT INTO payment_logs
-    DB-->>PaymentModel: return status
     PaymentModel-->>PaymentController: return payment_status
 
     alt Payment Failed
@@ -726,8 +700,6 @@ sequenceDiagram
         PaymentController->>SubController: activate_subscription(user_id, plan_id)
         SubController->>SubModel: create_user_subscription()
         SubModel->>DB: INSERT INTO user_subscriptions
-        DB-->>SubModel: return status
-        SubModel-->>SubController: return status
         SubController-->>SubPage: return success
         SubPage-->>User: display_message("Subscription Activated")
     end
@@ -768,14 +740,11 @@ sequenceDiagram
         SubPage->>PaymentController: process_payment(user_id, amount_difference)
         PaymentController->>PaymentModel: create_payment_record()
         PaymentModel->>DB: INSERT INTO payment_logs
-        DB-->>PaymentModel: return status
         PaymentModel-->>PaymentController: return payment_status
         alt Payment Success
             PaymentController->>SubController: update_subscription(user_id, new_plan_id)
             SubController->>SubModel: update_user_subscription()
             SubModel->>DB: UPDATE user_subscriptions SET ...
-            DB-->>SubModel: return status
-            SubModel-->>SubController: return status
             SubController-->>SubPage: return success
             SubPage-->>User: display_message("Plan Upgraded")
         else Payment Failed
@@ -786,8 +755,6 @@ sequenceDiagram
         SubPage->>SubController: schedule_downgrade(user_id, new_plan_id)
         SubController->>SubModel: schedule_downgrade()
         SubModel->>DB: UPDATE user_subscriptions SET next_plan_id
-        DB-->>SubModel: return status
-        SubModel-->>SubController: return status
         SubController-->>SubPage: return success
         SubPage-->>User: display_message("Plan will change at next cycle")
     end
@@ -820,8 +787,6 @@ sequenceDiagram
     SubPage->>SubController: cancel_subscription(user_id)
     SubController->>SubModel: update_subscription_status(user_id, "Cancelled")
     SubModel->>DB: UPDATE user_subscriptions SET status
-    DB-->>SubModel: return status
-    SubModel-->>SubController: return status
     SubController-->>SubPage: return success
     SubPage-->>User: display_message("Subscription Cancelled")
 ```
@@ -951,11 +916,11 @@ sequenceDiagram
 
 | Category                   | Use Cases    | Sequence Diagrams | Test Cases |
 | -------------------------- | ------------ | ----------------- | ---------- |
-| Authentication             | 3            | 2                 | 11         |
+| Authentication             | 3            | 3                 | 11         |
 | Token Management           | 7            | 3                 | 10         |
 | Image Recognition          | 5            | 2                 | 11         |
 | Video Streaming            | 3            | 2                 | 8          |
-| RTSP Camera Management     | 4            | 5                 | 10         |
+| RTSP Camera Management     | 4            | 6                 | 10         |
 | Subscription Management    | 4            | 3                 | 8          |
 | AI Engine                  | — (internal) | —                 | 10         |
-| **Total**                  | **26**       | **17**            | **68**     |
+| **Total**                  | **26**       | **19**            | **68**     |
