@@ -177,13 +177,14 @@ sequenceDiagram
     participant UserModel as User Model
     participant DB as Database
 
-    User->>AuthPage: submit_register(email, password)
-    AuthPage->>AuthController: register(email, password)
-    AuthController->>UserModel: create_user(email, hashed_password)
-    UserModel->>DB: INSERT INTO users
-    UserModel-->>AuthController: return user
-    AuthController-->>AuthPage: return success
-    AuthPage-->>User: display_message("Registration Successful")
+    User->>+AuthPage: submit_register(email, password)
+    AuthPage->>+AuthController: register(email, password)
+    AuthController->>+UserModel: create_user(email, hashed_password)
+    UserModel->>+DB: INSERT INTO users
+    DB-->>-UserModel: return user_id
+    UserModel-->>-AuthController: return user
+    AuthController-->>-AuthPage: return success
+    AuthPage-->>-User: display_message("Registration Successful")
 ```
 
 ---
@@ -198,12 +199,12 @@ sequenceDiagram
     participant UserModel as User Model
     participant DB as Database
 
-    User->>AuthPage: submit_login(email, password)
-    AuthPage->>AuthController: login(email, password)
-    AuthController->>UserModel: find_user(email)
-    UserModel->>DB: SELECT FROM users
-    DB-->>UserModel: return user_record
-    UserModel-->>AuthController: return user_record
+    User->>+AuthPage: submit_login(email, password)
+    AuthPage->>+AuthController: login(email, password)
+    AuthController->>+UserModel: find_user(email)
+    UserModel->>+DB: SELECT FROM users
+    DB-->>-UserModel: return user_record
+    UserModel-->>-AuthController: return user_record
     alt Credentials valid
         AuthController-->>AuthPage: return access_token
         AuthPage-->>User: redirect to Dashboard
@@ -211,6 +212,8 @@ sequenceDiagram
         AuthController-->>AuthPage: return error
         AuthPage-->>User: display_message("Incorrect email or password")
     end
+    deactivate AuthController
+    deactivate AuthPage
 ```
 
 ---
@@ -225,16 +228,16 @@ sequenceDiagram
     participant SubModel as User Subscription Model
     participant DB as Database
 
-    Client->>TAM: request(token)
-    TAM->>TokenModel: is_token_valid(token)
-    TokenModel->>DB: SELECT FROM tokens
-    DB-->>TokenModel: return token_record
-    TokenModel-->>TAM: return token_status
-    TAM->>SubModel: is_user_subscribed(user_id)
-    SubModel->>DB: SELECT FROM user_subscriptions
-    DB-->>SubModel: return subscription_record
-    SubModel-->>TAM: return subscription_status
-    TAM-->>Client: return result
+    Client->>+TAM: request(token)
+    TAM->>+TokenModel: is_token_valid(token)
+    TokenModel->>+DB: SELECT FROM tokens
+    DB-->>-TokenModel: return token_record
+    TokenModel-->>-TAM: return token_status
+    TAM->>+SubModel: is_user_subscribed(user_id)
+    SubModel->>+DB: SELECT FROM user_subscriptions
+    DB-->>-SubModel: return subscription_record
+    SubModel-->>-TAM: return subscription_status
+    TAM-->>-Client: return result
 ```
 
 ---
@@ -252,23 +255,25 @@ sequenceDiagram
     participant TokenModel as Token Model
     participant DB as Database
 
-    User->>TokenPage: create_token(name, service_type, expire_time)
-    TokenPage->>TokenController: create_token()
-    TokenController->>SubModel: get_subscription(user_id)
-    SubModel->>DB: SELECT FROM user_subscriptions
-    DB-->>SubModel: return subscription
-    SubModel-->>TokenController: return token_limit
+    User->>+TokenPage: create_token(name, service_type, expire_time)
+    TokenPage->>+TokenController: create_token()
+    TokenController->>+SubModel: get_subscription(user_id)
+    SubModel->>+DB: SELECT FROM user_subscriptions
+    DB-->>-SubModel: return subscription
+    SubModel-->>-TokenController: return token_limit
     alt Limit reached
         TokenController-->>TokenPage: return error
         TokenPage-->>User: display_error("Token limit reached")
     else Under limit
-        TokenController->>TokenModel: save_token()
-        TokenModel->>DB: INSERT INTO tokens
-        DB-->>TokenModel: return token_record
-        TokenModel-->>TokenController: return token
+        TokenController->>+TokenModel: save_token()
+        TokenModel->>+DB: INSERT INTO tokens
+        DB-->>-TokenModel: return token_record
+        TokenModel-->>-TokenController: return token
         TokenController-->>TokenPage: return token
         TokenPage-->>User: display_token_key()
     end
+    deactivate TokenController
+    deactivate TokenPage
 ```
 
 ---
@@ -283,12 +288,14 @@ sequenceDiagram
     participant TokenModel as Token Model
     participant DB as Database
 
-    User->>TokenPage: edit_token(token_key, new_name, new_expire_time)
-    TokenPage->>TokenController: edit_token()
-    TokenController->>TokenModel: update_token()
-    TokenModel->>DB: UPDATE tokens SET ...
-    TokenController-->>TokenPage: return status
-    TokenPage-->>User: display_message("Token Updated")
+    User->>+TokenPage: edit_token(token_key, new_name, new_expire_time)
+    TokenPage->>+TokenController: edit_token()
+    TokenController->>+TokenModel: update_token()
+    TokenModel->>+DB: UPDATE tokens SET ...
+    DB-->>-TokenModel: return status
+    TokenModel-->>-TokenController: return status
+    TokenController-->>-TokenPage: return status
+    TokenPage-->>-User: display_message("Token Updated")
 ```
 
 ---
@@ -303,12 +310,14 @@ sequenceDiagram
     participant TokenModel as Token Model
     participant DB as Database
 
-    User->>TokenPage: delete_token(token_key)
-    TokenPage->>TokenController: delete_token()
-    TokenController->>TokenModel: delete_token()
-    TokenModel->>DB: DELETE FROM tokens
-    TokenController-->>TokenPage: return status
-    TokenPage-->>User: display_message("Token Deleted")
+    User->>+TokenPage: delete_token(token_key)
+    TokenPage->>+TokenController: delete_token()
+    TokenController->>+TokenModel: delete_token()
+    TokenModel->>+DB: DELETE FROM tokens
+    DB-->>-TokenModel: return status
+    TokenModel-->>-TokenController: return status
+    TokenController-->>-TokenPage: return status
+    TokenPage-->>-User: display_message("Token Deleted")
 ```
 
 ---
@@ -328,20 +337,22 @@ sequenceDiagram
     participant ImageLogsModel as Image Logs Model
     participant DB as Database
 
-    User->>UploadPage: submit_image(image, token)
-    UploadPage->>ImageController: upload_image(image, token)
-    ImageController->>TAM: authenticate(token)
-    TAM->>TokenModel: validate_token(token)
-    TokenModel->>DB: SELECT FROM tokens
-    DB-->>TokenModel: return token_record
-    TokenModel-->>TAM: return status
-    TAM-->>ImageController: return status
-    ImageController->>PR: process_image(image)
-    PR-->>ImageController: return plate_data
-    ImageController->>ImageLogsModel: save_image_log()
-    ImageLogsModel->>DB: INSERT INTO image_logs
-    ImageController-->>UploadPage: return plate_data
-    UploadPage-->>User: display_result(plate_data)
+    User->>+UploadPage: submit_image(image, token)
+    UploadPage->>+ImageController: upload_image(image, token)
+    ImageController->>+TAM: authenticate(token)
+    TAM->>+TokenModel: validate_token(token)
+    TokenModel->>+DB: SELECT FROM tokens
+    DB-->>-TokenModel: return token_record
+    TokenModel-->>-TAM: return status
+    TAM-->>-ImageController: return status
+    ImageController->>+PR: process_image(image)
+    PR-->>-ImageController: return plate_data
+    ImageController->>+ImageLogsModel: save_image_log()
+    ImageLogsModel->>+DB: INSERT INTO image_logs
+    DB-->>-ImageLogsModel: return status
+    ImageLogsModel-->>-ImageController: return status
+    ImageController-->>-UploadPage: return plate_data
+    UploadPage-->>-User: display_result(plate_data)
 ```
 
 ---
@@ -358,27 +369,32 @@ sequenceDiagram
     participant ImageLogsModel as Image Logs Model
     participant DB as Database
 
-    Client->>ImageController: send_image(image, token)
-    ImageController->>TAM: authenticate(token)
-    TAM->>TokenModel: validate_token(token)
-    TokenModel->>DB: SELECT FROM tokens
-    DB-->>TokenModel: return token_record
-    TokenModel-->>TAM: return status
+    Client->>+ImageController: send_image(image, token)
+    ImageController->>+TAM: authenticate(token)
+    TAM->>+TokenModel: validate_token(token)
+    TokenModel->>+DB: SELECT FROM tokens
+    DB-->>-TokenModel: return token_record
+    TokenModel-->>-TAM: return status
+    TAM-->>-ImageController: return auth_result
 
     alt Token invalid or expired
-        TAM-->>Client: return 401 Unauthorized
+        ImageController-->>Client: return 401 Unauthorized
     else Quota exhausted
-        TAM-->>Client: return 403 Quota Exceeded
+        ImageController-->>Client: return 403 Quota Exceeded
     else Token valid
-        TAM-->>ImageController: return status
-        ImageController->>PR: process_image(image)
-        PR-->>ImageController: return plate_data
-        ImageController->>ImageLogsModel: save_image_log()
-        ImageLogsModel->>DB: INSERT INTO image_logs
-        ImageController->>TokenModel: deduct_quota(token)
-        TokenModel->>DB: UPDATE tokens SET quota = quota - 1
+        ImageController->>+PR: process_image(image)
+        PR-->>-ImageController: return plate_data
+        ImageController->>+ImageLogsModel: save_image_log()
+        ImageLogsModel->>+DB: INSERT INTO image_logs
+        DB-->>-ImageLogsModel: return status
+        ImageLogsModel-->>-ImageController: return status
+        ImageController->>+TokenModel: deduct_quota(token)
+        TokenModel->>+DB: UPDATE tokens SET quota = quota - 1
+        DB-->>-TokenModel: return status
+        TokenModel-->>-ImageController: return status
         ImageController-->>Client: return plate_data
     end
+    deactivate ImageController
 ```
 
 ---
@@ -401,28 +417,30 @@ sequenceDiagram
 
     User->>UploadPage: select_video()
     User->>UploadPage: select_token()
-    UploadPage->>WSHandler: create_connection(token)
-    WSHandler->>TAM: authenticate(token)
-    TAM->>TokenModel: validate_token(token)
-    TokenModel->>DB: SELECT FROM tokens
-    DB-->>TokenModel: return token_record
-    TokenModel-->>TAM: return status
-    TAM-->>WSHandler: return status
-    WSHandler-->>UploadPage: return connection_status
+    UploadPage->>+WSHandler: create_connection(token)
+    WSHandler->>+TAM: authenticate(token)
+    TAM->>+TokenModel: validate_token(token)
+    TokenModel->>+DB: SELECT FROM tokens
+    DB-->>-TokenModel: return token_record
+    TokenModel-->>-TAM: return status
+    TAM-->>-WSHandler: return status
+    WSHandler-->>-UploadPage: return connection_status
     UploadPage-->>User: return status
 
     loop For each video frame
-        UploadPage->>WSHandler: send_frame(frame)
-        WSHandler->>VideoService: process_frame(frame)
+        UploadPage->>+WSHandler: send_frame(frame)
+        WSHandler->>+VideoService: process_frame(frame)
         VideoService->>VideoService: detect_plate_region(frame)
         alt Plate detected
-            VideoService->>PR: recognize_plate(plate_crop)
-            PR-->>VideoService: return plate_data
-            VideoService->>VideoLogsModel: save_video_log()
-            VideoLogsModel->>DB: INSERT INTO video_logs
+            VideoService->>+PR: recognize_plate(plate_crop)
+            PR-->>-VideoService: return plate_data
+            VideoService->>+VideoLogsModel: save_video_log()
+            VideoLogsModel->>+DB: INSERT INTO video_logs
+            DB-->>-VideoLogsModel: return status
+            VideoLogsModel-->>-VideoService: return status
         end
-        VideoService-->>WSHandler: return result
-        WSHandler-->>UploadPage: return result
+        VideoService-->>-WSHandler: return result
+        WSHandler-->>-UploadPage: return result
     end
 
     User->>UploadPage: cancel()
@@ -445,39 +463,40 @@ sequenceDiagram
     participant VideoLogsModel as Video Logs Model
     participant DB as Database
 
-    Client->>WSHandler: create_connection(token)
-    WSHandler->>TAM: authenticate(token)
-    TAM->>TokenModel: validate_token(token)
-    TokenModel->>DB: SELECT FROM tokens
-    DB-->>TokenModel: return token_record
-    TokenModel-->>TAM: return status
-    TAM-->>WSHandler: return status
+    Client->>+WSHandler: create_connection(token)
+    WSHandler->>+TAM: authenticate(token)
+    TAM->>+TokenModel: validate_token(token)
+    TokenModel->>+DB: SELECT FROM tokens
+    DB-->>-TokenModel: return token_record
+    TokenModel-->>-TAM: return status
+    TAM-->>-WSHandler: return status
 
     alt Token invalid or expired
         WSHandler-->>Client: close_connection(4001, Unauthorized)
     else Token valid
         WSHandler-->>Client: return connection_status
 
-
         loop For each video frame
-            Client->>WSHandler: send_frame(frame)
-            WSHandler->>VideoService: process_frame(frame)
+            Client->>+WSHandler: send_frame(frame)
+            WSHandler->>+VideoService: process_frame(frame)
             VideoService->>VideoService: detect_plate_region(frame)
             alt Plate detected
-                VideoService->>PR: recognize_plate(plate_crop)
-                PR-->>VideoService: return plate_data
-                VideoService->>VideoLogsModel: save_video_log()
-                VideoLogsModel->>DB: INSERT INTO video_logs
-
+                VideoService->>+PR: recognize_plate(plate_crop)
+                PR-->>-VideoService: return plate_data
+                VideoService->>+VideoLogsModel: save_video_log()
+                VideoLogsModel->>+DB: INSERT INTO video_logs
+                DB-->>-VideoLogsModel: return status
+                VideoLogsModel-->>-VideoService: return status
             end
-            VideoService-->>WSHandler: return result
-            WSHandler-->>Client: return result
+            VideoService-->>-WSHandler: return result
+            WSHandler-->>-Client: return result
         end
 
         Client->>WSHandler: close_connection()
         WSHandler->>WSHandler: cleanup_tasks()
         WSHandler-->>Client: connection_closed
     end
+    deactivate WSHandler
 ```
 
 ---
@@ -496,31 +515,37 @@ sequenceDiagram
     participant CAM as IP Camera
     participant DB as Database
 
-    User->>StreamPage: open_manage_stream()
-    StreamPage->>StreamController: get_camera_list(user_id)
-    StreamController->>CameraModel: fetch_camera_list(user_id)
-    CameraModel->>DB: SELECT FROM rtsp_streams
-    DB-->>CameraModel: return camera_list
-    CameraModel-->>StreamController: return camera_list
-    StreamController-->>StreamPage: return camera_list
-    StreamPage-->>User: display_camera_list()
+    User->>+StreamPage: open_manage_stream()
+    StreamPage->>+StreamController: get_camera_list(user_id)
+    StreamController->>+CameraModel: fetch_camera_list(user_id)
+    CameraModel->>+DB: SELECT FROM rtsp_streams
+    DB-->>-CameraModel: return camera_list
+    CameraModel-->>-StreamController: return camera_list
+    StreamController-->>-StreamPage: return camera_list
+    StreamPage-->>-User: display_camera_list()
 
-    User->>StreamPage: add_camera(rtsp_url, camera_name)
-    StreamPage->>StreamController: add_camera()
-    StreamController->>StreamService: validate_stream(rtsp_url, token)
-    StreamService->>CAM: open_rtsp_connection(rtsp_url)
-    CAM-->>StreamService: return connection_status
+    User->>+StreamPage: add_camera(rtsp_url, camera_name)
+    StreamPage->>+StreamController: add_camera()
+    StreamController->>+StreamService: validate_stream(rtsp_url, token)
+    StreamService->>+CAM: open_rtsp_connection(rtsp_url)
+    CAM-->>-StreamService: return connection_status
 
     alt Connection failed
         StreamService-->>StreamController: return error
         StreamController-->>StreamPage: return error
         StreamPage-->>User: display_error("Connection Failed")
     else Connection success
-        StreamService->>CameraModel: save_camera(user_id, camera_name, rtsp_url)
-        CameraModel->>DB: INSERT INTO rtsp_streams
+        StreamService->>+CameraModel: save_camera(user_id, camera_name, rtsp_url)
+        CameraModel->>+DB: INSERT INTO rtsp_streams
+        DB-->>-CameraModel: return status
+        CameraModel-->>-StreamService: return status
+        StreamService-->>StreamController: return success
         StreamController-->>StreamPage: return success
         StreamPage-->>User: display_message("Camera Connected")
     end
+    deactivate StreamService
+    deactivate StreamController
+    deactivate StreamPage
 ```
 
 ---
@@ -540,27 +565,30 @@ sequenceDiagram
     participant StreamLogsModel as Stream Logs Model
     participant DB as Database
 
-    User->>StreamPage: start_stream(camera_id)
-    StreamPage->>StreamController: start_stream(camera_id, token)
-    StreamController->>TAM: authenticate(token)
-    TAM->>TokenModel: validate_token(token)
-    TokenModel->>DB: SELECT FROM tokens
-    DB-->>TokenModel: return token_record
-    TokenModel-->>TAM: return status
-    TAM-->>StreamController: return status
-    StreamController->>StreamService: open_rtsp_connection(rtsp_url)
-    StreamService->>CAM: connect(rtsp_url)
-    CAM-->>StreamService: return stream_status
-    StreamController-->>StreamPage: return connection_status
-    StreamPage-->>User: display_message("Stream Started")
+    User->>+StreamPage: start_stream(camera_id)
+    StreamPage->>+StreamController: start_stream(camera_id, token)
+    StreamController->>+TAM: authenticate(token)
+    TAM->>+TokenModel: validate_token(token)
+    TokenModel->>+DB: SELECT FROM tokens
+    DB-->>-TokenModel: return token_record
+    TokenModel-->>-TAM: return status
+    TAM-->>-StreamController: return status
+    StreamController->>+StreamService: open_rtsp_connection(rtsp_url)
+    StreamService->>+CAM: connect(rtsp_url)
+    CAM-->>-StreamService: return stream_status
+    StreamService-->>-StreamController: return stream_status
+    StreamController-->>-StreamPage: return connection_status
+    StreamPage-->>-User: display_message("Stream Started")
 
     loop While connection is active
-        StreamService->>CAM: capture_frame()
-        CAM-->>StreamService: return frame
-        StreamService->>PR: process_frame(frame)
-        PR-->>StreamService: return plate_data
-        StreamService->>StreamLogsModel: save_detection(user_id, plate_data)
-        StreamLogsModel->>DB: INSERT INTO detection_logs
+        StreamService->>+CAM: capture_frame()
+        CAM-->>-StreamService: return frame
+        StreamService->>+PR: process_frame(frame)
+        PR-->>-StreamService: return plate_data
+        StreamService->>+StreamLogsModel: save_detection(user_id, plate_data)
+        StreamLogsModel->>+DB: INSERT INTO detection_logs
+        DB-->>-StreamLogsModel: return status
+        StreamLogsModel-->>-StreamService: return status
         StreamService->>StreamPage: push_realtime_result(plate_data)
     end
 ```
@@ -579,14 +607,18 @@ sequenceDiagram
     participant CAM as IP Camera
     participant DB as Database
 
-    User->>StreamPage: stop_stream(camera_id)
-    StreamPage->>StreamController: stop_stream(camera_id)
-    StreamController->>StreamService: cancel_capture_task(camera_id)
-    StreamService->>CAM: disconnect()
-    StreamService->>CameraModel: update_stream_status(camera_id, "stopped")
-    CameraModel->>DB: UPDATE rtsp_streams SET status
-    StreamController-->>StreamPage: return status
-    StreamPage-->>User: display_message("Stream Stopped")
+    User->>+StreamPage: stop_stream(camera_id)
+    StreamPage->>+StreamController: stop_stream(camera_id)
+    StreamController->>+StreamService: cancel_capture_task(camera_id)
+    StreamService->>+CAM: disconnect()
+    CAM-->>-StreamService: return status
+    StreamService->>+CameraModel: update_stream_status(camera_id, "stopped")
+    CameraModel->>+DB: UPDATE rtsp_streams SET status
+    DB-->>-CameraModel: return status
+    CameraModel-->>-StreamService: return status
+    StreamService-->>-StreamController: return status
+    StreamController-->>-StreamPage: return status
+    StreamPage-->>-User: display_message("Stream Stopped")
 ```
 
 ---
@@ -601,12 +633,14 @@ sequenceDiagram
     participant CameraModel as Camera Model
     participant DB as Database
 
-    User->>StreamPage: edit_camera(camera_id, new_name, new_url)
-    StreamPage->>StreamController: edit_camera()
-    StreamController->>CameraModel: update_camera(camera_id, new_name, new_url)
-    CameraModel->>DB: UPDATE rtsp_streams SET ...
-    StreamController-->>StreamPage: return status
-    StreamPage-->>User: display_message("Camera Info Updated")
+    User->>+StreamPage: edit_camera(camera_id, new_name, new_url)
+    StreamPage->>+StreamController: edit_camera()
+    StreamController->>+CameraModel: update_camera(camera_id, new_name, new_url)
+    CameraModel->>+DB: UPDATE rtsp_streams SET ...
+    DB-->>-CameraModel: return status
+    CameraModel-->>-StreamController: return status
+    StreamController-->>-StreamPage: return status
+    StreamPage-->>-User: display_message("Camera Info Updated")
 ```
 
 ---
@@ -621,14 +655,16 @@ sequenceDiagram
     participant CameraModel as Camera Model
     participant DB as Database
 
-    User->>StreamPage: remove_camera(camera_id)
+    User->>+StreamPage: remove_camera(camera_id)
     StreamPage-->>User: confirm_popup("Confirm Delete?")
     User->>StreamPage: confirm()
-    StreamPage->>StreamController: delete_camera(camera_id)
-    StreamController->>CameraModel: delete_camera(camera_id)
-    CameraModel->>DB: DELETE FROM rtsp_streams
-    StreamController-->>StreamPage: return status
-    StreamPage-->>User: display_message("Camera Removed")
+    StreamPage->>+StreamController: delete_camera(camera_id)
+    StreamController->>+CameraModel: delete_camera(camera_id)
+    CameraModel->>+DB: DELETE FROM rtsp_streams
+    DB-->>-CameraModel: return status
+    CameraModel-->>-StreamController: return status
+    StreamController-->>-StreamPage: return status
+    StreamPage-->>-User: display_message("Camera Removed")
 ```
 
 ---
@@ -644,22 +680,22 @@ sequenceDiagram
     participant StreamService as Stream Service
     participant DB as Database
 
-    User->>StreamPage: open_manage_stream()
-    StreamPage->>StreamController: get_camera_list(user_id)
-    StreamController->>CameraModel: fetch_camera_list(user_id)
-    CameraModel->>DB: SELECT FROM rtsp_streams
-    DB-->>CameraModel: return camera_list
-    CameraModel-->>StreamController: return camera_list
-    StreamController-->>StreamPage: return camera_list
+    User->>+StreamPage: open_manage_stream()
+    StreamPage->>+StreamController: get_camera_list(user_id)
+    StreamController->>+CameraModel: fetch_camera_list(user_id)
+    CameraModel->>+DB: SELECT FROM rtsp_streams
+    DB-->>-CameraModel: return camera_list
+    CameraModel-->>-StreamController: return camera_list
+    StreamController-->>-StreamPage: return camera_list
 
     loop For each camera
-        StreamPage->>StreamController: check_camera_status(camera_id)
-        StreamController->>StreamService: get_stream_status(camera_id)
-        StreamService-->>StreamController: return status
-        StreamController-->>StreamPage: return status
+        StreamPage->>+StreamController: check_camera_status(camera_id)
+        StreamController->>+StreamService: get_stream_status(camera_id)
+        StreamService-->>-StreamController: return status
+        StreamController-->>-StreamPage: return status
     end
 
-    StreamPage-->>User: display_all_camera_status()
+    StreamPage-->>-User: display_all_camera_status()
 ```
 
 ---
@@ -678,31 +714,37 @@ sequenceDiagram
     participant PaymentModel as Payment Model
     participant DB as Database
 
-    User->>SubPage: open_subscription_page()
-    SubPage->>SubController: get_available_plans()
-    SubController->>SubModel: fetch_all_plans()
-    SubModel->>DB: SELECT FROM subscriptions
-    DB-->>SubModel: return plan_list
-    SubModel-->>SubController: return plan_list
-    SubController-->>SubPage: return plan_list
-    SubPage-->>User: display_plan_list()
+    User->>+SubPage: open_subscription_page()
+    SubPage->>+SubController: get_available_plans()
+    SubController->>+SubModel: fetch_all_plans()
+    SubModel->>+DB: SELECT FROM subscriptions
+    DB-->>-SubModel: return plan_list
+    SubModel-->>-SubController: return plan_list
+    SubController-->>-SubPage: return plan_list
+    SubPage-->>-User: display_plan_list()
 
-    User->>SubPage: select_plan(plan_id)
-    SubPage->>PaymentController: process_payment(user_id, plan_price)
-    PaymentController->>PaymentModel: create_payment_record()
-    PaymentModel->>DB: INSERT INTO payment_logs
-    PaymentModel-->>PaymentController: return payment_status
+    User->>+SubPage: select_plan(plan_id)
+    SubPage->>+PaymentController: process_payment(user_id, plan_price)
+    PaymentController->>+PaymentModel: create_payment_record()
+    PaymentModel->>+DB: INSERT INTO payment_logs
+    DB-->>-PaymentModel: return status
+    PaymentModel-->>-PaymentController: return payment_status
 
     alt Payment Failed
         PaymentController-->>SubPage: return error
         SubPage-->>User: display_error("Payment Failed")
     else Payment Success
-        PaymentController->>SubController: activate_subscription(user_id, plan_id)
-        SubController->>SubModel: create_user_subscription()
-        SubModel->>DB: INSERT INTO user_subscriptions
-        SubController-->>SubPage: return success
+        PaymentController->>+SubController: activate_subscription(user_id, plan_id)
+        SubController->>+SubModel: create_user_subscription()
+        SubModel->>+DB: INSERT INTO user_subscriptions
+        DB-->>-SubModel: return status
+        SubModel-->>-SubController: return status
+        SubController-->>-PaymentController: return status
+        PaymentController-->>SubPage: return success
         SubPage-->>User: display_message("Subscription Activated")
     end
+    deactivate PaymentController
+    deactivate SubPage
 ```
 
 ---
@@ -719,45 +761,53 @@ sequenceDiagram
     participant PaymentModel as Payment Model
     participant DB as Database
 
-    User->>SubPage: open_subscription_page()
-    SubPage->>SubController: get_current_plan(user_id)
-    SubController->>SubModel: fetch_user_subscription(user_id)
-    SubModel->>DB: SELECT FROM user_subscriptions
-    DB-->>SubModel: return current_plan
-    SubModel-->>SubController: return current_plan
-    SubController-->>SubPage: return plan_info
-    SubPage-->>User: display_current_plan()
+    User->>+SubPage: open_subscription_page()
+    SubPage->>+SubController: get_current_plan(user_id)
+    SubController->>+SubModel: fetch_user_subscription(user_id)
+    SubModel->>+DB: SELECT FROM user_subscriptions
+    DB-->>-SubModel: return current_plan
+    SubModel-->>-SubController: return current_plan
+    SubController-->>-SubPage: return plan_info
+    SubPage-->>-User: display_current_plan()
 
-    User->>SubPage: select_new_plan(new_plan_id)
-    SubPage->>SubController: get_plan_price(new_plan_id)
-    SubController->>SubModel: fetch_plan(new_plan_id)
-    SubModel->>DB: SELECT FROM subscriptions
-    DB-->>SubModel: return plan_price
-    SubModel-->>SubController: return plan_price
-    SubController-->>SubPage: return plan_price
+    User->>+SubPage: select_new_plan(new_plan_id)
+    SubPage->>+SubController: get_plan_price(new_plan_id)
+    SubController->>+SubModel: fetch_plan(new_plan_id)
+    SubModel->>+DB: SELECT FROM subscriptions
+    DB-->>-SubModel: return plan_price
+    SubModel-->>-SubController: return plan_price
+    SubController-->>-SubPage: return plan_price
 
     alt Upgrade Plan
-        SubPage->>PaymentController: process_payment(user_id, amount_difference)
-        PaymentController->>PaymentModel: create_payment_record()
-        PaymentModel->>DB: INSERT INTO payment_logs
-        PaymentModel-->>PaymentController: return payment_status
+        SubPage->>+PaymentController: process_payment(user_id, amount_difference)
+        PaymentController->>+PaymentModel: create_payment_record()
+        PaymentModel->>+DB: INSERT INTO payment_logs
+        DB-->>-PaymentModel: return status
+        PaymentModel-->>-PaymentController: return payment_status
         alt Payment Success
-            PaymentController->>SubController: update_subscription(user_id, new_plan_id)
-            SubController->>SubModel: update_user_subscription()
-            SubModel->>DB: UPDATE user_subscriptions SET ...
-            SubController-->>SubPage: return success
+            PaymentController->>+SubController: update_subscription(user_id, new_plan_id)
+            SubController->>+SubModel: update_user_subscription()
+            SubModel->>+DB: UPDATE user_subscriptions SET ...
+            DB-->>-SubModel: return status
+            SubModel-->>-SubController: return status
+            SubController-->>-PaymentController: return status
+            PaymentController-->>SubPage: return success
             SubPage-->>User: display_message("Plan Upgraded")
         else Payment Failed
             PaymentController-->>SubPage: return error
             SubPage-->>User: display_error("Payment Failed")
         end
+        deactivate PaymentController
     else Downgrade Plan
-        SubPage->>SubController: schedule_downgrade(user_id, new_plan_id)
-        SubController->>SubModel: schedule_downgrade()
-        SubModel->>DB: UPDATE user_subscriptions SET next_plan_id
-        SubController-->>SubPage: return success
+        SubPage->>+SubController: schedule_downgrade(user_id, new_plan_id)
+        SubController->>+SubModel: schedule_downgrade()
+        SubModel->>+DB: UPDATE user_subscriptions SET next_plan_id
+        DB-->>-SubModel: return status
+        SubModel-->>-SubController: return status
+        SubController-->>-SubPage: return success
         SubPage-->>User: display_message("Plan will change at next cycle")
     end
+    deactivate SubPage
 ```
 
 ---
@@ -772,23 +822,25 @@ sequenceDiagram
     participant SubModel as Subscription Model
     participant DB as Database
 
-    User->>SubPage: open_subscription_page()
-    SubPage->>SubController: get_current_plan(user_id)
-    SubController->>SubModel: fetch_user_subscription(user_id)
-    SubModel->>DB: SELECT FROM user_subscriptions
-    DB-->>SubModel: return plan_info
-    SubModel-->>SubController: return plan_info
-    SubController-->>SubPage: return plan_info
-    SubPage-->>User: display_current_plan()
+    User->>+SubPage: open_subscription_page()
+    SubPage->>+SubController: get_current_plan(user_id)
+    SubController->>+SubModel: fetch_user_subscription(user_id)
+    SubModel->>+DB: SELECT FROM user_subscriptions
+    DB-->>-SubModel: return plan_info
+    SubModel-->>-SubController: return plan_info
+    SubController-->>-SubPage: return plan_info
+    SubPage-->>-User: display_current_plan()
 
-    User->>SubPage: click_cancel_subscription()
+    User->>+SubPage: click_cancel_subscription()
     SubPage-->>User: confirm_popup("Cancel Subscription?")
     User->>SubPage: confirm()
-    SubPage->>SubController: cancel_subscription(user_id)
-    SubController->>SubModel: update_subscription_status(user_id, "Cancelled")
-    SubModel->>DB: UPDATE user_subscriptions SET status
-    SubController-->>SubPage: return success
-    SubPage-->>User: display_message("Subscription Cancelled")
+    SubPage->>+SubController: cancel_subscription(user_id)
+    SubController->>+SubModel: update_subscription_status(user_id, "Cancelled")
+    SubModel->>+DB: UPDATE user_subscriptions SET status
+    DB-->>-SubModel: return status
+    SubModel-->>-SubController: return status
+    SubController-->>-SubPage: return success
+    SubPage-->>-User: display_message("Subscription Cancelled")
 ```
 
 ---
