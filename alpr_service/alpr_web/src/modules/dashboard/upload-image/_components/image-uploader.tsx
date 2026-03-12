@@ -13,9 +13,9 @@ import { validateImage } from '@/shared/libs/image'
 import { fileToBase64 } from '@/shared/libs/file'
 import type { FileType } from '../_types'
 import type { AppDispatch, RootState } from '@/shared/store'
-import { 
-  setImageSize, 
-  setImage, 
+import {
+  setImageSize,
+  setImage,
   setImageName,
   resetUploadImageState
 } from '@/shared/store/dashboard/upload-image-slice'
@@ -84,12 +84,12 @@ const ImageUploader = () => {
       >
         {fileList.length > 0 ? null : <UploadImageButton />}
       </StyledUpload>
-      {previewImage && 
-        <ImagePreview 
-          isPreviewOpen={previewOpen} 
+      {previewImage &&
+        <ImagePreview
+          isPreviewOpen={previewOpen}
           previewImage={previewImage}
-          setPreviewImage={setPreviewImage} 
-          setPreviewOpen={setPreviewOpen} 
+          setPreviewImage={setPreviewImage}
+          setPreviewOpen={setPreviewOpen}
         />
       }
     </Flex>
