@@ -205,7 +205,7 @@ sequenceDiagram
     User->>+AuthPage: submit_login(email, password)
     AuthPage->>+AuthController: login(email, password)
     AuthController->>+UserModel: find_user(email)
-    UserModel->>+DB: SELECT FROM users
+    TokenModel->>+DB: UPDATE tokens SET name, expire_time
     DB-->>-UserModel: return user_record
     UserModel-->>-AuthController: return user_record
     alt Credentials valid
@@ -213,7 +213,6 @@ sequenceDiagram
         AuthPage-->>User: redirect to Dashboard
     else Credentials invalid
         AuthController-->>AuthPage: return error
-        AuthPage-->>User: display_message("Incorrect email or password")
     end
     deactivate AuthController
     deactivate AuthPage
@@ -300,7 +299,7 @@ sequenceDiagram
     User->>+TokenPage: edit_token(token_key, new_name, new_expire_time)
     TokenPage->>+TokenController: edit_token()
     TokenController->>+TokenModel: update_token()
-    TokenModel->>+DB: UPDATE tokens SET ...
+    TokenModel->>+DB: update token name and expiry
     DB-->>-TokenModel: return status
     TokenModel-->>-TokenController: return status
     TokenController-->>-TokenPage: return status
@@ -420,6 +419,7 @@ sequenceDiagram
 #### 2.5.1 Upload Video — Dashboard
 
 ```mermaid
+
 sequenceDiagram
     actor User
     participant UploadPage as Upload Video Page
@@ -432,7 +432,7 @@ sequenceDiagram
     participant DB as Database
 
     activate User
-    User->>UploadPage: select_video()
+    User->>+UploadPage: select_video()
     User->>UploadPage: select_token()
     UploadPage->>+WSHandler: create_connection(token)
     WSHandler->>+TAM: authenticate(token)
@@ -461,12 +461,12 @@ sequenceDiagram
     end
 
     User->>UploadPage: cancel()
-    UploadPage->>WSHandler: close_connection()
-    UploadPage-->>User: display_message("Stopped")
+    UploadPage->>+WSHandler: close_connection()
+    WSHandler-->>-UploadPage: return connection_closed
+    UploadPage-->>-User: display_message("Stopped")
     deactivate User
 ```
 
----
 
 #### 2.5.2 Send Video via WebSocket
 
@@ -496,7 +496,7 @@ sequenceDiagram
         WSHandler-->>Client: return connection_status
 
         loop For each video frame
-            Client->>+WSHandler: send_frame(frame)
+            Client->>WSHandler: send_frame(frame)
             WSHandler->>+VideoService: process_frame(frame)
             VideoService->>VideoService: detect_plate_region(frame)
             alt Plate detected
@@ -508,7 +508,7 @@ sequenceDiagram
                 VideoLogsModel-->>-VideoService: return status
             end
             VideoService-->>-WSHandler: return result
-            WSHandler-->>-Client: return result
+            WSHandler-->>Client: return result
         end
 
         Client->>WSHandler: close_connection()
@@ -599,7 +599,7 @@ sequenceDiagram
     StreamController->>+StreamService: open_rtsp_connection(rtsp_url)
     StreamService->>+CAM: connect(rtsp_url)
     CAM-->>-StreamService: return stream_status
-    StreamService-->>-StreamController: return stream_status
+    StreamService-->>StreamController: return stream_status
     StreamController-->>-StreamPage: return connection_status
     StreamPage-->>-User: display_message("Stream Started")
 
@@ -612,12 +612,13 @@ sequenceDiagram
         StreamLogsModel->>+DB: INSERT INTO detection_logs
         DB-->>-StreamLogsModel: return status
         StreamLogsModel-->>-StreamService: return status
-        StreamService->>StreamPage: push_realtime_result(plate_data)
+        StreamService->>+StreamPage: push_realtime_result
+        StreamPage-->>-User: display_live_stream_and_result
     end
+    deactivate StreamService
     deactivate User
 ```
 
----
 
 #### 2.6.3 Stop RTSP Stream
 
