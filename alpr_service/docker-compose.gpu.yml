@@ -1,0 +1,32 @@
+# GPU Mode Override
+# Usage: docker compose --env-file .env -f docker-compose.yml -f docker-compose.gpu.yml up -d --build
+#
+# Requirements:
+#   - NVIDIA GPU with CUDA 11.8+ support
+#   - nvidia-container-toolkit installed on the host
+#     (https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)
+#
+# To combine with dev mode:
+#   docker compose --env-file .env.dev -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.gpu.yml up -d --build
+
+services:
+  # ============================================
+  # Plate Recognition Service — GPU Accelerated
+  # ============================================
+  plate-recognizer:
+    build:
+      context: ./plate_recognizer
+      dockerfile: Dockerfile   # CUDA 11.8 image (pytorch/pytorch:2.4.1-cuda11.8-cudnn9-devel)
+    deploy:
+      replicas: 1              # 1 GPU replica is sufficient; increase if VRAM allows (≥ 8 GB each)
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 1G
+          devices:
+            - driver: nvidia
+              count: all       # expose all available GPUs; set to 1 to limit to a single GPU
+              capabilities: [gpu]
+    environment:
+      - CUDA_VISIBLE_DEVICES=0   # change to "0,1" for multi-GPU, or "all"

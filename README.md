@@ -3,6 +3,7 @@
 > AI-powered License Plate Recognition System with Real-time Processing, WebSocket Support, and Microservices Architecture
 
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](https://www.docker.com/)
+[![NVIDIA](https://img.shields.io/badge/GPU-CUDA%2011.8-76B900?logo=nvidia)](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Next.js](https://img.shields.io/badge/Next.js-14+-000000?logo=nextdotjs)](https://nextjs.org/)
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python)](https://www.python.org/)
@@ -17,6 +18,7 @@
 - [Services](#-services)
 - [Tech Stack](#-tech-stack)
 - [Quick Start](#-quick-start)
+  - [GPU Mode](#gpu-mode)
 - [Environment Variables](#-environment-variables)
 - [API Documentation](#-api-documentation)
 - [Performance](#-performance)
@@ -134,6 +136,7 @@ Result: { plate_id, province, full_plate, format_flag }
 - Docker ≥ 24 and Docker Compose ≥ 2
 - 8 GB RAM minimum (16 GB recommended for 2 AI replicas)
 - Linux / macOS / Windows (WSL2)
+- *(GPU optional)* NVIDIA GPU (CUDA 11.8+) + [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)
 
 ### 1 — Clone
 
@@ -214,6 +217,48 @@ docker compose --env-file .env.dev -f docker-compose.yml -f docker-compose.dev.y
 Dev mode enables:
 - Next.js hot reload (volume-mounted `src/`)
 - Swagger UI on all FastAPI services (`APP_ENV=development`)
+
+### GPU Mode
+
+> **Requires** NVIDIA GPU (CUDA 11.8+) and [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) installed on the host.
+
+The `plate_recognizer` service ships a CUDA-enabled image (`pytorch/pytorch:2.4.1-cuda11.8-cudnn9-devel`). The `docker-compose.gpu.yml` override activates NVIDIA device access and drops the replica count to 1 (one GPU replica already saturates throughput).
+
+#### Quick check — verify Docker sees your GPU
+
+```bash
+docker run --rm --gpus all nvidia/cuda:11.8.0-base-ubuntu22.04 nvidia-smi
+```
+
+#### Start in GPU mode (production)
+
+```bash
+docker compose --env-file .env -f docker-compose.yml -f docker-compose.gpu.yml up -d --build
+```
+
+#### Start in GPU + dev mode (hot reload + Swagger UI)
+
+```bash
+docker compose --env-file .env.dev \
+  -f docker-compose.yml \
+  -f docker-compose.dev.yml \
+  -f docker-compose.gpu.yml \
+  up -d --build
+```
+
+#### Multi-GPU / replica tuning
+
+Edit `docker-compose.gpu.yml` to expose more GPUs or run multiple replicas:
+
+```yaml
+plate-recognizer:
+  deploy:
+    replicas: 2          # one replica per GPU
+  environment:
+    - CUDA_VISIBLE_DEVICES=0,1   # expose GPU 0 and 1
+```
+
+> **Performance note:** With a single mid-range GPU (e.g. RTX 3060), end-to-end latency drops to ~32 ms (vs ~120 ms CPU-only) and throughput reaches ~31 FPS. See [Performance](#-performance) for full benchmarks.
 
 ---
 
@@ -358,8 +403,9 @@ alpr_service/
 ├── .env.example                # Root env template (SERVER_URL, WS_URL)
 ├── .env.dev.example            # Dev env template
 ├── nginx.conf                  # Nginx reverse proxy + routing rules
-├── docker-compose.yml          # Production compose
-├── docker-compose.dev.yml      # Development compose (hot reload + Swagger UI)
+├── docker-compose.yml          # Production compose (CPU)
+├── docker-compose.dev.yml      # Development override (hot reload + Swagger UI)
+├── docker-compose.gpu.yml      # GPU override (NVIDIA CUDA acceleration)
 ├── dump.sql                    # Initial DB schema + seed data
 ├── plate_recognizer/           # AI inference engine (YOLOv11 + OCR)
 ├── alpr_web/                   # Next.js 14 frontend dashboard
