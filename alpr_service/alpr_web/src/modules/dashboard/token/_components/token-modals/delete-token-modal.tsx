@@ -13,11 +13,11 @@ import { useDeleteToken } from '@/api/dashboard/token/hooks'
 const ModalTitle = () => {
   return (
     <p style={{ margin: 0 }}>
-      <ExclamationCircleOutlined 
-        style={{ color: 'orange', marginRight: 8 }} 
+      <ExclamationCircleOutlined
+        style={{ color: 'orange', marginRight: 8 }}
       />Delete Token
     </p>
-  )  
+  )
 }
 
 const DeleteTokenModal = () => {
@@ -27,17 +27,22 @@ const DeleteTokenModal = () => {
   const [confirmLoading, setConfirmLoading] = useState(false)
 
   const handleOk = (tokenKey: string | undefined) => {
+    if (!tokenKey) return
     setConfirmLoading(true)
-    if (tokenKey) deleteToken({ key: tokenKey })
-    dispatch(setTokenToDelete(undefined))
-    setConfirmLoading(false)
+    deleteToken(
+      { key: tokenKey },
+      {
+        onSuccess: () => dispatch(setTokenToDelete(undefined)),
+        onSettled: () => setConfirmLoading(false),
+      }
+    )
   }
 
   const handleCancel = () => dispatch(setTokenToDelete(undefined))
 
   return (
     <Modal
-      title={<ModalTitle />} 
+      title={<ModalTitle />}
       open={tokenToDelete ? true : false}
       onOk={() => handleOk(tokenToDelete)}
       onCancel={handleCancel}
