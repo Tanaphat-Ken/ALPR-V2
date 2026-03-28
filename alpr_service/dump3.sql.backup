@@ -2,12 +2,11 @@
 -- PostgreSQL database dump
 --
 
-\restrict IfdTG0DeZPP3g0OHBbJmPyjbjYmnLS2C3dLReZUUQq7oCVX5tpF1d22ZBYf793B
 
 -- Dumped from database version 15.16
 -- Dumped by pg_dump version 15.14
 
--- Started on 2026-03-28 18:59:27
+-- Started on 2026-02-20 02:34:42
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -19,25 +18,6 @@ SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
-
---
--- TOC entry 5 (class 2615 OID 2200)
--- Name: public; Type: SCHEMA; Schema: -; Owner: pg_database_owner
---
-
-CREATE SCHEMA public;
-
-
-ALTER SCHEMA public OWNER TO pg_database_owner;
-
---
--- TOC entry 3552 (class 0 OID 0)
--- Dependencies: 5
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: pg_database_owner
---
-
-COMMENT ON SCHEMA public IS 'standard public schema';
-
 
 --
 -- TOC entry 857 (class 1247 OID 16386)
@@ -108,7 +88,7 @@ CREATE SEQUENCE public.car_bbox_car_bbox_id_seq
 ALTER TABLE public.car_bbox_car_bbox_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3554 (class 0 OID 0)
+-- TOC entry 3553 (class 0 OID 0)
 -- Dependencies: 215
 -- Name: car_bbox_car_bbox_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -174,7 +154,7 @@ CREATE SEQUENCE public.payment_logs_transection_id_seq
 ALTER TABLE public.payment_logs_transection_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3555 (class 0 OID 0)
+-- TOC entry 3554 (class 0 OID 0)
 -- Dependencies: 218
 -- Name: payment_logs_transection_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -219,7 +199,7 @@ CREATE SEQUENCE public.plate_bbox_plate_bbox_id_seq
 ALTER TABLE public.plate_bbox_plate_bbox_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3556 (class 0 OID 0)
+-- TOC entry 3555 (class 0 OID 0)
 -- Dependencies: 220
 -- Name: plate_bbox_plate_bbox_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -250,7 +230,7 @@ CREATE TABLE public.rtsp_streams (
 ALTER TABLE public.rtsp_streams OWNER TO postgres;
 
 --
--- TOC entry 3557 (class 0 OID 0)
+-- TOC entry 3556 (class 0 OID 0)
 -- Dependencies: 234
 -- Name: TABLE rtsp_streams; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -259,7 +239,7 @@ COMMENT ON TABLE public.rtsp_streams IS 'Camera / video-source configs ของ
 
 
 --
--- TOC entry 3558 (class 0 OID 0)
+-- TOC entry 3557 (class 0 OID 0)
 -- Dependencies: 234
 -- Name: COLUMN rtsp_streams.rtsp_url; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -268,7 +248,7 @@ COMMENT ON COLUMN public.rtsp_streams.rtsp_url IS 'rtsp:// URL หรือ path
 
 
 --
--- TOC entry 3559 (class 0 OID 0)
+-- TOC entry 3558 (class 0 OID 0)
 -- Dependencies: 234
 -- Name: COLUMN rtsp_streams.user_id; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -293,7 +273,7 @@ CREATE SEQUENCE public.rtsp_streams_stream_id_seq
 ALTER TABLE public.rtsp_streams_stream_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3560 (class 0 OID 0)
+-- TOC entry 3559 (class 0 OID 0)
 -- Dependencies: 233
 -- Name: rtsp_streams_stream_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -362,7 +342,7 @@ CREATE SEQUENCE public.subscription_logs_log_id_seq
 ALTER TABLE public.subscription_logs_log_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3561 (class 0 OID 0)
+-- TOC entry 3560 (class 0 OID 0)
 -- Dependencies: 223
 -- Name: subscription_logs_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -387,7 +367,7 @@ CREATE SEQUENCE public.subscription_sub_id_seq
 ALTER TABLE public.subscription_sub_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3562 (class 0 OID 0)
+-- TOC entry 3561 (class 0 OID 0)
 -- Dependencies: 224
 -- Name: subscription_sub_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -448,7 +428,7 @@ CREATE SEQUENCE public.user_subscription_user_sub_id_seq
 ALTER TABLE public.user_subscription_user_sub_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3563 (class 0 OID 0)
+-- TOC entry 3562 (class 0 OID 0)
 -- Dependencies: 227
 -- Name: user_subscription_user_sub_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -490,7 +470,7 @@ CREATE SEQUENCE public.user_user_id_seq
 ALTER TABLE public.user_user_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3564 (class 0 OID 0)
+-- TOC entry 3563 (class 0 OID 0)
 -- Dependencies: 229
 -- Name: user_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -542,7 +522,7 @@ CREATE SEQUENCE public.websocket_image_logs_log_id_seq
 ALTER TABLE public.websocket_image_logs_log_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3565 (class 0 OID 0)
+-- TOC entry 3564 (class 0 OID 0)
 -- Dependencies: 231
 -- Name: websocket_image_logs_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -567,7 +547,7 @@ CREATE SEQUENCE public.websocket_video_logs_log_id_seq
 ALTER TABLE public.websocket_video_logs_log_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3566 (class 0 OID 0)
+-- TOC entry 3565 (class 0 OID 0)
 -- Dependencies: 232
 -- Name: websocket_video_logs_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -1023,17 +1003,7 @@ COPY public.image_logs (log_id, file_name, processing_time, plate_id, car_bbox_i
 173	./Images/2026-02-18_14-09-48.jpg	00:01:30	6ขห3823	\N	202	9	2026-02-18 21:09:53.885809	API	กรุงเทพมหานคร	complete	6ขห3823 กรุงเทพมหานคร	50	e0b6621b-2752-46fe-b808-842af147db48
 174	./Images/2026-02-19_15-39-58.jpg	00:01:30	5ขฆ4903	\N	203	9	2026-02-19 22:40:05.499556	API	กรุงเทพมหานคร	complete	5ขฆ4903 กรุงเทพมหานคร	50	e0b6621b-2752-46fe-b808-842af147db48
 175	./Images/2026-02-19_16-45-13.jpg	00:01:30	\N	\N	\N	9	2026-02-19 23:45:17.830473	API	\N	warning	\N	50	e0b6621b-2752-46fe-b808-842af147db48
-181	./Images/2026-03-03_12-14-21.jpg	00:01:30	3ขห8199	\N	206	10	2026-03-03 19:14:37.498829	API	กรุงเทพมหานคร	complete	3ขห8199 กรุงเทพมหานคร	50	fd86d838-c063-44b9-89e6-1635382b293a
-182	./Images/2026-03-10_16-15-15.jpg	00:01:30	\N	\N	\N	10	2026-03-10 23:15:20.920492	API	\N	warning	\N	50	fd86d838-c063-44b9-89e6-1635382b293a
-183	./Images/2026-03-12_15-03-59.jpg	00:01:30	ฮน26	\N	207	10	2026-03-12 22:04:03.708513	API	กรุงเทพมหานคร	complete	ฮน26 กรุงเทพมหานคร	50	fd86d838-c063-44b9-89e6-1635382b293a
-184	./Images/2026-03-12_15-06-36.jpg	00:01:30	\N	\N	\N	10	2026-03-12 22:06:38.669635	API	\N	warning	\N	50	fd86d838-c063-44b9-89e6-1635382b293a
-185	./Images/2026-03-12_15-09-34.jpg	00:01:30	\N	\N	\N	10	2026-03-12 22:09:37.736133	API	\N	warning	\N	50	fd86d838-c063-44b9-89e6-1635382b293a
-186	./Images/2026-03-12_15-11-10.jpg	00:01:30	\N	\N	\N	10	2026-03-12 22:11:14.633255	API	\N	warning	\N	50	fd86d838-c063-44b9-89e6-1635382b293a
-187	./Images/2026-03-12_15-11-41.jpg	00:01:30	\N	\N	\N	10	2026-03-12 22:11:43.642539	API	\N	warning	\N	50	fd86d838-c063-44b9-89e6-1635382b293a
-188	./Images/2026-03-16_18-13-58.jpg	00:01:30	6กก396	\N	208	9	2026-03-17 01:13:58.869633	API	กรุงเทพมหานคร	complete	6กก396 กรุงเทพมหานคร	50	e3340abc-6741-42c1-b528-4043671b2591
-189	./Images/2026-03-28_11-35-06.jpg	00:01:30	บษ791	\N	209	9	2026-03-28 18:35:07.592202	API	กาฬสินธุ์	complete	บษ791 กาฬสินธุ์	50	e3340abc-6741-42c1-b528-4043671b2591
-190	./Images/2026-03-28_11-36-29.jpg	00:01:30	1กฎ8992	\N	210	9	2026-03-28 18:36:29.609685	API	กรุงเทพมหานคร	complete	1กฎ8992 กรุงเทพมหานคร	50	e3340abc-6741-42c1-b528-4043671b2591
-191	./Images/2026-03-28_11-36-54.jpg	00:01:30	2ขส5195	\N	211	9	2026-03-28 18:36:54.320726	API	กรุงเทพมหานคร	complete	2ขส5195 กรุงเทพมหานคร	50	e3340abc-6741-42c1-b528-4043671b2591
+176	./Images/2026-02-19_19-33-48.jpg	00:01:30	\N	\N	\N	9	2026-02-20 02:33:58.473021	API	\N	warning	\N	50	50c9cbd8-6145-4411-8e22-4f06fc8df058
 \.
 
 
@@ -1257,14 +1227,6 @@ COPY public.plate_bbox (plate_bbox_id, top_left_x, top_left_y, top_right_x, top_
 201	865.6657104492188	614.49462890625	939.8285522460938	614.49462890625	865.6657104492188	655.598876953125	939.8285522460938	655.598876953125
 202	636.7620239257812	401.0419921875	697.5383911132812	401.0419921875	636.7620239257812	434.0452880859375	697.5383911132812	434.0452880859375
 203	557.5189819335938	669.9467163085938	640.157958984375	669.9467163085938	557.5189819335938	710.3536987304688	640.157958984375	710.3536987304688
-204	1596.525634765625	1257.643310546875	1814.193603515625	1257.643310546875	1596.525634765625	1374.89111328125	1814.193603515625	1374.89111328125
-205	539.9539184570312	925.3408813476562	635.2921752929688	925.3408813476562	539.9539184570312	975.5755004882812	635.2921752929688	975.5755004882812
-206	135.27294921875	732.12548828125	296.91583251953125	732.12548828125	135.27294921875	807.8726806640625	296.91583251953125	807.8726806640625
-207	1881.621337890625	1238.6915283203125	2092.208740234375	1238.6915283203125	1881.621337890625	1349.5960693359375	2092.208740234375	1349.5960693359375
-208	1567.660888671875	1167.22607421875	1763.896240234375	1167.22607421875	1567.660888671875	1266.1982421875	1763.896240234375	1266.1982421875
-209	1843.4482421875	861.4866943359375	2020.3583984375	861.4866943359375	1843.4482421875	949.69189453125	2020.3583984375	949.69189453125
-210	1313.545654296875	1228.3800048828125	1525.067626953125	1228.3800048828125	1313.545654296875	1335.8670654296875	1525.067626953125	1335.8670654296875
-211	1293.1395263671875	1434.980712890625	1506.3746337890625	1434.980712890625	1293.1395263671875	1534.452392578125	1506.3746337890625	1534.452392578125
 \.
 
 
@@ -1275,8 +1237,8 @@ COPY public.plate_bbox (plate_bbox_id, top_left_x, top_left_y, top_right_x, top_
 --
 
 COPY public.rtsp_streams (stream_id, name, rtsp_url, location, enabled, fps, frame_skip, user_id, created_at, updated_at, token_key) FROM stdin;
-4	Demo link	https://stream1.ioc.pattaya.go.th/live/CC-002.m3u8		t	8	4	9	2026-02-19 14:43:11.680629	2026-03-16 18:18:26.453766	0aacc8ea-3664-49ce-8fb7-805b3ea4f764
-2	Demo-camera-video	/app/videos/demo_video.mp4	Building A	t	30	1	9	2026-02-18 19:54:07.273551	2026-03-28 11:21:47.640438	0aacc8ea-3664-49ce-8fb7-805b3ea4f764
+2	Demo-camera-video	/app/videos/Test_video_crop_final.mp4	Building A	t	30	1	9	2026-02-18 19:54:07.273551	2026-02-18 23:05:30.848969	31076acf-d4f1-4247-90aa-288a4398e7b7
+4	Demo link	https://stream1.ioc.pattaya.go.th/live/CC-002.m3u8		t	8	4	9	2026-02-19 14:43:11.680629	2026-02-19 15:36:14.912502	31076acf-d4f1-4247-90aa-288a4398e7b7
 \.
 
 
@@ -1312,12 +1274,10 @@ COPY public.subscription_logs (log_id, transection_id, request_limit, price, ser
 
 COPY public.token (key, name, expire_time, create_at, update_at, user_sub_id, service_type) FROM stdin;
 123	token1	2025-10-19 09:29:51.217	2025-09-19 09:29:51.217	2025-09-19 09:29:51.217	9	API
+50c9cbd8-6145-4411-8e22-4f06fc8df058	admin_api	2026-02-27 17:00:00	2026-02-16 21:34:13.155998	2026-02-16 21:34:13.155998	14	API
 e0b6621b-2752-46fe-b808-842af147db48	admin_websocket	2026-02-27 17:00:00	2026-02-16 21:34:22.492481	2026-02-16 21:34:22.492481	14	WEBSOCKET
-fd86d838-c063-44b9-89e6-1635382b293a	api token	2026-03-27 17:00:00	2026-03-03 12:12:36.878024	2026-03-03 12:12:36.878033	16	API
-338262ce-68a5-4e34-a07c-a01f6cd03daf	video token	2026-03-27 17:00:00	2026-03-03 12:20:24.644743	2026-03-03 12:20:24.644744	16	VIDEO_WEBSOCKET
-e3340abc-6741-42c1-b528-4043671b2591	Admin_API	2027-03-16 17:00:00	2026-03-16 18:11:48.201694	2026-03-16 18:11:48.201694	14	API
-61a63cb3-564f-4d23-a8f2-ad65a699533b	Admin_video	2027-03-15 17:00:00	2026-03-16 18:12:32.105287	2026-03-16 18:12:32.105287	14	VIDEO_WEBSOCKET
-0aacc8ea-3664-49ce-8fb7-805b3ea4f764	admin_rtsp_2	2027-03-15 17:00:00	2026-03-16 18:12:51.20936	2026-03-16 18:12:51.209361	14	RTSP
+31076acf-d4f1-4247-90aa-288a4398e7b7	admin_rtsp	2026-02-27 17:00:00	2026-02-16 21:34:49.14957	2026-02-16 21:34:49.149572	14	RTSP
+661c35ce-da88-4de7-a65a-32d5d8a01e0c	admin_video	2026-02-27 17:00:00	2026-02-17 17:48:54.216133	2026-02-17 17:48:54.216134	14	VIDEO_WEBSOCKET
 \.
 
 
@@ -1335,8 +1295,6 @@ COPY public.user_subscription (user_sub_id, is_activate, end_date, start_date, r
 13	f	2026-03-16 00:00:00	2026-02-16 00:00:00	5000	9	32
 11	t	2026-03-16 00:00:00	2026-02-16 00:00:00	\N	4	32
 14	t	2026-03-16 00:00:00	2026-02-16 00:00:00	\N	9	32
-15	f	2026-04-03 00:00:00	2026-03-03 00:00:00	1000	10	31
-16	t	2026-04-03 00:00:00	2026-03-03 00:00:00	990	10	31
 \.
 
 
@@ -1355,13 +1313,6 @@ COPY public.users (user_id, email, password, is_activate, created_at, updated_at
 5	test1@alpr.com	password	t	2025-03-04 15:34:30.071054	2025-03-04 15:34:30.071054
 4	tester@gmail.com	P@ssw0rd	t	2025-09-19 16:09:38.142294	2025-09-19 16:09:38.142294
 9	admin@gmail.com	$2b$12$XA09jhcoYaWzdfe9i6UN9OzkaBGHzN2JrMn/4P7DGo1tsvIoY30P.	t	2026-02-16 20:40:24.141746	2026-02-16 20:40:24.141746
-10	user000@gmail.com	$2b$12$4S4cdy3pdTjR7gw50lSbSOQVv/C1O9vHdGJG2zjEe2M5HogfPsUHi	t	2026-03-03 17:36:38.267813	2026-03-03 17:36:38.267813
-11	test_int@test.com	$2b$12$0eCSqVEp1Qxx6i4x8zJeruF1zTXHwfl8mVDm/NalrHMn2RiAyLq0u	t	2026-03-12 20:02:51.108679	2026-03-12 20:02:51.108679
-12	inttest1773320692@example.com	$2b$12$CMJwsjsT4AvzoivmMx9.j.ejm5z5EkySBiGpazjnkV/XSwrMi0JeS	t	2026-03-12 20:04:52.487523	2026-03-12 20:04:52.487523
-13	inttest1773320927@example.com	$2b$12$rAD0ITXFEmqRcGoARdOBkONHKTB4wVt0LfVVqossZKiMf16F.ix9K	t	2026-03-12 20:08:48.125845	2026-03-12 20:08:48.125845
-14	inttest1773321090@example.com	$2b$12$qWxwm64CwWbhlkTDH9rk9e6sL9f0KmqAc09svcw/bTpDk4AL2vSX2	t	2026-03-12 20:11:30.650782	2026-03-12 20:11:30.650782
-15	inttest1773321205@example.com	$2b$12$AdaJB/J3ca.kpT0zk7E1Bu9gyGmKkF9oKN8UOR3Fb9qbwra7xfAp.	t	2026-03-12 20:13:26.050041	2026-03-12 20:13:26.050041
-16	inttest1773684420@example.com	$2b$12$Ino8Gktrwc3oae3lhnXkb.q93oHGdzu0KbGi72.RTnFL3LJHtmUWS	t	2026-03-17 01:07:01.320361	2026-03-17 01:07:01.320361
 \.
 
 
@@ -1372,99 +1323,316 @@ COPY public.users (user_id, email, password, is_activate, created_at, updated_at
 --
 
 COPY public.video_logs (log_id, video_timestamp, score, plate_id, file_name, processing_time, car_bbox_id, plate_bbox_id, user_id, created_at, province, full_plate, format_flag, token_key, service_type, stream_id) FROM stdin;
-794	\N	\N	กท6506	plate_2_20260318_080653.jpg	\N	\N	\N	9	2026-03-18 15:06:53.340221	พิจิตร	กท6506 พิจิตร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-795	\N	\N	กฬ6506	plate_2_20260318_080654.jpg	\N	\N	\N	9	2026-03-18 15:06:54.700019	พิจิตร	กฬ6506 พิจิตร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-796	\N	\N	กท6500	plate_2_20260318_080657.jpg	\N	\N	\N	9	2026-03-18 15:06:57.413192	แพร่	กท6500 แพร่	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-797	\N	\N	กท0500	plate_2_20260318_080704.jpg	\N	\N	\N	9	2026-03-18 15:07:04.164838	ยโสธร	กท0500 ยโสธร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-784	\N	\N	ผว9829	800880cc-462c-4432-8cad-05fbb295f738_2026-03-16_18-15-15.jpg	\N	\N	\N	9	2026-03-17 01:15:15.730955	กรุงเทพมหานคร	ผว9829 กรุงเทพมหานคร	complete	61a63cb3-564f-4d23-a8f2-ad65a699533b	\N	\N
-798	\N	\N	กท6506	plate_2_20260328_080157.jpg	\N	\N	\N	9	2026-03-28 15:02:00.060882	พิจิตร	กท6506 พิจิตร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-799	\N	\N	กฬ6506	plate_2_20260328_080202.jpg	\N	\N	\N	9	2026-03-28 15:02:03.012511	พิจิตร	กฬ6506 พิจิตร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-800	\N	\N	กท6500	plate_2_20260328_080206.jpg	\N	\N	\N	9	2026-03-28 15:02:06.738113	แพร่	กท6500 แพร่	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-801	\N	\N	กท0500	plate_2_20260328_080213.jpg	\N	\N	\N	9	2026-03-28 15:02:13.664259	ยโสธร	กท0500 ยโสธร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-802	\N	\N	5ขท9820	plate_2_20260328_080254.jpg	\N	\N	\N	9	2026-03-28 15:02:54.355905	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-803	\N	\N	7ก975	plate_2_20260328_080309.jpg	\N	\N	\N	9	2026-03-28 15:03:09.524753	กรุงเทพมหานคร	7ก975 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-804	\N	\N	กท6506	plate_2_20260328_080427.jpg	\N	\N	\N	9	2026-03-28 15:04:27.160628	พิจิตร	กท6506 พิจิตร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-805	\N	\N	กฬ6506	plate_2_20260328_080428.jpg	\N	\N	\N	9	2026-03-28 15:04:28.493702	พิจิตร	กฬ6506 พิจิตร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-806	\N	\N	กท6500	plate_2_20260328_080431.jpg	\N	\N	\N	9	2026-03-28 15:04:31.048159	แพร่	กท6500 แพร่	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-807	\N	\N	กท0500	plate_2_20260328_080437.jpg	\N	\N	\N	9	2026-03-28 15:04:37.30031	ยโสธร	กท0500 ยโสธร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-808	\N	\N	5ขท9820	plate_2_20260328_080517.jpg	\N	\N	\N	9	2026-03-28 15:05:17.77847	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-809	\N	\N	7ก975	plate_2_20260328_080534.jpg	\N	\N	\N	9	2026-03-28 15:05:34.831863	กรุงเทพมหานคร	7ก975 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-810	\N	\N	กท6506	plate_2_20260328_103625.jpg	\N	\N	\N	9	2026-03-28 17:36:27.664609	พิจิตร	กท6506 พิจิตร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-811	\N	\N	กฬ6506	plate_2_20260328_103629.jpg	\N	\N	\N	9	2026-03-28 17:36:29.26172	พิจิตร	กฬ6506 พิจิตร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-812	\N	\N	กท6500	plate_2_20260328_103631.jpg	\N	\N	\N	9	2026-03-28 17:36:32.034673	แพร่	กท6500 แพร่	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-813	\N	\N	กท0500	plate_2_20260328_103639.jpg	\N	\N	\N	9	2026-03-28 17:36:39.171374	ยโสธร	กท0500 ยโสธร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-814	\N	\N	5ขท9820	plate_2_20260328_103728.jpg	\N	\N	\N	9	2026-03-28 17:37:29.091797	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-815	\N	\N	7ก975	plate_2_20260328_103752.jpg	\N	\N	\N	9	2026-03-28 17:37:52.162993	กรุงเทพมหานคร	7ก975 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-816	\N	\N	กข2227	plate_2_20260328_104010.jpg	\N	\N	\N	9	2026-03-28 17:40:11.025759	ชลบุรี	กข2227 ชลบุรี	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-817	\N	\N	กข2227	plate_2_20260328_104016.jpg	\N	\N	\N	9	2026-03-28 17:40:16.401058	แพร่	กข2227 แพร่	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-818	\N	\N	กข2227	plate_2_20260328_104017.jpg	\N	\N	\N	9	2026-03-28 17:40:18.031878	\N	กข2227	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-819	\N	\N	ขล5511	plate_2_20260328_104024.jpg	\N	\N	\N	9	2026-03-28 17:40:24.091451	ชลบุรี	ขล5511 ชลบุรี	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-820	\N	\N	ขล5511	plate_2_20260328_104025.jpg	\N	\N	\N	9	2026-03-28 17:40:25.629846	แพร่	ขล5511 แพร่	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-821	\N	\N	ขณ5511	plate_2_20260328_104026.jpg	\N	\N	\N	9	2026-03-28 17:40:26.404043	ชลบุรี	ขณ5511 ชลบุรี	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-822	\N	\N	จก5666	plate_2_20260328_104036.jpg	\N	\N	\N	9	2026-03-28 17:40:36.848333	แพร่	จก5666 แพร่	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-823	\N	\N	จก5806	plate_2_20260328_104037.jpg	\N	\N	\N	9	2026-03-28 17:40:37.72051	แพร่	จก5806 แพร่	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-824	\N	\N	ญบ3732	plate_2_20260328_104039.jpg	\N	\N	\N	9	2026-03-28 17:40:40.046026	กรุงเทพมหานคร	ญบ3732 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-825	\N	\N	ณข3732	plate_2_20260328_104041.jpg	\N	\N	\N	9	2026-03-28 17:40:41.516242	กรุงเทพมหานคร	ณข3732 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-826	\N	\N	ญศ2957	plate_2_20260328_104104.jpg	\N	\N	\N	9	2026-03-28 17:41:04.098773	กรุงเทพมหานคร	ญศ2957 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-827	\N	\N	ขล5511	plate_2_20260328_111127.jpg	\N	\N	\N	9	2026-03-28 18:11:27.318418	ชลบุรี	ขล5511 ชลบุรี	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-828	\N	\N	บล5511	plate_2_20260328_111128.jpg	\N	\N	\N	9	2026-03-28 18:11:28.060989	ชลบุรี	บล5511 ชลบุรี	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-829	\N	\N	ขถ5511	plate_2_20260328_111128.jpg	\N	\N	\N	9	2026-03-28 18:11:28.825266	แพร่	ขถ5511 แพร่	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-830	\N	\N	ขถ5511	plate_2_20260328_111129.jpg	\N	\N	\N	9	2026-03-28 18:11:29.572694	ชลบุรี	ขถ5511 ชลบุรี	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-831	\N	\N	ญบ3732	plate_2_20260328_111134.jpg	\N	\N	\N	9	2026-03-28 18:11:34.208337	กรุงเทพมหานคร	ญบ3732 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-832	\N	\N	ณข3732	plate_2_20260328_111135.jpg	\N	\N	\N	9	2026-03-28 18:11:35.717716	กรุงเทพมหานคร	ณข3732 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-833	\N	\N	ญศ2957	plate_2_20260328_111148.jpg	\N	\N	\N	9	2026-03-28 18:11:48.829195	กรุงเทพมหานคร	ญศ2957 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-834	\N	\N	1ขส8152	plate_2_20260328_111205.jpg	\N	\N	\N	9	2026-03-28 18:12:05.463335	กรุงเทพมหานคร	1ขส8152 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-835	\N	\N	2ฒง7023	plate_2_20260328_111219.jpg	\N	\N	\N	9	2026-03-28 18:12:19.360089	สมุทรสาคร	2ฒง7023 สมุทรสาคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-836	\N	\N	2ขง7023	plate_2_20260328_111220.jpg	\N	\N	\N	9	2026-03-28 18:12:20.121547	กรุงเทพมหานคร	2ขง7023 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-837	\N	\N	2ฒง7023	plate_2_20260328_111220.jpg	\N	\N	\N	9	2026-03-28 18:12:20.88518	กรุงเทพมหานคร	2ฒง7023 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-838	\N	\N	4ขณ9300	plate_2_20260328_111233.jpg	\N	\N	\N	9	2026-03-28 18:12:33.945885	กรุงเทพมหานคร	4ขณ9300 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-839	\N	\N	4ขณ0300	plate_2_20260328_111234.jpg	\N	\N	\N	9	2026-03-28 18:12:34.717025	กรุงเทพมหานคร	4ขณ0300 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-840	\N	\N	4ขณ9300	plate_2_20260328_111237.jpg	\N	\N	\N	9	2026-03-28 18:12:37.129764	กรุงเทพมหานคร	4ขณ9300 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-841	\N	\N	ฮกฐ8151	plate_2_20260328_111242.jpg	\N	\N	\N	9	2026-03-28 18:12:42.269633	กรุงเทพมหานคร	ฮกฐ8151 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-842	\N	\N	8กฐ5151	plate_2_20260328_111242.jpg	\N	\N	\N	9	2026-03-28 18:12:43.036799	กรุงเทพมหานคร	8กฐ5151 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-843	\N	\N	ญข3732	plate_2_20260328_111811.jpg	\N	\N	\N	9	2026-03-28 18:18:11.3537	กรุงเทพมหานคร	ญข3732 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-844	\N	\N	ญศ2957	plate_2_20260328_111826.jpg	\N	\N	\N	9	2026-03-28 18:18:26.168889	แพร่	ญศ2957 แพร่	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-845	\N	\N	1ขส8152	plate_2_20260328_111842.jpg	\N	\N	\N	9	2026-03-28 18:18:42.968424	กรุงเทพมหานคร	1ขส8152 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-846	\N	\N	4ขณ9300	plate_2_20260328_111855.jpg	\N	\N	\N	9	2026-03-28 18:18:55.659844	กรุงเทพมหานคร	4ขณ9300 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-847	\N	\N	4ขณ9300	plate_2_20260328_111858.jpg	\N	\N	\N	9	2026-03-28 18:18:58.772914	กรุงเทพมหานคร	4ขณ9300 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-848	\N	\N	4ขณ9300	plate_2_20260328_111859.jpg	\N	\N	\N	9	2026-03-28 18:18:59.533267	แพร่	4ขณ9300 แพร่	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-849	\N	\N	ฮกฐ8151	plate_2_20260328_111903.jpg	\N	\N	\N	9	2026-03-28 18:19:04.053307	กรุงเทพมหานคร	ฮกฐ8151 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-850	\N	\N	8กฐ6151	plate_2_20260328_111904.jpg	\N	\N	\N	9	2026-03-28 18:19:04.814574	กรุงเทพมหานคร	8กฐ6151 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-851	\N	\N	ญข3732	plate_2_20260328_112158.jpg	\N	\N	\N	9	2026-03-28 18:21:58.58408	กรุงเทพมหานคร	ญข3732 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-852	\N	\N	1ขฮ0152	plate_2_20260328_112214.jpg	\N	\N	\N	9	2026-03-28 18:22:14.329665	กรุงเทพมหานคร	1ขฮ0152 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-853	\N	\N	1ขส8152	plate_2_20260328_112215.jpg	\N	\N	\N	9	2026-03-28 18:22:15.07004	กรุงเทพมหานคร	1ขส8152 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-854	\N	\N	4ขณ09300	plate_2_20260328_112226.jpg	\N	\N	\N	9	2026-03-28 18:22:26.651204	กรุงเทพมหานคร	4ขณ09300 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-855	\N	\N	4ขณ9300	plate_2_20260328_112227.jpg	\N	\N	\N	9	2026-03-28 18:22:27.396129	กรุงเทพมหานคร	4ขณ9300 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-856	\N	\N	ฮกฐ5151	plate_2_20260328_112234.jpg	\N	\N	\N	9	2026-03-28 18:22:34.648247	กรุงเทพมหานคร	ฮกฐ5151 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-857	\N	\N	8กฐ5151	plate_2_20260328_112235.jpg	\N	\N	\N	9	2026-03-28 18:22:35.396445	กรุงเทพมหานคร	8กฐ5151 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-858	\N	\N	8กฐ8151	plate_2_20260328_112240.jpg	\N	\N	\N	9	2026-03-28 18:22:40.379198	กรุงเทพมหานคร	8กฐ8151 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-859	\N	\N	ญข3732	plate_2_20260328_112308.jpg	\N	\N	\N	9	2026-03-28 18:23:08.146673	กรุงเทพมหานคร	ญข3732 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-860	\N	\N	1ขฮ0152	plate_2_20260328_112323.jpg	\N	\N	\N	9	2026-03-28 18:23:23.893524	กรุงเทพมหานคร	1ขฮ0152 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-861	\N	\N	1ขส8152	plate_2_20260328_112324.jpg	\N	\N	\N	9	2026-03-28 18:23:24.633546	กรุงเทพมหานคร	1ขส8152 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-862	\N	\N	4ขณ09300	plate_2_20260328_112336.jpg	\N	\N	\N	9	2026-03-28 18:23:36.244304	กรุงเทพมหานคร	4ขณ09300 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-863	\N	\N	4ขณ9300	plate_2_20260328_112336.jpg	\N	\N	\N	9	2026-03-28 18:23:36.989305	กรุงเทพมหานคร	4ขณ9300 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-864	\N	\N	4ขณ9300	plate_2_20260328_112339.jpg	\N	\N	\N	9	2026-03-28 18:23:40.017229	กรุงเทพมหานคร	4ขณ9300 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-865	\N	\N	ฮกฐ5151	plate_2_20260328_112344.jpg	\N	\N	\N	9	2026-03-28 18:23:44.357114	กรุงเทพมหานคร	ฮกฐ5151 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-866	\N	\N	8กฐ5151	plate_2_20260328_112345.jpg	\N	\N	\N	9	2026-03-28 18:23:45.097735	กรุงเทพมหานคร	8กฐ5151 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-867	\N	\N	8กฐ8151	plate_2_20260328_112350.jpg	\N	\N	\N	9	2026-03-28 18:23:50.110788	กรุงเทพมหานคร	8กฐ8151 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-868	\N	\N	ญข3732	plate_2_20260328_112922.jpg	\N	\N	\N	9	2026-03-28 18:29:22.217215	กรุงเทพมหานคร	ญข3732 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-869	\N	\N	1ขส0152	plate_2_20260328_112938.jpg	\N	\N	\N	9	2026-03-28 18:29:38.589698	กรุงเทพมหานคร	1ขส0152 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-870	\N	\N	1ขส8152	plate_2_20260328_112939.jpg	\N	\N	\N	9	2026-03-28 18:29:39.352392	กรุงเทพมหานคร	1ขส8152 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-871	\N	\N	ฮกฐ8151	plate_2_20260328_112948.jpg	\N	\N	\N	9	2026-03-28 18:29:48.066786	กรุงเทพมหานคร	ฮกฐ8151 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-872	\N	\N	8กฐ5151	plate_2_20260328_112948.jpg	\N	\N	\N	9	2026-03-28 18:29:48.811304	กรุงเทพมหานคร	8กฐ5151 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-873	\N	\N	5ขท9820	plate_2_20260328_113001.jpg	\N	\N	\N	9	2026-03-28 18:30:01.157963	กำแพงเพชร	5ขท9820 กำแพงเพชร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-874	\N	\N	5ขท9820	plate_2_20260328_113001.jpg	\N	\N	\N	9	2026-03-28 18:30:01.938758	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-875	\N	\N	ญข3732	plate_2_20260328_113048.jpg	\N	\N	\N	9	2026-03-28 18:30:48.45538	กรุงเทพมหานคร	ญข3732 กรุงเทพมหานคร	complete	0aacc8ea-3664-49ce-8fb7-805b3ea4f764	RTSP	2
-698	\N	\N	กท6506	12d3fffd-0a4b-4eb8-aeee-4b71c78d1fe3_2026-03-03_12-22-14.jpg	\N	\N	\N	10	2026-03-03 19:22:15.019324	พิจิตร	กท6506 พิจิตร	complete	338262ce-68a5-4e34-a07c-a01f6cd03daf	\N	\N
-699	\N	\N	กท6500	81ed3bdb-d484-4f4c-ac9e-84e2ef204a15_2026-03-03_12-22-34.jpg	\N	\N	\N	10	2026-03-03 19:22:34.188425	พิจิตร	กท6500 พิจิตร	complete	338262ce-68a5-4e34-a07c-a01f6cd03daf	\N	\N
-731	\N	\N	กท6506	44bb9272-95c5-4b85-9461-b2ccfae9017a_2026-03-10_16-02-28.jpg	\N	\N	\N	10	2026-03-10 23:02:28.68698	พิจิตร	กท6506 พิจิตร	complete	338262ce-68a5-4e34-a07c-a01f6cd03daf	\N	\N
-782	\N	\N	กท6506	d9aa44dc-2a0e-41b3-bb73-fe12a37a0851_2026-03-16_18-13-20.jpg	\N	\N	\N	9	2026-03-17 01:13:20.939191	พิจิตร	กท6506 พิจิตร	complete	61a63cb3-564f-4d23-a8f2-ad65a699533b	\N	\N
-783	\N	\N	กท6500	61390be2-6117-426b-99d9-409b82c21f3a_2026-03-16_18-13-28.jpg	\N	\N	\N	9	2026-03-17 01:13:28.386897	พิจิตร	กท6500 พิจิตร	complete	61a63cb3-564f-4d23-a8f2-ad65a699533b	\N	\N
+519	\N	\N	5ขท9620	plate_2_20260218_220225.jpg	\N	\N	\N	9	2026-02-19 05:02:26.317572	กรุงเทพมหานคร	5ขท9620 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+539	\N	\N	ก99640	plate_2_20260218_222538.jpg	\N	\N	\N	9	2026-02-19 05:25:38.854688	\N	ก99640	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+540	\N	\N	4ก9871	plate_2_20260218_222541.jpg	\N	\N	\N	9	2026-02-19 05:25:41.519528	\N	4ก9871	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+541	\N	\N	1ก920	plate_2_20260218_222546.jpg	\N	\N	\N	9	2026-02-19 05:25:47.001709	\N	1ก920	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+562	\N	\N	กท6506	plate_2_20260218_224119.jpg	\N	\N	\N	9	2026-02-19 05:41:19.840275	พิจิตร	กท6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+563	\N	\N	กฬ6506	plate_2_20260218_224123.jpg	\N	\N	\N	9	2026-02-19 05:41:23.692838	พิจิตร	กฬ6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+564	\N	\N	กท6500	plate_2_20260218_224130.jpg	\N	\N	\N	9	2026-02-19 05:41:30.582824	แพร่	กท6500 แพร่	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+565	\N	\N	กท0500	plate_2_20260218_224148.jpg	\N	\N	\N	9	2026-02-19 05:41:48.624151	ยโสธร	กท0500 ยโสธร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+623	\N	\N	7ก975	plate_2_20260219_142110.jpg	\N	\N	\N	9	2026-02-19 21:21:11.1124	กรุงเทพมหานคร	7ก975 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+635	\N	\N	กท6506	plate_2_20260219_151904.jpg	\N	\N	\N	9	2026-02-19 22:19:04.505584	พิจิตร	กท6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+636	\N	\N	กฬ6506	plate_2_20260219_151907.jpg	\N	\N	\N	9	2026-02-19 22:19:07.683098	พิจิตร	กฬ6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+637	\N	\N	กท6500	plate_2_20260219_151922.jpg	\N	\N	\N	9	2026-02-19 22:19:22.582272	แพร่	กท6500 แพร่	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+638	\N	\N	กท0500	plate_2_20260219_151937.jpg	\N	\N	\N	9	2026-02-19 22:19:37.72971	ยโสธร	กท0500 ยโสธร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+639	\N	\N	5ขท9820	plate_2_20260219_152116.jpg	\N	\N	\N	9	2026-02-19 22:21:16.741093	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+640	\N	\N	5ขท9820	plate_2_20260219_152120.jpg	\N	\N	\N	9	2026-02-19 22:21:20.741504	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+641	\N	\N	7ก975	plate_2_20260219_152201.jpg	\N	\N	\N	9	2026-02-19 22:22:01.951781	กรุงเทพมหานคร	7ก975 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+647	\N	\N	กท6506	plate_2_20260219_153519.jpg	\N	\N	\N	9	2026-02-19 22:35:20.016094	พิจิตร	กท6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+648	\N	\N	กฬ6506	plate_2_20260219_153523.jpg	\N	\N	\N	9	2026-02-19 22:35:23.873111	พิจิตร	กฬ6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+649	\N	\N	กท6500	plate_2_20260219_153530.jpg	\N	\N	\N	9	2026-02-19 22:35:31.193228	แพร่	กท6500 แพร่	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+650	\N	\N	กท0500	plate_2_20260219_153548.jpg	\N	\N	\N	9	2026-02-19 22:35:48.961862	ยโสธร	กท0500 ยโสธร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+651	\N	\N	5ขท9820	plate_2_20260219_153743.jpg	\N	\N	\N	9	2026-02-19 22:37:44.245465	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+652	\N	\N	5ขท9820	plate_2_20260219_153748.jpg	\N	\N	\N	9	2026-02-19 22:37:48.712362	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+657	\N	\N	กท6500	e58ac22c-6455-45d9-87d1-5bfdff991308_2026-02-19_15-41-10.jpg	\N	\N	\N	9	2026-02-19 22:41:10.049151	พิจิตร	กท6500 พิจิตร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+658	\N	\N	ผว9829	c3af4519-bdeb-46fa-9de5-8fceb165dc2c_2026-02-19_15-42-59.jpg	\N	\N	\N	9	2026-02-19 22:42:59.911936	กรุงเทพมหานคร	ผว9829 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+663	\N	\N	กท0500	plate_2_20260219_182409.jpg	\N	\N	\N	9	2026-02-20 01:24:10.024302	ยโสธร	กท0500 ยโสธร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+664	\N	\N	5ขท9820	plate_2_20260219_182550.jpg	\N	\N	\N	9	2026-02-20 01:25:51.179833	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+665	\N	\N	5ขท9820	plate_2_20260219_182554.jpg	\N	\N	\N	9	2026-02-20 01:25:54.506894	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+666	\N	\N	7ก975	plate_2_20260219_182633.jpg	\N	\N	\N	9	2026-02-20 01:26:34.179026	กรุงเทพมหานคร	7ก975 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+520	\N	\N	5ขท9620	plate_2_20260218_220256.jpg	\N	\N	\N	9	2026-02-19 05:02:56.919751	กรุงเทพมหานคร	5ขท9620 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+521	\N	\N	5ขพ9820	plate_2_20260218_220318.jpg	\N	\N	\N	9	2026-02-19 05:03:19.019441	กรุงเทพมหานคร	5ขพ9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+522	\N	\N	5ขท9620	plate_2_20260218_220405.jpg	\N	\N	\N	9	2026-02-19 05:04:05.903405	กรุงเทพมหานคร	5ขท9620 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+523	\N	\N	5ขพ9820	plate_2_20260218_220451.jpg	\N	\N	\N	9	2026-02-19 05:04:52.150953	กรุงเทพมหานคร	5ขพ9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+542	\N	\N	ก99640	plate_2_20260218_223032.jpg	\N	\N	\N	9	2026-02-19 05:30:32.944522	\N	ก99640	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+543	\N	\N	4ก9871	plate_2_20260218_223034.jpg	\N	\N	\N	9	2026-02-19 05:30:35.005259	\N	4ก9871	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+544	\N	\N	5ร2820	plate_2_20260218_223038.jpg	\N	\N	\N	9	2026-02-19 05:30:38.482949	กรุงเทพมหานคร	5ร2820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+545	\N	\N	5ขพ9820	plate_2_20260218_223039.jpg	\N	\N	\N	9	2026-02-19 05:30:39.410198	กรุงเทพมหานคร	5ขพ9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+546	\N	\N	5ข9820	plate_2_20260218_223040.jpg	\N	\N	\N	9	2026-02-19 05:30:40.260059	\N	5ข9820	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+547	\N	\N	5ขท98209	plate_2_20260218_223040.jpg	\N	\N	\N	9	2026-02-19 05:30:41.130125	\N	5ขท98209	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+548	\N	\N	1ก920	plate_2_20260218_223041.jpg	\N	\N	\N	9	2026-02-19 05:30:41.93224	\N	1ก920	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+566	\N	\N	กท6506	plate_2_20260218_224320.jpg	\N	\N	\N	9	2026-02-19 05:43:20.606026	พิจิตร	กท6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+567	\N	\N	กฬ6506	plate_2_20260218_224324.jpg	\N	\N	\N	9	2026-02-19 05:43:24.433689	พิจิตร	กฬ6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+568	\N	\N	กท6500	plate_2_20260218_224331.jpg	\N	\N	\N	9	2026-02-19 05:43:31.278143	แพร่	กท6500 แพร่	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+569	\N	\N	กท0500	plate_2_20260218_224347.jpg	\N	\N	\N	9	2026-02-19 05:43:47.296103	ยโสธร	กท0500 ยโสธร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+570	\N	\N	3ขด9820	plate_2_20260218_224517.jpg	\N	\N	\N	9	2026-02-19 05:45:17.977515	กรุงเทพมหานคร	3ขด9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+571	\N	\N	กว9820	plate_2_20260218_224519.jpg	\N	\N	\N	9	2026-02-19 05:45:20.043237	กรุงเทพมหานคร	กว9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+572	\N	\N	กว9820	plate_2_20260218_224521.jpg	\N	\N	\N	9	2026-02-19 05:45:21.887348	\N	กว9820	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+573	\N	\N	5ขท9829	plate_2_20260218_224525.jpg	\N	\N	\N	9	2026-02-19 05:45:25.577156	\N	5ขท9829	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+574	\N	\N	5รท9820	plate_2_20260218_224528.jpg	\N	\N	\N	9	2026-02-19 05:45:29.138982	ร้อยเอ็ด	5รท9820 ร้อยเอ็ด	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+575	\N	\N	1ก9629	plate_2_20260218_224533.jpg	\N	\N	\N	9	2026-02-19 05:45:33.636975	\N	1ก9629	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+576	\N	\N	5ขท2620	plate_2_20260218_224536.jpg	\N	\N	\N	9	2026-02-19 05:45:37.254772	ปทุมธานี	5ขท2620 ปทุมธานี	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+577	\N	\N	5ขท9620	plate_2_20260218_224539.jpg	\N	\N	\N	9	2026-02-19 05:45:39.520622	ฉะเชิงเทรา	5ขท9620 ฉะเชิงเทรา	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+578	\N	\N	5ขท9820	plate_2_20260218_224541.jpg	\N	\N	\N	9	2026-02-19 05:45:41.815124	ปทุมธานี	5ขท9820 ปทุมธานี	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+579	\N	\N	5ขท9820	plate_2_20260218_224546.jpg	\N	\N	\N	9	2026-02-19 05:45:47.080272	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+580	\N	\N	5ขท9820	plate_2_20260218_224550.jpg	\N	\N	\N	9	2026-02-19 05:45:50.925088	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+581	\N	\N	1กฉ9791	plate_2_20260218_224620.jpg	\N	\N	\N	9	2026-02-19 05:46:21.202459	กรุงเทพมหานคร	1กฉ9791 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+582	\N	\N	1กฌ971	plate_2_20260218_224622.jpg	\N	\N	\N	9	2026-02-19 05:46:23.02615	\N	1กฌ971	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+583	\N	\N	1กฌ9761	plate_2_20260218_224625.jpg	\N	\N	\N	9	2026-02-19 05:46:25.48604	\N	1กฌ9761	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+584	\N	\N	7กว975	plate_2_20260218_224627.jpg	\N	\N	\N	9	2026-02-19 05:46:28.132069	\N	7กว975	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+585	\N	\N	1กฌ1795	plate_2_20260218_224629.jpg	\N	\N	\N	9	2026-02-19 05:46:29.907183	\N	1กฌ1795	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+586	\N	\N	7ขก9795	plate_2_20260218_224631.jpg	\N	\N	\N	9	2026-02-19 05:46:31.693114	\N	7ขก9795	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+587	\N	\N	7กฌ725	plate_2_20260218_224633.jpg	\N	\N	\N	9	2026-02-19 05:46:33.74243	ปทุมธานี	7กฌ725 ปทุมธานี	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+588	\N	\N	7กฌ725	plate_2_20260218_224635.jpg	\N	\N	\N	9	2026-02-19 05:46:35.745827	กรุงเทพมหานคร	7กฌ725 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+589	\N	\N	1กฌ795	plate_2_20260218_224637.jpg	\N	\N	\N	9	2026-02-19 05:46:37.549301	กรุงเทพมหานคร	1กฌ795 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+590	\N	\N	7ก975	plate_2_20260218_224639.jpg	\N	\N	\N	9	2026-02-19 05:46:39.541112	กรุงเทพมหานคร	7ก975 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+624	\N	\N	กท6506	plate_2_20260219_144050.jpg	\N	\N	\N	9	2026-02-19 21:40:50.470356	พิจิตร	กท6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+625	\N	\N	กฬ6506	plate_2_20260219_144053.jpg	\N	\N	\N	9	2026-02-19 21:40:53.742269	พิจิตร	กฬ6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+626	\N	\N	กท6500	plate_2_20260219_144059.jpg	\N	\N	\N	9	2026-02-19 21:41:00.095869	แพร่	กท6500 แพร่	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+627	\N	\N	กท0500	plate_2_20260219_144114.jpg	\N	\N	\N	9	2026-02-19 21:41:14.71486	ยโสธร	กท0500 ยโสธร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+524	\N	\N	5ขท98209	plate_2_20260218_220528.jpg	\N	\N	\N	9	2026-02-19 05:05:28.427651	\N	5ขท98209	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+525	\N	\N	5ข9820	plate_2_20260218_220555.jpg	\N	\N	\N	9	2026-02-19 05:05:55.388758	\N	5ข9820	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+526	\N	\N	ก99640	plate_2_20260218_220636.jpg	\N	\N	\N	9	2026-02-19 05:06:38.120265	\N	ก99640	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+527	\N	\N	1ก920	plate_2_20260218_220640.jpg	\N	\N	\N	9	2026-02-19 05:06:41.257856	\N	1ก920	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+528	\N	\N	5ขท98209	plate_2_20260218_220717.jpg	\N	\N	\N	9	2026-02-19 05:07:17.752087	\N	5ขท98209	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+529	\N	\N	5ขท9620	plate_2_20260218_220822.jpg	\N	\N	\N	9	2026-02-19 05:08:22.939245	กรุงเทพมหานคร	5ขท9620 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+549	\N	\N	ก99640	plate_2_20260218_223228.jpg	\N	\N	\N	9	2026-02-19 05:32:29.223664	\N	ก99640	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+550	\N	\N	4ก9871	plate_2_20260218_223231.jpg	\N	\N	\N	9	2026-02-19 05:32:31.422787	\N	4ก9871	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+551	\N	\N	5ร2820	plate_2_20260218_223234.jpg	\N	\N	\N	9	2026-02-19 05:32:34.960743	กรุงเทพมหานคร	5ร2820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+552	\N	\N	5ขพ9820	plate_2_20260218_223235.jpg	\N	\N	\N	9	2026-02-19 05:32:35.853917	กรุงเทพมหานคร	5ขพ9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+553	\N	\N	5ข9820	plate_2_20260218_223236.jpg	\N	\N	\N	9	2026-02-19 05:32:36.721192	\N	5ข9820	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+554	\N	\N	5ขท98209	plate_2_20260218_223237.jpg	\N	\N	\N	9	2026-02-19 05:32:37.569297	\N	5ขท98209	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+555	\N	\N	1ก920	plate_2_20260218_223238.jpg	\N	\N	\N	9	2026-02-19 05:32:38.367477	\N	1ก920	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+591	\N	\N	กท6506	plate_2_20260218_224949.jpg	\N	\N	\N	9	2026-02-19 05:49:50.750573	พิจิตร	กท6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+592	\N	\N	กท6506	plate_2_20260218_224955.jpg	\N	\N	\N	9	2026-02-19 05:49:55.341369	พิจิตร	กท6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+593	\N	\N	กฬ6506	plate_2_20260218_224957.jpg	\N	\N	\N	9	2026-02-19 05:49:57.421594	พิจิตร	กฬ6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+594	\N	\N	กท6500	plate_2_20260218_225004.jpg	\N	\N	\N	9	2026-02-19 05:50:04.972881	แพร่	กท6500 แพร่	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+595	\N	\N	กท0500	plate_2_20260218_225022.jpg	\N	\N	\N	9	2026-02-19 05:50:22.529134	ยโสธร	กท0500 ยโสธร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+596	\N	\N	กท6506	plate_2_20260218_225129.jpg	\N	\N	\N	9	2026-02-19 05:51:30.202633	พิจิตร	กท6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+597	\N	\N	กฬ6506	plate_2_20260218_225134.jpg	\N	\N	\N	9	2026-02-19 05:51:34.380734	พิจิตร	กฬ6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+598	\N	\N	กท6500	plate_2_20260218_225141.jpg	\N	\N	\N	9	2026-02-19 05:51:41.587132	แพร่	กท6500 แพร่	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+599	\N	\N	กท0500	plate_2_20260218_225159.jpg	\N	\N	\N	9	2026-02-19 05:51:59.28707	ยโสธร	กท0500 ยโสธร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+600	\N	\N	1ก9629	plate_2_20260218_225344.jpg	\N	\N	\N	9	2026-02-19 05:53:44.890385	\N	1ก9629	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+601	\N	\N	5ขท2620	plate_2_20260218_225346.jpg	\N	\N	\N	9	2026-02-19 05:53:46.939427	ปทุมธานี	5ขท2620 ปทุมธานี	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+602	\N	\N	5ขท9620	plate_2_20260218_225348.jpg	\N	\N	\N	9	2026-02-19 05:53:49.061242	ฉะเชิงเทรา	5ขท9620 ฉะเชิงเทรา	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+603	\N	\N	5ขท9820	plate_2_20260218_225350.jpg	\N	\N	\N	9	2026-02-19 05:53:51.053711	ปทุมธานี	5ขท9820 ปทุมธานี	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+604	\N	\N	5ขท9820	plate_2_20260218_225354.jpg	\N	\N	\N	9	2026-02-19 05:53:55.188829	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+605	\N	\N	5ขท9820	plate_2_20260218_225358.jpg	\N	\N	\N	9	2026-02-19 05:53:59.200687	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+628	\N	\N	กท6506	plate_2_20260219_145236.jpg	\N	\N	\N	9	2026-02-19 21:52:36.764153	พิจิตร	กท6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+629	\N	\N	กฬ6506	plate_2_20260219_145240.jpg	\N	\N	\N	9	2026-02-19 21:52:40.721336	พิจิตร	กฬ6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+630	\N	\N	กท6500	plate_2_20260219_145246.jpg	\N	\N	\N	9	2026-02-19 21:52:46.291683	แพร่	กท6500 แพร่	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+642	\N	\N	กท6506	plate_2_20260219_152521.jpg	\N	\N	\N	9	2026-02-19 22:25:22.133263	พิจิตร	กท6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+643	\N	\N	กฬ6506	plate_2_20260219_152525.jpg	\N	\N	\N	9	2026-02-19 22:25:25.36427	พิจิตร	กฬ6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+644	\N	\N	กท6500	plate_2_20260219_152531.jpg	\N	\N	\N	9	2026-02-19 22:25:32.090659	แพร่	กท6500 แพร่	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+645	\N	\N	กท0500	plate_2_20260219_152546.jpg	\N	\N	\N	9	2026-02-19 22:25:46.566138	ยโสธร	กท0500 ยโสธร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+653	\N	\N	กท6506	plate_2_20260219_153829.jpg	\N	\N	\N	9	2026-02-19 22:38:30.231587	พิจิตร	กท6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+654	\N	\N	กฬ6506	plate_2_20260219_153833.jpg	\N	\N	\N	9	2026-02-19 22:38:33.749537	พิจิตร	กฬ6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+655	\N	\N	กท6500	plate_2_20260219_153839.jpg	\N	\N	\N	9	2026-02-19 22:38:39.96438	แพร่	กท6500 แพร่	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+659	\N	\N	กท6506	da29398d-8b3c-4c11-b504-8cb3c70b17d0_2026-02-19_16-41-52.jpg	\N	\N	\N	9	2026-02-19 23:41:52.231564	พิจิตร	กท6506 พิจิตร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+660	\N	\N	กท6506	plate_2_20260219_182342.jpg	\N	\N	\N	9	2026-02-20 01:23:43.528856	พิจิตร	กท6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+661	\N	\N	กฬ6506	plate_2_20260219_182346.jpg	\N	\N	\N	9	2026-02-20 01:23:47.056042	พิจิตร	กฬ6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+662	\N	\N	กท6500	plate_2_20260219_182353.jpg	\N	\N	\N	9	2026-02-20 01:23:53.748327	แพร่	กท6500 แพร่	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+530	\N	\N	ก99640	plate_2_20260218_221921.jpg	\N	\N	\N	9	2026-02-19 05:19:22.000949	\N	ก99640	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+531	\N	\N	4ก9871	plate_2_20260218_221923.jpg	\N	\N	\N	9	2026-02-19 05:19:24.189703	\N	4ก9871	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+532	\N	\N	1ก920	plate_2_20260218_221928.jpg	\N	\N	\N	9	2026-02-19 05:19:28.834696	\N	1ก920	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+556	\N	\N	กท6506	518c2b30-9a53-4eb1-a52c-cebf38eae190_2026-02-18_22-33-42.jpg	\N	\N	\N	9	2026-02-19 05:33:42.788532	พิจิตร	กท6506 พิจิตร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+356	\N	\N	3ข99471	6f2ce930-fe89-4256-9fb5-6ec48603ee79_2026-02-17_23-26-59.jpg	\N	\N	\N	9	2026-02-18 06:26:59.577945	กรุงเทพมหานคร	3ข99471 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+357	\N	\N	ก99710	4bce4527-c868-4192-99e5-d2a0398124f2_2026-02-17_23-27-03.jpg	\N	\N	\N	9	2026-02-18 06:27:03.582598	\N	ก99710	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+358	\N	\N	1ขต9975	a2c63afa-cb17-49e7-a55b-ada4aa31bfd6_2026-02-17_23-27-07.jpg	\N	\N	\N	9	2026-02-18 06:27:07.417836	\N	1ขต9975	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+359	\N	\N	ผว9829	5c9cc26d-9559-435c-84de-1fda023c9c98_2026-02-17_23-27-11.jpg	\N	\N	\N	9	2026-02-18 06:27:11.270875	กรุงเทพมหานคร	ผว9829 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+360	\N	\N	1กท9429	ce99b253-2ac0-4146-94fe-5552edd02257_2026-02-17_23-27-15.jpg	\N	\N	\N	9	2026-02-18 06:27:15.283231	กำแพงเพชร	1กท9429 กำแพงเพชร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+361	\N	\N	5ขท9820	0152cce3-c707-4bed-90b6-77b4038fc91b_2026-02-17_23-27-19.jpg	\N	\N	\N	9	2026-02-18 06:27:19.213334	ปทุมธานี	5ขท9820 ปทุมธานี	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+362	\N	\N	5ขท9820	0c1a1bc8-245c-423d-a82f-9bf829fa710a_2026-02-17_23-27-23.jpg	\N	\N	\N	9	2026-02-18 06:27:23.074987	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+363	\N	\N	7ก191	b248ceea-0f9a-4b92-a633-e430db2a5520_2026-02-17_23-27-30.jpg	\N	\N	\N	9	2026-02-18 06:27:30.621488	ระยอง	7ก191 ระยอง	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+364	\N	\N	7ก6702	0e8bbc3b-01eb-4646-af95-c06eed0470b2_2026-02-17_23-27-34.jpg	\N	\N	\N	9	2026-02-18 06:27:34.471131	ระยอง	7ก6702 ระยอง	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+365	\N	\N	1ก9791	f4181e8c-589e-48f4-953c-4498a558e72a_2026-02-17_23-27-38.jpg	\N	\N	\N	9	2026-02-18 06:27:38.294945	\N	1ก9791	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+366	\N	\N	7กญ9791	6ed8edd5-9d71-4ca4-b680-d50ba1955acf_2026-02-17_23-27-42.jpg	\N	\N	\N	9	2026-02-18 06:27:42.129241	\N	7กญ9791	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+367	\N	\N	1กฌ971	0ed1d0a4-4a57-4d40-a5e2-84163bb72042_2026-02-17_23-27-45.jpg	\N	\N	\N	9	2026-02-18 06:27:45.970397	\N	1กฌ971	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+368	\N	\N	1กฌ795	cb3363da-42da-4c1d-b0c8-96052d69e4f0_2026-02-17_23-27-49.jpg	\N	\N	\N	9	2026-02-18 06:27:49.829443	\N	1กฌ795	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+369	\N	\N	7กฌ9725	07d2bb00-d818-4172-87d4-e1f2550511fa_2026-02-17_23-27-53.jpg	\N	\N	\N	9	2026-02-18 06:27:53.663647	กรุงเทพมหานคร	7กฌ9725 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+370	\N	\N	กท6506	e91fd3cf-1e13-4cc1-8ae0-dfacaf3730c1_2026-02-18_14-11-00.jpg	\N	\N	\N	9	2026-02-18 21:11:00.265132	พิจิตร	กท6506 พิจิตร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+371	\N	\N	กท6506	b339bbf2-5f05-4907-b1e6-04a45164eab3_2026-02-18_14-11-08.jpg	\N	\N	\N	9	2026-02-18 21:11:08.642677	แพร่	กท6506 แพร่	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+372	\N	\N	4ฒณ111	ae4ada81-5713-4b7d-b1ee-02e0f98ebea2_2026-02-18_14-11-44.jpg	\N	\N	\N	9	2026-02-18 21:11:44.425594	\N	4ฒณ111	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+373	\N	\N	3ท1	affa21ff-dc8a-4e20-8ee5-647e93047da2_2026-02-18_14-12-16.jpg	\N	\N	\N	9	2026-02-18 21:12:16.323681	\N	3ท1	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+374	\N	\N	9ษ9914	ad79fecc-3083-4ea6-af75-e24c7d1f156b_2026-02-18_14-12-20.jpg	\N	\N	\N	9	2026-02-18 21:12:20.780847	\N	9ษ9914	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+375	\N	\N	3ข99471	e5e86500-f0f0-409e-9794-ca4921e57e77_2026-02-18_14-12-25.jpg	\N	\N	\N	9	2026-02-18 21:12:25.390656	กรุงเทพมหานคร	3ข99471 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+376	\N	\N	ก99710	a8d9891e-3ec5-4b30-8012-e3f5d4a1b40f_2026-02-18_14-12-29.jpg	\N	\N	\N	9	2026-02-18 21:12:29.593807	\N	ก99710	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+377	\N	\N	1ขต9975	cbc1483a-a13d-4b51-8eda-2a9964b054fb_2026-02-18_14-12-33.jpg	\N	\N	\N	9	2026-02-18 21:12:33.899699	\N	1ขต9975	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+378	\N	\N	ผว9829	1d0139e6-b4ff-4cb9-8c71-4152ce1fa7fe_2026-02-18_14-12-38.jpg	\N	\N	\N	9	2026-02-18 21:12:38.288482	กรุงเทพมหานคร	ผว9829 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+379	\N	\N	1กท9429	d11a8d3b-3331-47f0-aa43-34a6e774cd89_2026-02-18_14-12-42.jpg	\N	\N	\N	9	2026-02-18 21:12:42.661992	กำแพงเพชร	1กท9429 กำแพงเพชร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+380	\N	\N	5ขท9820	f0f2afb4-f9e4-4a14-b458-7c2e098a4f4b_2026-02-18_14-12-46.jpg	\N	\N	\N	9	2026-02-18 21:12:46.734543	ปทุมธานี	5ขท9820 ปทุมธานี	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+381	\N	\N	5ขท9820	6a2f3c8a-80ff-4c83-89a3-cdf15d1ea1c6_2026-02-18_14-12-50.jpg	\N	\N	\N	9	2026-02-18 21:12:50.91502	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+382	\N	\N	7ก191	aa0fdb23-dc1a-472c-9913-ec77c9a47679_2026-02-18_14-12-59.jpg	\N	\N	\N	9	2026-02-18 21:12:59.414185	ระยอง	7ก191 ระยอง	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+383	\N	\N	7ก6702	c9bdc6f7-4255-4ab9-9209-621afbf02066_2026-02-18_14-13-03.jpg	\N	\N	\N	9	2026-02-18 21:13:03.700289	ระยอง	7ก6702 ระยอง	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+384	\N	\N	1ก9791	30e09544-fc02-4f96-9473-0acce9a98ac4_2026-02-18_14-13-07.jpg	\N	\N	\N	9	2026-02-18 21:13:07.823737	\N	1ก9791	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+385	\N	\N	7กญ9791	2279e864-9af7-4e57-a160-f83ef7d6959e_2026-02-18_14-13-11.jpg	\N	\N	\N	9	2026-02-18 21:13:11.852338	\N	7กญ9791	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+386	\N	\N	1กฌ971	ee0c7cd2-4583-4407-80e0-90a53fbddf07_2026-02-18_14-13-15.jpg	\N	\N	\N	9	2026-02-18 21:13:15.922597	\N	1กฌ971	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+387	\N	\N	1กฌ795	7f88095a-b486-4b5f-a731-ed98a43e8d05_2026-02-18_14-13-20.jpg	\N	\N	\N	9	2026-02-18 21:13:20.025424	\N	1กฌ795	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+388	\N	\N	7กฌ9725	8eb19856-0606-43c5-b379-b38f8ad794fc_2026-02-18_14-13-24.jpg	\N	\N	\N	9	2026-02-18 21:13:24.026503	กรุงเทพมหานคร	7กฌ9725 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+557	\N	\N	กท6500	664abc4d-1185-47e9-8d27-d7e4e671131b_2026-02-18_22-33-51.jpg	\N	\N	\N	9	2026-02-19 05:33:51.54436	พิจิตร	กท6500 พิจิตร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+389	\N	\N	กท6506	8c3efc1e-6418-4149-95ed-26f9e240c806_2026-02-18_16-29-56.jpg	\N	\N	\N	9	2026-02-18 23:29:56.248793	พิจิตร	กท6506 พิจิตร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+390	\N	\N	กท6506	17ffc172-4f2d-447a-86fe-ec637796da95_2026-02-18_16-30-05.jpg	\N	\N	\N	9	2026-02-18 23:30:05.33471	แพร่	กท6506 แพร่	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+391	\N	\N	4ฒณ111	6aa5bf62-7ba8-4a8c-a6ad-3bbb6202fba0_2026-02-18_16-30-47.jpg	\N	\N	\N	9	2026-02-18 23:30:47.673997	\N	4ฒณ111	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+392	\N	\N	3ท1	272aef12-c050-41cf-a71b-42b637c2804e_2026-02-18_16-31-23.jpg	\N	\N	\N	9	2026-02-18 23:31:23.739386	\N	3ท1	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+393	\N	\N	9ษ9914	8bbc3545-e9be-47c5-a660-262970ba5193_2026-02-18_16-31-28.jpg	\N	\N	\N	9	2026-02-18 23:31:28.174675	\N	9ษ9914	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+394	\N	\N	3ข99471	95a24c7a-712f-4192-8441-1b262e971ced_2026-02-18_16-31-32.jpg	\N	\N	\N	9	2026-02-18 23:31:32.546119	กรุงเทพมหานคร	3ข99471 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+395	\N	\N	ก99710	25fca677-b377-4d98-88d1-b185e120df81_2026-02-18_16-31-37.jpg	\N	\N	\N	9	2026-02-18 23:31:37.073069	\N	ก99710	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+396	\N	\N	1ขต9975	5a74dcf3-bf2e-451a-a040-3503de6ee48a_2026-02-18_16-31-41.jpg	\N	\N	\N	9	2026-02-18 23:31:41.458419	\N	1ขต9975	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+397	\N	\N	ผว9829	b1af07c9-af52-4424-92c7-9f38adaf0760_2026-02-18_16-31-45.jpg	\N	\N	\N	9	2026-02-18 23:31:45.801004	กรุงเทพมหานคร	ผว9829 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+398	\N	\N	1กท9429	11f421cd-7aaf-4800-984f-cda07c3942d6_2026-02-18_16-31-50.jpg	\N	\N	\N	9	2026-02-18 23:31:50.423176	กำแพงเพชร	1กท9429 กำแพงเพชร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+399	\N	\N	5ขท9820	f2bc01b5-4bc4-461e-972c-754b29585e6f_2026-02-18_16-31-54.jpg	\N	\N	\N	9	2026-02-18 23:31:54.756068	ปทุมธานี	5ขท9820 ปทุมธานี	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+400	\N	\N	5ขท9820	4a534e8a-04e7-40f0-b379-8e09802df52a_2026-02-18_16-31-59.jpg	\N	\N	\N	9	2026-02-18 23:31:59.192165	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+401	\N	\N	7ก191	44c0ec55-df4b-44e2-91a2-5621677f32de_2026-02-18_16-32-09.jpg	\N	\N	\N	9	2026-02-18 23:32:09.075502	ระยอง	7ก191 ระยอง	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+402	\N	\N	7ก6702	db9decd3-dfe0-41f1-bd70-7bce89687f22_2026-02-18_16-32-13.jpg	\N	\N	\N	9	2026-02-18 23:32:13.617106	ระยอง	7ก6702 ระยอง	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+403	\N	\N	1ก9791	171ae73c-b08a-4f91-8ef0-ce8e793fe326_2026-02-18_16-32-18.jpg	\N	\N	\N	9	2026-02-18 23:32:18.161463	\N	1ก9791	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+404	\N	\N	7กญ9791	275f78a8-805c-4ab7-a374-0700fc39d78c_2026-02-18_16-32-22.jpg	\N	\N	\N	9	2026-02-18 23:32:22.537424	\N	7กญ9791	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+405	\N	\N	1กฌ971	21225f05-c3f9-42d7-8c70-d6037cd43247_2026-02-18_16-32-27.jpg	\N	\N	\N	9	2026-02-18 23:32:27.018785	\N	1กฌ971	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+406	\N	\N	1กฌ795	7877313a-707c-4bd1-9a2c-39c52b4ef41f_2026-02-18_16-32-31.jpg	\N	\N	\N	9	2026-02-18 23:32:31.485805	\N	1กฌ795	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+407	\N	\N	7กฌ9725	04a14244-ba15-4631-9f82-ab81ab7de1d4_2026-02-18_16-32-35.jpg	\N	\N	\N	9	2026-02-18 23:32:35.81383	กรุงเทพมหานคร	7กฌ9725 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+408	\N	\N	กท6506	01601c87-5fae-4764-9f6d-53e93ea19ae3_2026-02-18_16-47-21.jpg	\N	\N	\N	9	2026-02-18 23:47:21.943436	พิจิตร	กท6506 พิจิตร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+409	\N	\N	กท6506	9e5064f4-6f1f-44f8-b535-46e5b49d551b_2026-02-18_16-47-30.jpg	\N	\N	\N	9	2026-02-18 23:47:30.317089	แพร่	กท6506 แพร่	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+410	\N	\N	4ฒณ111	46abe091-43c5-4132-8857-5f6627cc33af_2026-02-18_16-48-10.jpg	\N	\N	\N	9	2026-02-18 23:48:10.704913	\N	4ฒณ111	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+411	\N	\N	3ท1	d6cd6db4-2165-4afc-b489-5867a68ecd1c_2026-02-18_16-48-43.jpg	\N	\N	\N	9	2026-02-18 23:48:43.582583	\N	3ท1	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+412	\N	\N	9ษ9914	fbd4d3c9-9c5f-4d39-92e2-af32292570c3_2026-02-18_16-48-47.jpg	\N	\N	\N	9	2026-02-18 23:48:47.798469	\N	9ษ9914	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+413	\N	\N	3ข99471	7757a3d2-d3f1-48f0-943c-58d65a98ed99_2026-02-18_16-48-52.jpg	\N	\N	\N	9	2026-02-18 23:48:52.160745	กรุงเทพมหานคร	3ข99471 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+414	\N	\N	ก99710	117e7d56-3388-4407-88e8-27619b165aea_2026-02-18_16-48-56.jpg	\N	\N	\N	9	2026-02-18 23:48:56.620858	\N	ก99710	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+415	\N	\N	1ขต9975	f4154cf8-c3c6-4694-bef5-4c3d5b092cec_2026-02-18_16-49-01.jpg	\N	\N	\N	9	2026-02-18 23:49:01.014526	\N	1ขต9975	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+416	\N	\N	ผว9829	0e684365-3799-4714-9fa1-1d652ba28a3c_2026-02-18_16-49-05.jpg	\N	\N	\N	9	2026-02-18 23:49:05.465361	กรุงเทพมหานคร	ผว9829 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+417	\N	\N	1กท9429	ef0990c8-f683-4f0b-bb41-6ebcd0718d3d_2026-02-18_16-49-09.jpg	\N	\N	\N	9	2026-02-18 23:49:09.692655	กำแพงเพชร	1กท9429 กำแพงเพชร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+418	\N	\N	กท6506	be362e10-b3f7-4632-8730-855e0efd0f72_2026-02-18_16-51-55.jpg	\N	\N	\N	9	2026-02-18 23:51:55.5397	พิจิตร	กท6506 พิจิตร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+419	\N	\N	กท6506	a5055fff-932c-46ba-8d8a-f6d26b9e263c_2026-02-18_16-52-05.jpg	\N	\N	\N	9	2026-02-18 23:52:05.414281	แพร่	กท6506 แพร่	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+420	\N	\N	4ฒณ111	fa537002-9020-4d08-a429-40ef3dcf8a75_2026-02-18_16-52-41.jpg	\N	\N	\N	9	2026-02-18 23:52:41.356867	\N	4ฒณ111	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+421	\N	\N	3ท1	d88d3629-06b6-4762-b830-7d23a28a085b_2026-02-18_16-53-13.jpg	\N	\N	\N	9	2026-02-18 23:53:13.046787	\N	3ท1	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+422	\N	\N	9ษ9914	d9d7c0fb-1586-483a-a968-a11d7243d5d1_2026-02-18_16-53-17.jpg	\N	\N	\N	9	2026-02-18 23:53:17.199853	\N	9ษ9914	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+423	\N	\N	3ข99471	de5595c9-ec0c-4606-b326-91f93c737570_2026-02-18_16-53-21.jpg	\N	\N	\N	9	2026-02-18 23:53:21.374965	กรุงเทพมหานคร	3ข99471 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+424	\N	\N	ก99710	45962981-4c39-48c3-99aa-52cbbb78a748_2026-02-18_16-53-25.jpg	\N	\N	\N	9	2026-02-18 23:53:25.976912	\N	ก99710	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+425	\N	\N	1ขต9975	67af6237-520d-4af9-bf49-e4f1989ea95e_2026-02-18_16-53-30.jpg	\N	\N	\N	9	2026-02-18 23:53:30.098627	\N	1ขต9975	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+426	\N	\N	ผว9829	5454e8dd-faf0-4605-b35f-18e306ec46c0_2026-02-18_16-53-34.jpg	\N	\N	\N	9	2026-02-18 23:53:34.303626	กรุงเทพมหานคร	ผว9829 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+427	\N	\N	1กท9429	49746bf7-81c2-4011-824b-f9affe64434d_2026-02-18_16-53-38.jpg	\N	\N	\N	9	2026-02-18 23:53:38.386432	กำแพงเพชร	1กท9429 กำแพงเพชร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+428	\N	\N	5ขท9820	daf995fe-69a7-4ce3-beb3-16cf38a4ff36_2026-02-18_16-53-42.jpg	\N	\N	\N	9	2026-02-18 23:53:42.407902	ปทุมธานี	5ขท9820 ปทุมธานี	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+429	\N	\N	5ขท9820	893725a5-be99-4cab-8617-50624d761100_2026-02-18_16-53-46.jpg	\N	\N	\N	9	2026-02-18 23:53:46.566478	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+430	\N	\N	7ก191	fbc39b3a-d928-4fc9-a04e-0bf7b9a59650_2026-02-18_16-53-54.jpg	\N	\N	\N	9	2026-02-18 23:53:54.834077	ระยอง	7ก191 ระยอง	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+431	\N	\N	7ก6702	45c45d88-d1b5-44ff-847e-6068c5c62196_2026-02-18_16-53-59.jpg	\N	\N	\N	9	2026-02-18 23:53:59.028662	ระยอง	7ก6702 ระยอง	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+432	\N	\N	1ก9791	d17b4445-86dc-4d60-a85b-dbc7f89231a6_2026-02-18_16-54-03.jpg	\N	\N	\N	9	2026-02-18 23:54:03.426203	\N	1ก9791	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+433	\N	\N	7กญ9791	bc667412-1b50-45cc-a099-9c86cedda403_2026-02-18_16-54-07.jpg	\N	\N	\N	9	2026-02-18 23:54:07.720457	\N	7กญ9791	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+434	\N	\N	1กฌ971	4254a277-4a2f-4f36-ab12-579c302a47be_2026-02-18_16-54-12.jpg	\N	\N	\N	9	2026-02-18 23:54:12.206758	\N	1กฌ971	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+435	\N	\N	1กฌ795	3ab729c3-5818-48fa-9203-c0b477e169a9_2026-02-18_16-54-16.jpg	\N	\N	\N	9	2026-02-18 23:54:16.494338	\N	1กฌ795	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+436	\N	\N	7กฌ9725	6e1b2108-cc5d-4425-b89d-307d29d1e2d0_2026-02-18_16-54-20.jpg	\N	\N	\N	9	2026-02-18 23:54:20.753928	กรุงเทพมหานคร	7กฌ9725 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+437	\N	\N	กท6506	97e2e2fe-62fa-4081-a481-3200aafd5014_2026-02-18_17-03-09.jpg	\N	\N	\N	9	2026-02-19 00:03:09.042206	พิจิตร	กท6506 พิจิตร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+438	\N	\N	กท6500	45caa3b3-d343-4942-a0fc-52780c0078ee_2026-02-18_17-03-17.jpg	\N	\N	\N	9	2026-02-19 00:03:17.78936	พิจิตร	กท6500 พิจิตร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+439	\N	\N	3ค99471	88f18771-ca0d-46a1-80f0-d35bfc288d90_2026-02-18_17-04-37.jpg	\N	\N	\N	9	2026-02-19 00:04:37.537791	กรุงเทพมหานคร	3ค99471 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+440	\N	\N	คก96710	d1a72940-3fff-4130-b03e-ff94a4f2648f_2026-02-18_17-04-42.jpg	\N	\N	\N	9	2026-02-19 00:04:42.102309	\N	คก96710	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+441	\N	\N	1ขต9925	ce29bc47-a988-4101-8a47-17ed3059476f_2026-02-18_17-04-46.jpg	\N	\N	\N	9	2026-02-19 00:04:46.543359	กรุงเทพมหานคร	1ขต9925 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+442	\N	\N	ผว9829	fd1e8595-cfdd-45f7-bea7-e68f2845bcd3_2026-02-18_17-04-51.jpg	\N	\N	\N	9	2026-02-19 00:04:51.005109	กรุงเทพมหานคร	ผว9829 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+443	\N	\N	1ก9629	152eca51-7e9b-4d10-973b-8869c8bc4b46_2026-02-18_17-04-55.jpg	\N	\N	\N	9	2026-02-19 00:04:55.395053	\N	1ก9629	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+444	\N	\N	5ขท9820	324315be-e73a-4f80-a8af-e51f209f098a_2026-02-18_17-05-21.jpg	\N	\N	\N	9	2026-02-19 00:05:21.227477	ปทุมธานี	5ขท9820 ปทุมธานี	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+445	\N	\N	5ขท9820	9350eff0-d068-424f-8255-5119a3cd3cfb_2026-02-18_17-05-25.jpg	\N	\N	\N	9	2026-02-19 00:05:25.667175	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+446	\N	\N	7ก6702	1b88d5eb-62f1-4697-9b50-f0f9d18ff6e9_2026-02-18_17-05-38.jpg	\N	\N	\N	9	2026-02-19 00:05:38.418885	แพร่	7ก6702 แพร่	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+447	\N	\N	1ก9791	4ad258d3-1359-4ac3-90f8-5e82584c2d6a_2026-02-18_17-05-42.jpg	\N	\N	\N	9	2026-02-19 00:05:42.929444	\N	1ก9791	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+448	\N	\N	7กญ9711	8b7bba18-e1c4-450a-8bbf-3897c62cd9d1_2026-02-18_17-05-47.jpg	\N	\N	\N	9	2026-02-19 00:05:47.325413	\N	7กญ9711	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+449	\N	\N	1กฌ971	5a9b91a0-97d0-4cd3-9184-de3ba2a81e13_2026-02-18_17-05-51.jpg	\N	\N	\N	9	2026-02-19 00:05:51.782305	\N	1กฌ971	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+450	\N	\N	1กฌ795	7708ac36-9643-462e-bc51-26e096efa4d9_2026-02-18_17-05-56.jpg	\N	\N	\N	9	2026-02-19 00:05:56.232686	\N	1กฌ795	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+451	\N	\N	7กฌ9725	8225b3c8-0876-4cdb-b3b2-939e3e6d03f2_2026-02-18_17-06-00.jpg	\N	\N	\N	9	2026-02-19 00:06:00.569577	กรุงเทพมหานคร	7กฌ9725 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+452	\N	\N	7ก9795	b2feba4d-bd80-478d-af8a-e765a9e7de17_2026-02-18_17-06-05.jpg	\N	\N	\N	9	2026-02-19 00:06:05.193034	หนองคาย	7ก9795 หนองคาย	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+453	\N	\N	กท6506	a500f582-89ce-4702-968c-1c6f24d2200c_2026-02-18_17-12-53.jpg	\N	\N	\N	9	2026-02-19 00:12:53.690452	พิจิตร	กท6506 พิจิตร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+454	\N	\N	กท6500	060b0e53-7b41-4b4e-9db9-23a86ff55e1c_2026-02-18_17-13-02.jpg	\N	\N	\N	9	2026-02-19 00:13:02.228719	พิจิตร	กท6500 พิจิตร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+455	\N	\N	ผว9829	e1ee1b73-f757-4b65-8b33-c0d9ef998154_2026-02-18_17-14-27.jpg	\N	\N	\N	9	2026-02-19 00:14:27.60535	กรุงเทพมหานคร	ผว9829 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+456	\N	\N	1ก9629	20ceba96-e53e-4607-90de-feb0fbff9bf1_2026-02-18_17-14-31.jpg	\N	\N	\N	9	2026-02-19 00:14:31.724807	\N	1ก9629	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+457	\N	\N	5ขท9820	6a0e962b-63e4-49d6-8712-00aff63d1f92_2026-02-18_17-14-35.jpg	\N	\N	\N	9	2026-02-19 00:14:35.944785	ปทุมธานี	5ขท9820 ปทุมธานี	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+458	\N	\N	5ขท9820	1a665109-ba39-4785-974d-a00b1b4e6f84_2026-02-18_17-14-40.jpg	\N	\N	\N	9	2026-02-19 00:14:40.13353	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+459	\N	\N	1กฌ971	67b1df18-e5f6-490c-a522-aa9c11187b5c_2026-02-18_17-15-03.jpg	\N	\N	\N	9	2026-02-19 00:15:03.926056	\N	1กฌ971	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+460	\N	\N	1กฌ795	5a73ec6c-60ea-4107-9885-106e7b26f9b3_2026-02-18_17-15-07.jpg	\N	\N	\N	9	2026-02-19 00:15:07.977061	\N	1กฌ795	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+461	\N	\N	7กฌ9725	a3f2e4f3-5c06-4370-93b0-f07601ecc89d_2026-02-18_17-15-12.jpg	\N	\N	\N	9	2026-02-19 00:15:12.04233	กรุงเทพมหานคร	7กฌ9725 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+462	\N	\N	7ก9795	30c0369b-75c0-45b4-bc55-0f5d00038910_2026-02-18_17-15-16.jpg	\N	\N	\N	9	2026-02-19 00:15:16.199799	หนองคาย	7ก9795 หนองคาย	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+533	\N	\N	ก99640	plate_2_20260218_222210.jpg	\N	\N	\N	9	2026-02-19 05:22:11.255207	\N	ก99640	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+534	\N	\N	4ก9871	plate_2_20260218_222213.jpg	\N	\N	\N	9	2026-02-19 05:22:13.712568	\N	4ก9871	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+535	\N	\N	1ก920	plate_2_20260218_222220.jpg	\N	\N	\N	9	2026-02-19 05:22:20.449025	\N	1ก920	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+558	\N	\N	ผว9829	1be1dd14-a24b-4258-ba5b-31dbce17e281_2026-02-18_22-35-25.jpg	\N	\N	\N	9	2026-02-19 05:35:25.592617	กรุงเทพมหานคร	ผว9829 กรุงเทพมหานคร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+606	\N	\N	กท6506	plate_2_20260218_230041.jpg	\N	\N	\N	9	2026-02-19 06:00:41.938791	พิจิตร	กท6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+607	\N	\N	กฬ6506	plate_2_20260218_230043.jpg	\N	\N	\N	9	2026-02-19 06:00:44.023954	พิจิตร	กฬ6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+608	\N	\N	กท6500	plate_2_20260218_230051.jpg	\N	\N	\N	9	2026-02-19 06:00:51.764048	แพร่	กท6500 แพร่	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+609	\N	\N	กท0500	plate_2_20260218_230109.jpg	\N	\N	\N	9	2026-02-19 06:01:10.196032	ยโสธร	กท0500 ยโสธร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+610	\N	\N	5ขท9820	plate_2_20260218_230313.jpg	\N	\N	\N	9	2026-02-19 06:03:13.320336	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+631	\N	\N	กท6506	plate_2_20260219_151617.jpg	\N	\N	\N	9	2026-02-19 22:16:17.59352	พิจิตร	กท6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+632	\N	\N	กฬ6506	plate_2_20260219_151620.jpg	\N	\N	\N	9	2026-02-19 22:16:20.876426	พิจิตร	กฬ6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+633	\N	\N	กท6500	plate_2_20260219_151627.jpg	\N	\N	\N	9	2026-02-19 22:16:27.562858	แพร่	กท6500 แพร่	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+634	\N	\N	กท0500	plate_2_20260219_151643.jpg	\N	\N	\N	9	2026-02-19 22:16:43.889237	ยโสธร	กท0500 ยโสธร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+646	\N	\N	กท6506	plate_2_20260219_153439.jpg	\N	\N	\N	9	2026-02-19 22:34:39.780911	พิจิตร	กท6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+656	\N	\N	กท6506	9049d0c6-99ff-4a24-8692-62707d224a7d_2026-02-19_15-40-56.jpg	\N	\N	\N	9	2026-02-19 22:40:56.740946	พิจิตร	กท6506 พิจิตร	complete	661c35ce-da88-4de7-a65a-32d5d8a01e0c	\N	\N
+463	\N	\N	9ษ914	plate_1_20260218_193508.jpg	\N	\N	\N	9	2026-02-19 02:35:10.34243	\N	9ษ914	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	\N
+464	\N	\N	1ข9921	plate_1_20260218_193513.jpg	\N	\N	\N	9	2026-02-19 02:35:13.675545	\N	1ข9921	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	\N
+465	\N	\N	1นด9871	plate_1_20260218_193521.jpg	\N	\N	\N	9	2026-02-19 02:35:21.755469	\N	1นด9871	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	\N
+466	\N	\N	กว9820	plate_1_20260218_193529.jpg	\N	\N	\N	9	2026-02-19 02:35:29.630927	\N	กว9820	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	\N
+467	\N	\N	5ขท9820	plate_1_20260218_193539.jpg	\N	\N	\N	9	2026-02-19 02:35:39.938686	ปทุมธานี	5ขท9820 ปทุมธานี	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	\N
+468	\N	\N	7ทญ791	plate_1_20260218_193554.jpg	\N	\N	\N	9	2026-02-19 02:35:55.006335	นครพนม	7ทญ791 นครพนม	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	\N
+469	\N	\N	1กฉ1791	plate_1_20260218_193604.jpg	\N	\N	\N	9	2026-02-19 02:36:04.66378	แม่ฮ่องสอน	1กฉ1791 แม่ฮ่องสอน	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	\N
+470	\N	\N	1กฌ9761	plate_1_20260218_193611.jpg	\N	\N	\N	9	2026-02-19 02:36:12.045295	\N	1กฌ9761	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	\N
+471	\N	\N	7กฌ725	plate_1_20260218_193619.jpg	\N	\N	\N	9	2026-02-19 02:36:19.602885	กรุงเทพมหานคร	7กฌ725 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	\N
+472	\N	\N	9ษ914	plate_1_20260218_193908.jpg	\N	\N	\N	9	2026-02-19 02:39:08.271481	\N	9ษ914	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	\N
+473	\N	\N	1ข9921	plate_1_20260218_193912.jpg	\N	\N	\N	9	2026-02-19 02:39:12.88097	\N	1ข9921	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	\N
+474	\N	\N	1นด9871	plate_1_20260218_193921.jpg	\N	\N	\N	9	2026-02-19 02:39:21.424826	\N	1นด9871	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	\N
+475	\N	\N	กว9820	plate_1_20260218_193928.jpg	\N	\N	\N	9	2026-02-19 02:39:29.163423	\N	กว9820	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	\N
+476	\N	\N	9ษ914	plate_1_20260218_195038.jpg	\N	\N	\N	9	2026-02-19 02:50:38.579185	\N	9ษ914	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	\N
+477	\N	\N	1ข9921	plate_1_20260218_195041.jpg	\N	\N	\N	9	2026-02-19 02:50:41.639928	\N	1ข9921	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	\N
+478	\N	\N	1นด9871	plate_1_20260218_195048.jpg	\N	\N	\N	9	2026-02-19 02:50:48.787185	\N	1นด9871	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	\N
+479	\N	\N	กว9820	plate_1_20260218_195055.jpg	\N	\N	\N	9	2026-02-19 02:50:55.921206	\N	กว9820	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	\N
+480	\N	\N	5ขท9820	plate_1_20260218_195106.jpg	\N	\N	\N	9	2026-02-19 02:51:06.29873	ปทุมธานี	5ขท9820 ปทุมธานี	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	\N
+481	\N	\N	7ก975	plate_2_20260218_210324.jpg	\N	\N	\N	9	2026-02-19 04:03:26.333603	กรุงเทพมหานคร	7ก975 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+482	\N	\N	7ก975	plate_2_20260218_210410.jpg	\N	\N	\N	9	2026-02-19 04:04:18.193573	กรุงเทพมหานคร	7ก975 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+483	\N	\N	7ก975	plate_2_20260218_210724.jpg	\N	\N	\N	9	2026-02-19 04:07:24.7448	กรุงเทพมหานคร	7ก975 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+484	\N	\N	1กฉ1791	plate_2_20260218_210842.jpg	\N	\N	\N	9	2026-02-19 04:08:42.423215	แม่ฮ่องสอน	1กฉ1791 แม่ฮ่องสอน	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+485	\N	\N	1กฌ1795	plate_2_20260218_210911.jpg	\N	\N	\N	9	2026-02-19 04:09:12.382617	\N	1กฌ1795	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+486	\N	\N	1กฌ1795	plate_2_20260218_210929.jpg	\N	\N	\N	9	2026-02-19 04:09:29.338338	\N	1กฌ1795	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+487	\N	\N	1กฌ9761	plate_2_20260218_211057.jpg	\N	\N	\N	9	2026-02-19 04:10:58.198795	\N	1กฌ9761	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+488	\N	\N	7กฌ725	plate_2_20260218_211226.jpg	\N	\N	\N	9	2026-02-19 04:12:27.149481	ปทุมธานี	7กฌ725 ปทุมธานี	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+489	\N	\N	7กฌ725	plate_2_20260218_211250.jpg	\N	\N	\N	9	2026-02-19 04:12:50.999879	ปทุมธานี	7กฌ725 ปทุมธานี	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+490	\N	\N	7ขก9795	plate_2_20260218_211841.jpg	\N	\N	\N	9	2026-02-19 04:18:41.862118	\N	7ขก9795	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+491	\N	\N	7กว975	plate_2_20260218_211944.jpg	\N	\N	\N	9	2026-02-19 04:19:44.391092	\N	7กว975	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+492	\N	\N	1กฉ9791	plate_2_20260218_212015.jpg	\N	\N	\N	9	2026-02-19 04:20:16.076323	กรุงเทพมหานคร	1กฉ9791 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+493	\N	\N	7กฌ725	plate_2_20260218_212340.jpg	\N	\N	\N	9	2026-02-19 04:23:40.766142	ปทุมธานี	7กฌ725 ปทุมธานี	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+494	\N	\N	1กฌ795	plate_2_20260218_212411.jpg	\N	\N	\N	9	2026-02-19 04:24:11.331922	กรุงเทพมหานคร	1กฌ795 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+495	\N	\N	1ก920	plate_2_20260218_215055.jpg	\N	\N	\N	9	2026-02-19 04:50:55.91682	\N	1ก920	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+496	\N	\N	4ก9671	plate_2_20260218_215113.jpg	\N	\N	\N	9	2026-02-19 04:51:13.836754	\N	4ก9671	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+497	\N	\N	5ขท9620	plate_2_20260218_215127.jpg	\N	\N	\N	9	2026-02-19 04:51:27.367178	กรุงเทพมหานคร	5ขท9620 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+498	\N	\N	5ขพ9820	plate_2_20260218_215139.jpg	\N	\N	\N	9	2026-02-19 04:51:40.286634	กรุงเทพมหานคร	5ขพ9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+499	\N	\N	4ก9871	plate_2_20260218_215152.jpg	\N	\N	\N	9	2026-02-19 04:51:53.006917	\N	4ก9871	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+500	\N	\N	5ขท9620	plate_2_20260218_215219.jpg	\N	\N	\N	9	2026-02-19 04:52:20.279509	กรุงเทพมหานคร	5ขท9620 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+501	\N	\N	5ข9820	plate_2_20260218_215233.jpg	\N	\N	\N	9	2026-02-19 04:52:33.714548	\N	5ข9820	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+502	\N	\N	4ก9671	plate_2_20260218_215246.jpg	\N	\N	\N	9	2026-02-19 04:52:46.924912	\N	4ก9671	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+503	\N	\N	5ขท9620	plate_2_20260218_215410.jpg	\N	\N	\N	9	2026-02-19 04:54:10.944593	กรุงเทพมหานคร	5ขท9620 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+504	\N	\N	4ก9871	plate_2_20260218_215501.jpg	\N	\N	\N	9	2026-02-19 04:55:01.456444	\N	4ก9871	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+505	\N	\N	4ก9671	plate_2_20260218_215514.jpg	\N	\N	\N	9	2026-02-19 04:55:14.303131	\N	4ก9671	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+506	\N	\N	5ร2820	plate_2_20260218_215526.jpg	\N	\N	\N	9	2026-02-19 04:55:27.266157	กรุงเทพมหานคร	5ร2820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+507	\N	\N	5ขท9620	plate_2_20260218_215552.jpg	\N	\N	\N	9	2026-02-19 04:55:52.669979	กรุงเทพมหานคร	5ขท9620 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+508	\N	\N	4ก9871	plate_2_20260218_215622.jpg	\N	\N	\N	9	2026-02-19 04:56:22.838641	\N	4ก9871	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+509	\N	\N	1ก920	plate_2_20260218_215642.jpg	\N	\N	\N	9	2026-02-19 04:56:43.036885	\N	1ก920	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+510	\N	\N	5ขท9620	plate_2_20260218_215702.jpg	\N	\N	\N	9	2026-02-19 04:57:02.591777	กรุงเทพมหานคร	5ขท9620 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+511	\N	\N	5ขพ9820	plate_2_20260218_215724.jpg	\N	\N	\N	9	2026-02-19 04:57:24.58628	กรุงเทพมหานคร	5ขพ9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+512	\N	\N	5ร2820	plate_2_20260218_215751.jpg	\N	\N	\N	9	2026-02-19 04:57:51.672155	กรุงเทพมหานคร	5ร2820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+513	\N	\N	4ก9871	plate_2_20260218_215813.jpg	\N	\N	\N	9	2026-02-19 04:58:13.778544	\N	4ก9871	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+514	\N	\N	5ข9820	plate_2_20260218_215836.jpg	\N	\N	\N	9	2026-02-19 04:58:37.400345	\N	5ข9820	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+515	\N	\N	1ก920	plate_2_20260218_215859.jpg	\N	\N	\N	9	2026-02-19 04:58:59.773032	\N	1ก920	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+516	\N	\N	5ขพ9820	plate_2_20260218_215921.jpg	\N	\N	\N	9	2026-02-19 04:59:22.137613	กรุงเทพมหานคร	5ขพ9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+517	\N	\N	1ก920	plate_2_20260218_215944.jpg	\N	\N	\N	9	2026-02-19 04:59:44.899717	\N	1ก920	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+518	\N	\N	5ขพ9820	plate_2_20260218_220006.jpg	\N	\N	\N	9	2026-02-19 05:00:07.013184	กรุงเทพมหานคร	5ขพ9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+611	\N	\N	กท6506	plate_2_20260218_230526.jpg	\N	\N	\N	9	2026-02-19 06:05:27.196008	พิจิตร	กท6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+612	\N	\N	กฬ6506	plate_2_20260218_230532.jpg	\N	\N	\N	9	2026-02-19 06:05:32.929332	พิจิตร	กฬ6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+613	\N	\N	กท6500	plate_2_20260218_230540.jpg	\N	\N	\N	9	2026-02-19 06:05:40.939584	แพร่	กท6500 แพร่	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+614	\N	\N	กท0500	plate_2_20260218_230556.jpg	\N	\N	\N	9	2026-02-19 06:05:56.97667	ยโสธร	กท0500 ยโสธร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+615	\N	\N	5ขท9820	plate_2_20260218_230738.jpg	\N	\N	\N	9	2026-02-19 06:07:39.194213	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+616	\N	\N	5ขท9820	plate_2_20260218_230743.jpg	\N	\N	\N	9	2026-02-19 06:07:44.228807	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+617	\N	\N	กท6506	plate_2_20260219_141836.jpg	\N	\N	\N	9	2026-02-19 21:18:37.660947	พิจิตร	กท6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+618	\N	\N	กฬ6506	plate_2_20260219_141840.jpg	\N	\N	\N	9	2026-02-19 21:18:40.800159	พิจิตร	กฬ6506 พิจิตร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+619	\N	\N	กท6500	plate_2_20260219_141846.jpg	\N	\N	\N	9	2026-02-19 21:18:46.302407	แพร่	กท6500 แพร่	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+620	\N	\N	กท0500	plate_2_20260219_141858.jpg	\N	\N	\N	9	2026-02-19 21:18:58.956179	ยโสธร	กท0500 ยโสธร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+621	\N	\N	5ขท9820	plate_2_20260219_142024.jpg	\N	\N	\N	9	2026-02-19 21:20:24.791318	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
+622	\N	\N	5ขท9820	plate_2_20260219_142029.jpg	\N	\N	\N	9	2026-02-19 21:20:29.900344	กรุงเทพมหานคร	5ขท9820 กรุงเทพมหานคร	complete	31076acf-d4f1-4247-90aa-288a4398e7b7	RTSP	2
 \.
 
 
 --
--- TOC entry 3567 (class 0 OID 0)
+-- TOC entry 3566 (class 0 OID 0)
 -- Dependencies: 215
 -- Name: car_bbox_car_bbox_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1473,7 +1641,7 @@ SELECT pg_catalog.setval('public.car_bbox_car_bbox_id_seq', 328, true);
 
 
 --
--- TOC entry 3568 (class 0 OID 0)
+-- TOC entry 3567 (class 0 OID 0)
 -- Dependencies: 218
 -- Name: payment_logs_transection_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1482,16 +1650,16 @@ SELECT pg_catalog.setval('public.payment_logs_transection_id_seq', 3, true);
 
 
 --
--- TOC entry 3569 (class 0 OID 0)
+-- TOC entry 3568 (class 0 OID 0)
 -- Dependencies: 220
 -- Name: plate_bbox_plate_bbox_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.plate_bbox_plate_bbox_id_seq', 211, true);
+SELECT pg_catalog.setval('public.plate_bbox_plate_bbox_id_seq', 203, true);
 
 
 --
--- TOC entry 3570 (class 0 OID 0)
+-- TOC entry 3569 (class 0 OID 0)
 -- Dependencies: 233
 -- Name: rtsp_streams_stream_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1500,7 +1668,7 @@ SELECT pg_catalog.setval('public.rtsp_streams_stream_id_seq', 4, true);
 
 
 --
--- TOC entry 3571 (class 0 OID 0)
+-- TOC entry 3570 (class 0 OID 0)
 -- Dependencies: 223
 -- Name: subscription_logs_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1509,7 +1677,7 @@ SELECT pg_catalog.setval('public.subscription_logs_log_id_seq', 3, true);
 
 
 --
--- TOC entry 3572 (class 0 OID 0)
+-- TOC entry 3571 (class 0 OID 0)
 -- Dependencies: 224
 -- Name: subscription_sub_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1518,39 +1686,39 @@ SELECT pg_catalog.setval('public.subscription_sub_id_seq', 32, true);
 
 
 --
--- TOC entry 3573 (class 0 OID 0)
+-- TOC entry 3572 (class 0 OID 0)
 -- Dependencies: 227
 -- Name: user_subscription_user_sub_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.user_subscription_user_sub_id_seq', 16, true);
+SELECT pg_catalog.setval('public.user_subscription_user_sub_id_seq', 14, true);
 
 
 --
--- TOC entry 3574 (class 0 OID 0)
+-- TOC entry 3573 (class 0 OID 0)
 -- Dependencies: 229
 -- Name: user_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.user_user_id_seq', 16, true);
+SELECT pg_catalog.setval('public.user_user_id_seq', 9, true);
 
 
 --
--- TOC entry 3575 (class 0 OID 0)
+-- TOC entry 3574 (class 0 OID 0)
 -- Dependencies: 231
 -- Name: websocket_image_logs_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.websocket_image_logs_log_id_seq', 191, true);
+SELECT pg_catalog.setval('public.websocket_image_logs_log_id_seq', 176, true);
 
 
 --
--- TOC entry 3576 (class 0 OID 0)
+-- TOC entry 3575 (class 0 OID 0)
 -- Dependencies: 232
 -- Name: websocket_video_logs_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.websocket_video_logs_log_id_seq', 875, true);
+SELECT pg_catalog.setval('public.websocket_video_logs_log_id_seq', 666, true);
 
 
 --
@@ -1873,7 +2041,7 @@ ALTER TABLE ONLY public.video_logs
 
 
 --
--- TOC entry 3553 (class 0 OID 0)
+-- TOC entry 3552 (class 0 OID 0)
 -- Dependencies: 5
 -- Name: SCHEMA public; Type: ACL; Schema: -; Owner: pg_database_owner
 --
@@ -1881,11 +2049,11 @@ ALTER TABLE ONLY public.video_logs
 GRANT ALL ON SCHEMA public TO postgres;
 
 
--- Completed on 2026-03-28 18:59:58
+-- Completed on 2026-02-20 02:34:49
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict IfdTG0DeZPP3g0OHBbJmPyjbjYmnLS2C3dLReZUUQq7oCVX5tpF1d22ZBYf793B
+\unrestrict rce7fcrel7SH7eXb1YbygCvOB0QW2ue6hGR92ZnVvRNh6hHe1nSzjcCnvMKNfNG
 
