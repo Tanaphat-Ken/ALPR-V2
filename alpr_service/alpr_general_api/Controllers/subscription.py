@@ -187,15 +187,25 @@ async def change_subscription(
         if not new_sub:
              raise HTTPException(status_code=404, detail="New subscription plan not found.")
 
-        # 2. Find existing active subscription for the same service type
-        find_existing_stmt = select(UserSubscription).join(Subscription).where(
-            UserSubscription.user_id == request.user_id,
-            Subscription.service_type == new_sub.service_type,
-            UserSubscription.is_activate == True
-        )
-        
+        is_tier_plan = new_sub.service_type.upper().startswith("TIER")
+
+        # 2. Find existing active subscriptions in the same plan family.
+        # Tier plans should behave as a single bundle (only one active at a time).
+        if is_tier_plan:
+            find_existing_stmt = select(UserSubscription).join(Subscription).where(
+                UserSubscription.user_id == request.user_id,
+                Subscription.service_type.ilike('tier%'),
+                UserSubscription.is_activate == True
+            )
+        else:
+            find_existing_stmt = select(UserSubscription).join(Subscription).where(
+                UserSubscription.user_id == request.user_id,
+                Subscription.service_type == new_sub.service_type,
+                UserSubscription.is_activate == True
+            )
+
         existing_result = await db.execute(find_existing_stmt)
-        existing_sub = existing_result.scalars().first()
+        existing_subs = existing_result.scalars().all()
         
         now_utc = datetime.now(pytz.utc)
         bangkok_tz = pytz.timezone("Asia/Bangkok")
@@ -204,45 +214,31 @@ async def change_subscription(
         
         end_date = check_billing_period(new_sub.billing_period, time_now)
 
-        if existing_sub:
-            if existing_sub.sub_id == request.sub_id:
-                 return {"message": "User is already subscribed to this plan."}
-            
-            # Deactivate old subscription
-            # We need to update using ORM object or update statement
+        if any(existing_sub.sub_id == request.sub_id for existing_sub in existing_subs):
+            return {"message": "User is already subscribed to this plan."}
+
+        if existing_subs:
+            existing_ids = [existing_sub.user_sub_id for existing_sub in existing_subs]
             stmt_update = update(UserSubscription).where(
-                UserSubscription.user_sub_id == existing_sub.user_sub_id
+                UserSubscription.user_sub_id.in_(existing_ids)
             ).values(is_activate=False)
             await db.execute(stmt_update)
-            
-            # Create new subscription
-            stmt_insert = insert(UserSubscription).values(
-                user_id=request.user_id,
-                sub_id=request.sub_id,
-                is_activate=True,
-                start_date=time_now,
-                end_date=end_date,
-                request_quota=new_sub.api_request_limit
-            )
-            await db.execute(stmt_insert)
-            await db.commit()
-            
+
+        stmt_insert = insert(UserSubscription).values(
+            user_id=request.user_id,
+            sub_id=request.sub_id,
+            is_activate=True,
+            start_date=time_now,
+            end_date=end_date,
+            request_quota=new_sub.api_request_limit
+        )
+        await db.execute(stmt_insert)
+        await db.commit()
+
+        if existing_subs:
             return {"message": "Subscription changed successfully."}
-            
-        else:
-            # If no existing subscription, just create new
-            stmt_insert = insert(UserSubscription).values(
-                user_id=request.user_id,
-                sub_id=request.sub_id,
-                is_activate=True,
-                start_date=time_now,
-                end_date=end_date,
-                request_quota=new_sub.api_request_limit
-            )
-            await db.execute(stmt_insert)
-            await db.commit()
-            
-            return {"message": "Subscription created successfully."}
+
+        return {"message": "Subscription created successfully."}
 
     except Exception as e:
         await db.rollback()
