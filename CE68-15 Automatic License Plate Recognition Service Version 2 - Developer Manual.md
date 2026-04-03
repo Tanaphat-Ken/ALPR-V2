@@ -1,4 +1,4 @@
-# CE68-XX PROJECT_NAME - Developer Manual
+# CE68-15 Automatic License Plate Recognition Service Version 2 - Developer Manual
 
 > เอกสารคู่มือสำหรับนักพัฒนา (ส่วนเสริมปริญญานิพนธ์) — อธิบายโครงสร้างโปรแกรมแบบ Top-Down, ความสัมพันธ์ของโมดูล, อินเทอร์เฟซระหว่างบริการ, และพารามิเตอร์ที่ใช้ในการสื่อสาร พร้อม Diagram/Flowchart
 
@@ -76,7 +76,7 @@ ALPR-V2 เป็นระบบอ่านป้ายทะเบียนแ
 | Web Dashboard       | `alpr_service/alpr_web/`             | Next.js      | HTTP      | `/`                                               | JWT (เรียก General API) | UI + เรียก API อื่น ๆ          |
 | General API         | `alpr_service/alpr_general_api/`     | `main.py`    | HTTP      | `/api/general/*`                                  | JWT (Bearer)            | user/token/subscription        |
 | Image Upload API    | `alpr_service/alpr_api_image/`       | `main.py`    | HTTP      | `/api/image/*`                                    | Service Token (Bearer)  | log + quota + model_response   |
-| WebSocket Video     | `alpr_service/alpr_websocket_video/` | `main.py`    | WS + HTTP | `ws://.../ws/video/{token}`                       | Service Token (path)    | ส่งผลลัพธ์เป็น JSON ผ่าน WS    |
+| WebSocket Video     | `alpr_service/alpr_websocket_video/` | `main.py`    | WS + HTTP | `ws://.../ws/video/:token`                        | Service Token (path)    | ส่งผลลัพธ์เป็น JSON ผ่าน WS    |
 | RTSP Service        | `alpr_service/alpr_rtsp_service/`    | `main.py`    | HTTP + WS | `/api/rtsp/*` และ `ws://.../api/rtsp/stream/{id}` | RTSP token (body)       | stream status + detection logs |
 | Plate Recognizer    | `alpr_service/plate_recognizer/`     | `main.py`    | HTTP      | `/api/v1/image/*`                                 | ไม่มี (internal API)    | {plate_id, province, bbox}     |
 | PostgreSQL          | (container)                          | -            | TCP       | (internal)                                        | DB credentials          | persistent storage             |
@@ -160,6 +160,22 @@ ALPR-V2 เป็นระบบอ่านป้ายทะเบียนแ
   - `user_id`
   - `filename`
 
+#### 4.3.2 Flowchart: HTTP Image Upload (Image API)
+
+```mermaid
+flowchart TD
+  A[Client: POST /api/image/upload-image\nAuthorization: Bearer API_TOKEN\nform-data: file] --> B[Nginx rewrite → /api/v1/images/upload-image]
+  B --> C[Image API: TokenAuthMiddleware\nvalidate token_key]
+  C --> D[Controllers/image.py\nfind user_id + validate subscription/quota]
+  D --> E{Validate file type/size}
+  E -- invalid --> X[HTTP 400]
+  E -- valid --> F[Send multipart to Plate Recognizer\n/api/v1/image/process]
+  F --> G[Receive model_response JSON]
+  G --> H[Save image_logs + bbox tables]
+  H --> I[Decrement request_quota]
+  I --> J[Return JSON: message + model_response]
+```
+
 ---
 
 ### 4.4 General API (Auth + Token + Subscription)
@@ -201,8 +217,8 @@ ALPR-V2 เป็นระบบอ่านป้ายทะเบียนแ
 
 ### 4.5 WebSocket Video (Streaming Frame → Detection)
 
-**Public WebSocket URL:** `ws://<host>/ws/video/{token}`  
-**Token:** path parameter `{token}` ต้องเป็น service_type = `VIDEO_WEBSOCKET`
+**Public WebSocket URL:** `ws://<host>/ws/video/:token`  
+**Token:** path parameter `:token` ต้องเป็น service_type = `VIDEO_WEBSOCKET`
 
 #### 4.5.1 Input (Client → Server)
 
@@ -220,6 +236,43 @@ ALPR-V2 เป็นระบบอ่านป้ายทะเบียนแ
 - เมื่อรับ blank frame: ส่งสถานะ
   - `{ status: "processing", message: "Video upload complete, processing frames..." }`
   - สุดท้าย `{ status: "completed", message: "All frames processed" }`
+
+#### 4.5.3 Sequence Diagram: WebSocket Video Processing
+
+```mermaid
+sequenceDiagram
+  participant C as Client
+  participant N as Nginx
+  participant W as WS Video Service
+  participant DB as PostgreSQL
+  participant PR as Plate Recognizer
+
+  C->>N: WS connect /ws/video/:token
+  N->>W: proxy upgrade
+  W->>DB: validate token_key (VIDEO_WEBSOCKET)
+  DB-->>W: user_id
+  W-->>C: accept()
+
+  loop Each frame
+    C->>W: send_bytes(frame)
+    W->>W: enqueue frame (asyncio.Queue)
+    W-->>C: status=progress (frame_number, queue_size)
+    W->>W: detect plate crop (tracker)
+    alt plate detected
+      W->>PR: POST /image/process/from-plate-crop (multipart)
+      PR-->>W: result JSON
+      W->>DB: INSERT video_logs (+ bbox)
+      W->>DB: decrement quota
+      W-->>C: result JSON + image + plateCropImage
+    else no plate
+      W-->>C: no result event
+    end
+  end
+
+  C->>W: send_bytes(blank frame <3KB)
+  W-->>C: status=processing
+  W-->>C: status=completed
+```
 
 ---
 
@@ -416,7 +469,7 @@ flowchart TB
   Nginx -->|/| Web
   Nginx -->|/api/general/*| General
   Nginx -->|/api/image/*| ImgAPI
-  Nginx -->|/ws/video/{token}| WSVideo
+  Nginx -->|/ws/video/:token| WSVideo
   Nginx -->|/ws/image/*| WSImage
   Nginx -->|/api/rtsp/*| RTSP
   Nginx -->|/api/v1/image/*| PR
@@ -431,59 +484,6 @@ flowchart TB
   WSVideo -->|HTTP /api/v1/image/process/from-plate-crop| PR
   WSImage -->|HTTP /api/v1/image/process| PR
   RTSP -->|HTTP /api/v1/image/process/from-plate-crop| PR
-```
-
-### 6.2 Flowchart: HTTP Image Upload (Image API)
-
-```mermaid
-flowchart TD
-  A[Client: POST /api/image/upload-image\nAuthorization: Bearer API_TOKEN\nform-data: file] --> B[Nginx rewrite → /api/v1/images/upload-image]
-  B --> C[Image API: TokenAuthMiddleware\nvalidate token_key]
-  C --> D[Controllers/image.py\nfind user_id + validate subscription/quota]
-  D --> E{Validate file type/size}
-  E -- invalid --> X[HTTP 400]
-  E -- valid --> F[Send multipart to Plate Recognizer\n/api/v1/image/process]
-  F --> G[Receive model_response JSON]
-  G --> H[Save image_logs + bbox tables]
-  H --> I[Decrement request_quota]
-  I --> J[Return JSON: message + model_response]
-```
-
-### 6.3 Sequence Diagram: WebSocket Video Processing
-
-```mermaid
-sequenceDiagram
-  participant C as Client
-  participant N as Nginx
-  participant W as WS Video Service
-  participant DB as PostgreSQL
-  participant PR as Plate Recognizer
-
-  C->>N: WS connect /ws/video/{token}
-  N->>W: proxy upgrade
-  W->>DB: validate token_key (VIDEO_WEBSOCKET)
-  DB-->>W: user_id
-  W-->>C: accept()
-
-  loop Each frame
-    C->>W: send_bytes(frame)
-    W->>W: enqueue frame (asyncio.Queue)
-    W-->>C: {status:"progress", frame_number, queue_size}
-    W->>W: detect plate crop (tracker)
-    alt plate detected
-      W->>PR: POST /image/process/from-plate-crop (multipart)
-      PR-->>W: result JSON
-      W->>DB: INSERT video_logs (+ bbox)
-      W->>DB: decrement quota
-      W-->>C: result JSON + image + plateCropImage
-    else no plate
-      W-->>C: (no result event)
-    end
-  end
-
-  C->>W: send_bytes(blank frame <3KB)
-  W-->>C: {status:"processing"}
-  W-->>C: {status:"completed"}
 ```
 
 ---
@@ -566,7 +566,7 @@ docker exec alpr_general_api bash -c "NGINX_BASE=http://alpr_nginx DB_HOST=alpr_
 - General API: `http://<host>/api/general/*`
 - Image API: `http://<host>/api/image/*`
 - Plate Recognizer: `http://<host>/api/v1/image/*`
-- WebSocket Video: `ws://<host>/ws/video/{token}`
+- WebSocket Video: `ws://<host>/ws/video/:token`
 - RTSP API: `http://<host>/api/rtsp/*`
 - RTSP Viewer WS: `ws://<host>/api/rtsp/stream/{camera_id}`
 
